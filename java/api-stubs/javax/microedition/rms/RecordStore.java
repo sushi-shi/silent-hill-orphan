@@ -8,6 +8,12 @@ public class RecordStore {
     public static boolean oracleOpenCreate;
     public static int oracleOpenCalls;
     public static int oracleOpenMode;
+    public static byte[] oracleGetData;
+    public static int oracleGetId;
+    public static int oracleGetCalls;
+    public static int oracleGetMode;
+    public static int oracleCloseCalls;
+    public static int oracleCloseMode;
     public static byte[] oracleSetData;
     public static int oracleSetOffset;
     public static int oracleSetLength;
@@ -20,8 +26,17 @@ public class RecordStore {
         oracleOpenCalls++;
         oracleOpenName = name;
         oracleOpenCreate = createIfNecessary;
-        if (oracleOpenMode != 0) {
+        if (oracleOpenMode == 1) {
+            throw new RecordStoreNotFoundException("injected missing store");
+        }
+        if (oracleOpenMode == 2) {
             throw new RecordStoreException("injected open failure");
+        }
+        if (oracleOpenMode == 3) {
+            throw new AssertionError("injected open error");
+        }
+        if (oracleOpenMode == 4) {
+            throw new NullPointerException("injected open exception");
         }
         return new RecordStore();
     }
@@ -52,13 +67,47 @@ public class RecordStore {
         oracleOpenCreate = false;
         oracleOpenCalls = 0;
         oracleOpenMode = openMode;
+        oracleGetData = null;
+        oracleGetId = 0;
+        oracleGetCalls = 0;
+        oracleGetMode = 0;
+        oracleCloseCalls = 0;
+        oracleCloseMode = 0;
         oracleSetData = null;
         oracleSetOffset = 0;
         oracleSetLength = 0;
         oracleSetCalls = 0;
     }
 
-    public void closeRecordStore() throws RecordStoreNotOpenException, RecordStoreException {}
+    public static void oracleResetRead(
+            int openMode, int getMode, int closeMode, byte[] getData) {
+        oracleOpenName = null;
+        oracleOpenCreate = false;
+        oracleOpenCalls = 0;
+        oracleOpenMode = openMode;
+        oracleGetData = getData;
+        oracleGetId = 0;
+        oracleGetCalls = 0;
+        oracleGetMode = getMode;
+        oracleCloseCalls = 0;
+        oracleCloseMode = closeMode;
+    }
+
+    public void closeRecordStore() throws RecordStoreNotOpenException, RecordStoreException {
+        oracleCloseCalls++;
+        if (oracleCloseMode == 1) {
+            throw new RecordStoreNotFoundException("injected missing store");
+        }
+        if (oracleCloseMode == 2) {
+            throw new RecordStoreException("injected close failure");
+        }
+        if (oracleCloseMode == 3) {
+            throw new AssertionError("injected close error");
+        }
+        if (oracleCloseMode == 4) {
+            throw new NullPointerException("injected close exception");
+        }
+    }
 
     public int getNumRecords() throws RecordStoreNotOpenException {
         return 0;
@@ -86,6 +135,20 @@ public class RecordStore {
 
     public byte[] getRecord(int recordId)
             throws RecordStoreNotOpenException, RecordStoreException {
-        return null;
+        oracleGetCalls++;
+        oracleGetId = recordId;
+        if (oracleGetMode == 1) {
+            throw new RecordStoreNotFoundException("injected missing store");
+        }
+        if (oracleGetMode == 2) {
+            throw new RecordStoreException("injected getRecord failure");
+        }
+        if (oracleGetMode == 3) {
+            throw new AssertionError("injected getRecord error");
+        }
+        if (oracleGetMode == 4) {
+            throw new NullPointerException("injected getRecord exception");
+        }
+        return oracleGetData;
     }
 }

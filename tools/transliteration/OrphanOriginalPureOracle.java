@@ -986,6 +986,7 @@ public final class OrphanOriginalPureOracle {
         Method freeMemory = method(application, "freeMemory");
         Method setDisplay = method(application, "setDisplay", Displayable.class);
         Method rmsDelete = method(application, "rmsDelete", String.class);
+        Method rmsGet = method(application, "rmsGet", String.class);
         Method saveChunkIni = method(application, "saveChunkINI", DataInputStream.class);
         Method resourceMakeSubChunk = method(application, "resourceMakeSubChunk");
         Method resetLoad = method(application, "resetLoad");
@@ -1791,6 +1792,37 @@ public final class OrphanOriginalPureOracle {
                         ? "-" : RecordStore.oracleDeleteName == expectedName ? "I" : "W";
                 result = status + ":" + RecordStore.oracleDeleteCalls + ":" + identity;
                 RecordStore.oracleResetDelete(0);
+            } else if (parts[0].equals("rms-get") && parts.length == 6) {
+                String expectedName = utf16(parts[1]);
+                int getMode = value(parts, 3);
+                byte[] expectedData = bytes(parts[5]);
+                RecordStore.oracleResetRead(
+                        value(parts, 2), getMode, value(parts, 4), expectedData);
+                byte[] returned = null;
+                String status;
+                try {
+                    returned = (byte[]) rmsGet.invoke(null, expectedName);
+                    status = "OK";
+                } catch (InvocationTargetException exception) {
+                    if (!(exception.getCause() instanceof AssertionError)) {
+                        throw exception;
+                    }
+                    status = "ERR";
+                }
+                String dataIdentity = status.equals("OK") && getMode == 0
+                        && RecordStore.oracleGetCalls != 0
+                        ? returned == expectedData ? "I" : "W" : "-";
+                String nameIdentity = RecordStore.oracleOpenCalls == 0
+                        ? "-" : RecordStore.oracleOpenName == expectedName ? "I" : "W";
+                String getId = RecordStore.oracleGetCalls == 0
+                        ? "-" : Integer.toString(RecordStore.oracleGetId);
+                result = status + ":"
+                        + (returned == null ? "null" : bytesOutput(returned)) + ":"
+                        + dataIdentity + ":" + RecordStore.oracleOpenCalls + ":"
+                        + nameIdentity + ":" + (RecordStore.oracleOpenCreate ? "1" : "0")
+                        + ":" + RecordStore.oracleGetCalls + ":" + getId + ":"
+                        + RecordStore.oracleCloseCalls;
+                RecordStore.oracleResetRead(0, 0, 0, null);
             } else if (parts[0].equals("save-chunk-ini") && parts.length == 3) {
                 int streamMode = value(parts, 1);
                 DataInputStream chunkInput;

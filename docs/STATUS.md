@@ -12,7 +12,7 @@ Living record of what is recovered and verified. Newest first.
   `orphan-me` starts the deterministic MIDP subset with a clipped CPU ARGB
   framebuffer. These are device/runtime implementations, not transliterated
   game bodies.
-- The first 160/350 game methods (`M.min`, `max`, `abs`, `dir`, `toInt`,
+- The first 161/350 game methods (`M.min`, `max`, `abs`, `dir`, `toInt`,
   `toBoolean`, `getLeft`,
   `getTop`, `resourceExit`, `destroyApp`, `pauseApp`, `appStart`, `resourceURLEncode`, `codedString`, `charToString`,
   the default constructors for `Application`, `CheatController`, `SilentHillGame`,
@@ -23,7 +23,7 @@ Living record of what is recovered and verified. Newest first.
   `tickBasedTime`, `tickBasedTimeUpdate`, `tickBasedTimeReset`, `getGameLangPath`,
   both `getGameText` overloads, `getPosInLanguageSelectionList`,
   `txtStringReplace`, `removeStringPrefix`, both Ink-server getters and mutators,
-  `resetVariableSystem`, `roomRepaintRun`, `clearAllRMS`, `freeMemory`, `setDisplay`, `paint`, `repaintCanvasIfPossible`, `rmsDelete`, `saveChunkINI`, `resourceMakeSubChunk`, `roomGetCurrent`, `roomSetCurrent`, `roomGetHistorySize`,
+  `resetVariableSystem`, `roomRepaintRun`, `clearAllRMS`, `freeMemory`, `setDisplay`, `paint`, `repaintCanvasIfPossible`, `rmsGet`, `rmsDelete`, `saveChunkINI`, `resourceMakeSubChunk`, `roomGetCurrent`, `roomSetCurrent`, `roomGetHistorySize`,
   `roomGetLastInRoomHistory`, `roomAddToRoomHistory`, `roomRemoveLastInRoomHistory`,
   `resourceIsOnHeap`, `random`, `arrayCopyString`,
   both `LoadRequest` constructors, `createFromInputStream`, `getID`, `getDescription`, `equals`,
@@ -49,12 +49,12 @@ Living record of what is recovered and verified. Newest first.
   `getMoveDir`, and `enterHover`) are strict
   Rust translations. Each is hash-bound to original
   bytecode and opcode streams, complete `javac` and `syn` ASTs, a written
-  per-node semantic crosswalk, and a live 991,477-case oracle in which the
+  per-node semantic crosswalk, and a live 994,477-case oracle in which the
   recovered baseline, canonical Java, and Rust agree. The naming-reference JAR
-  agrees on all 985,262 non-variant cases; its 6,215 excluded requests cover two
+  agrees on all 988,262 non-variant cases; its 6,215 excluded requests cover two
   input-timing policies and one rendering policy scoped by live validation of
   the variant ledger.
-  Coverage stays an explicit ratchet; the other 190 bodies are not claimed.
+  Coverage stays an explicit ratchet; the other 189 bodies are not claimed.
 - The 183 Java fields reached by those methods are exhaustively mapped: 149 mutable
   fields become 149 Rust fields in `CheatControllerStatics`, `SilentHillGameStatics`, `ApplicationState`, `ResourceRequestState`, `GameResourceState`, `GameResourceStatics`, `InkEngineState`, `GameCanvasState`,
   `MenuState`, `MenuStatics`, `InkInterpreterState`, `InkInterpreterStatics`,
@@ -68,9 +68,9 @@ Living record of what is recovered and verified. Newest first.
   `ApplicationRepaintCanvasIfPossibleError`, `ApplicationResourceMakeSubChunkError`, and
   `RoomObjectStringEventError` and `RoomObjectEnterHoverError` enums and their variants are independently claimed
   as Rust-only adaptations.
-  The reverse `syn` inventory permits only the 162 reviewed functions, 226
-  reviewed value declarations, and 32 reviewed containers (420 total
-  declarations). Twenty focused Rust tests exercise the admitted bodies, and the
+  The reverse `syn` inventory permits only the 163 reviewed functions, 230
+  reviewed value declarations, and 33 reviewed containers (426 total
+  declarations). Twenty-one focused Rust tests exercise the admitted bodies, and the
   injected unowned-constant proof goes red.
 
 ## Phase 2 — canonical Java application and AST authority

@@ -1,17 +1,17 @@
 schema_version = 1
 baseline_sha256 = "ca9a874ce7c7fb11ed444701b65e967919d3d7c0bcf73f80a9fcf825fb6a4be7"
 total_body_count = 350
-reviewed_body_count = 160
-semantic_reviewed_body_count = 160
+reviewed_body_count = 161
+semantic_reviewed_body_count = 161
 total_field_count = 1075
 semantic_reviewed_field_count = 183
-total_rust_function_count = 162
-reviewed_rust_function_count = 162
-total_rust_value_declaration_count = 226
-reviewed_rust_value_declaration_count = 226
-total_rust_container_count = 32
-reviewed_rust_container_count = 32
-total_rust_declaration_count = 420
+total_rust_function_count = 163
+reviewed_rust_function_count = 163
+total_rust_value_declaration_count = 230
+reviewed_rust_value_declaration_count = 230
+total_rust_container_count = 33
+reviewed_rust_container_count = 33
+total_rust_declaration_count = 426
 
 [crosswalk_policy]
 blanket_max_span = 48
@@ -4050,6 +4050,37 @@ semantic_review = "Thirty-two hostile-name cases agree across both recovered JAR
 [[body]]
 java_class = "M"
 canonical_class = "Application"
+java_name = "rmsGet"
+descriptor = "(Ljava/lang/String;)[B"
+java_item = "rmsGet(String)"
+code_sha256 = "d859fe83cc997d05efbd225705222555eb00c345c096274228b032ffb1aeae52"
+opcode_sha256 = "e80e62cabc0bd5605073ffea81f6e3191d77b67671e95b45cc15442d6147a46d"
+java_ast_sha256 = "d95af72c1467d234bf8c378603a4c070d55c3cc1593e8e091d8e3cf95f7894e9"
+java_nodes_sha256 = "cbc8294fb9c76b72ecf09e5464b4a1b0fbd22438163d53811c5b67e61fb72657"
+java_node_count = 34
+rust_node_counts = [90]
+operation = [
+  { semantic = "own the complete exception-swallowing body", java_nodes = [0], rust_nodes = ["0:0"] },
+  { semantic = "initialize the nullable byte-array result to null before attempting any record-store operation", java_node_ranges = [[1, 5]], rust_node_ranges = [{ target = 0, start = 1, end = 3 }] },
+  { semantic = "open the exact nullable name once with create=false and retain the returned store only on success", java_node_ranges = [[8, 15]], rust_node_ranges = [{ target = 0, start = 4, end = 14 }] },
+  { semantic = "fetch record ID one through the opened store and publish the exact nullable byte-array result before close", java_node_ranges = [[16, 22]], rust_node_ranges = [{ target = 0, start = 33, end = 46 }] },
+  { semantic = "close the store only after a successful getRecord call", java_node_ranges = [[23, 26]], rust_node_ranges = [{ target = 0, start = 65, end = 71 }] },
+  { semantic = "apply the one empty Exception catch to open, get, and close: open/get failures return the current null result without close, while close failures retain the fetched result", java_node_ranges = [[6, 7], [27, 31]], rust_node_ranges = [{ target = 0, start = 23, end = 32 }, { target = 0, start = 55, end = 64 }, { target = 0, start = 72, end = 77 }] },
+  { semantic = "return the exact current byte-array result after successful or caught-close completion", java_node_ranges = [[32, 33]], rust_node_ranges = [{ target = 0, start = 78, end = 82 }] },
+]
+adaptation = [
+  { side = "rust", category = "representation-adapter", reason = "The explicit Uncaught arm preserves failures outside Java's Exception catch at the open boundary and suppresses all later callbacks.", rust_node_ranges = [{ target = 0, start = 15, end = 22 }] },
+  { side = "rust", category = "representation-adapter", reason = "The explicit Uncaught arm preserves failures outside Java's Exception catch at the get boundary and skips close.", rust_node_ranges = [{ target = 0, start = 47, end = 54 }] },
+  { side = "rust", category = "representation-adapter", reason = "The explicit Uncaught arm preserves failures outside Java's Exception catch at close, so the already-fetched result is not returned.", rust_node_ranges = [{ target = 0, start = 83, end = 89 }] },
+]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:application_rms_get", ast_sha256 = "b9314655d140deb62b5ea483809efa9c18fd24fad0ad40fd09148199ff83fcb3", nodes_sha256 = "fa92711f1b22211d72e79f8dae7d09c62a09934a092cdb44c57b797e30b51563", node_count = 90 }]
+oracle = "pure-method-v1"
+semantic_status = "crosswalked"
+semantic_review = "Three thousand cases agree across both recovered JARs, canonical Java, and Rust. Eight nullable and hostile UTF-16 names cross success, RecordStoreNotFoundException, another RecordStoreException, AssertionError, and NullPointerException independently at open, get, and close with null, empty, and binary record data. The oracle compares callback order and counts, name and data identity, create=false, record ID one, returned bytes, and propagated status. Open and get Exceptions return null and skip all later calls, a close Exception returns the exact fetched array, and Error propagates at every stage. All thirty-four javac and ninety syn nodes plus four typed error variants and their enum container are owned exactly once."
+
+[[body]]
+java_class = "M"
+canonical_class = "Application"
 java_name = "saveChunkINI"
 descriptor = "(Ljava/io/DataInputStream;)V"
 java_item = "saveChunkINI(DataInputStream)"
@@ -5645,6 +5676,46 @@ ast_sha256 = "8bba77d675da80d32f3137eaf97bd151c13efd6035e4a005157542b24c4f88de"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
 semantic_review = "Rust-only typed catch boundary preserving the subtype ordering and uncaught remainder of Application.rmsDelete."
+
+[[rust_value]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "variant:ApplicationRmsGetCallError::RecordStoreNotFound"
+ast_sha256 = "eb663b0e9adf2d46a397967290ddc83a563f6270c10f944c970f41e612a04bf8"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Rust-only typed representation of RecordStoreNotFoundException as one member of the source body's broad caught Exception domain."
+
+[[rust_value]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "variant:ApplicationRmsGetCallError::RecordStore"
+ast_sha256 = "b738c31ec8869f8dbb6e9f4fb3054df0005b04909b6c836dbc8f8c5ba9d0b51f"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Rust-only typed representation of another RecordStoreException caught by the source body's broad Exception handler."
+
+[[rust_value]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "variant:ApplicationRmsGetCallError::OtherException"
+ast_sha256 = "6b88316cf1b504109c0c756c2336a6c364fbedc5539bee6e5bcdad4dd064f95f"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Rust-only typed remainder of Java Exception, preventing the record-store-specific oracle modes from narrowing the actual catch domain."
+
+[[rust_value]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "variant:ApplicationRmsGetCallError::Uncaught"
+ast_sha256 = "4aa9399ae35f1c4e480b51155aa4a7723cb7e18395e7e8fb510893b21e0822f2"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Rust-only transparent wrapper preserving Error-like failures outside Java's Exception handler at each of the three callback boundaries."
+
+[[rust_container]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "enum:ApplicationRmsGetCallError"
+ast_sha256 = "546ea7ddff7c91e578d6ef1c18195d084d59a53c3ab5946216198f05b45a6bcb"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Typed callback boundary separating every caught Exception category from the uncaught remainder without constraining the transliteration crate to no_std."
 
 [[rust_value]]
 file = "transliteration/crates/orphan-game-xlat/src/lib.rs"

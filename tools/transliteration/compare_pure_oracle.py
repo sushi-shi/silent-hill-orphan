@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare 160 methods across recovered JARs, canonical Java, and Rust."""
+"""Compare 161 methods across recovered JARs, canonical Java, and Rust."""
 
 from __future__ import annotations
 
@@ -456,6 +456,17 @@ def requests() -> list[str]:
         f"rms-delete {utf16_token(name)} {mode}"
         for name in rms_names
         for mode in (0, 1, 2, 3)
+    )
+    rms_get_data = (None, b"", bytes((0, 1, 255)))
+    result.extend(
+        "rms-get "
+        f"{utf16_token(name)} {open_mode} {get_mode} {close_mode} "
+        f"{byte_token(data)}"
+        for name in rms_names
+        for open_mode in (0, 1, 2, 3, 4)
+        for get_mode in (0, 1, 2, 3, 4)
+        for close_mode in (0, 1, 2, 3, 4)
+        for data in rms_get_data
     )
     result.extend(
         f"save-chunk-ini {stream_mode} {open_mode}"

@@ -1656,15 +1656,44 @@ the three mutable fields and the typed, GameCanvas-scoped constant.
 wrapper's call edge, but keep the callback boundary and declaration ownership
 explicit so oracle evidence cannot silently promote the callee's AST.
 
+## A-62 — an empty catch is not a `finally` block
+
+`Application.rmsGet(String)` initializes its result to null, opens the named
+record store with `create=false`, fetches record ID one, publishes that exact
+byte-array reference, and only then closes the store. One `Exception` handler
+covers all three calls. Consequently an open failure returns null without get
+or close, a get failure returns null without close, and a caught close failure
+returns the already-published array. The close is ordinary code inside the try,
+not cleanup guaranteed by a `finally` block. Failures outside the caught
+`Exception` domain still propagate at each boundary and a close-time `Error`
+therefore suppresses the otherwise ready return.
+
+The Rust seam represents three caught `Exception` categories separately from an
+uncaught failure, borrows the store for `getRecord`, and consumes it for the
+conditional close. Its successful data path moves the exact `Vec` returned by
+the callback without copying. The 3,000-case four-authority matrix crosses eight
+nullable and hostile UTF-16 names, success, two RMS exceptions,
+`AssertionError`, and `NullPointerException` independently at open, get, and
+close, plus null, empty, or binary record data. It compares callback
+order and counts, exact name and data identity, the fixed false flag and record
+ID one, returned bytes, and propagated status. All thirty-four `javac` and
+ninety `syn` body nodes are owned exactly once, together with the four variants
+and container of the typed callback-error enum.
+
+**Lesson.** Recover the exception-table range before translating resource code.
+Replacing this shape with unconditional cleanup changes the observable call
+schedule, while assigning the result after close loses a successfully fetched
+array when close throws a caught exception.
+
 ## Verified clean so far
 
-- 160/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
+- 161/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
   and `syn` node ownership.
 - 183/1,075 Java fields have complete declaration-node ownership: 149 map into
   sixteen hash-locked Rust owner containers, thirty-four map to typed scalar constants,
   and one mutable array also owns a separately inventoried initializer template.
-- The differential currently runs 991,477 cases against the recovered baseline,
-  canonical Java, and Rust; the naming-reference JAR agrees on all 985,262
+- The differential currently runs 994,477 cases against the recovered baseline,
+  canonical Java, and Rust; the naming-reference JAR agrees on all 988,262
   cases, with 6,215 requests excluded only by its two ledger-reviewed
   input-timing variants and one ledger-reviewed rendering-policy variant.
 - Exhaustive subdomains include all Java `char` values, every pair of singleton

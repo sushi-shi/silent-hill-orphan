@@ -86,6 +86,14 @@ pub enum ApplicationRmsDeleteError<E> {
 }
 
 #[derive(Debug, Eq, PartialEq)]
+pub enum ApplicationRmsGetCallError<E> {
+    RecordStoreNotFound,
+    RecordStore,
+    OtherException,
+    Uncaught(E),
+}
+
+#[derive(Debug, Eq, PartialEq)]
 pub enum ApplicationResourceMakeSubChunkError {
     NegativeArraySize(orphan_jvm::NegativeArraySizeException),
     ArrayCopy(orphan_jvm::ArrayCopyException),
@@ -320,6 +328,48 @@ where
         Ok(()) | Err(ApplicationRmsDeleteError::NotFound) => Ok(true),
         Err(ApplicationRmsDeleteError::RecordStore) => Ok(false),
         Err(ApplicationRmsDeleteError::Uncaught(error)) => Err(error),
+    }
+}
+
+pub fn application_rms_get<Name, Store, OpenRecordStore, GetRecord, CloseRecordStore, E>(
+    name: Name,
+    open_record_store: OpenRecordStore,
+    get_record: GetRecord,
+    close_record_store: CloseRecordStore,
+) -> Result<Option<alloc::vec::Vec<u8>>, E>
+where
+    OpenRecordStore: FnOnce(Name, bool) -> Result<Store, ApplicationRmsGetCallError<E>>,
+    GetRecord: FnOnce(
+        &mut Store,
+        i32,
+    ) -> Result<Option<alloc::vec::Vec<u8>>, ApplicationRmsGetCallError<E>>,
+    CloseRecordStore: FnOnce(Store) -> Result<(), ApplicationRmsGetCallError<E>>,
+{
+    let mut record = None;
+    let mut record_store = match open_record_store(name, false) {
+        Ok(record_store) => record_store,
+        Err(ApplicationRmsGetCallError::Uncaught(error)) => return Err(error),
+        Err(
+            ApplicationRmsGetCallError::RecordStoreNotFound
+            | ApplicationRmsGetCallError::RecordStore
+            | ApplicationRmsGetCallError::OtherException,
+        ) => return Ok(record),
+    };
+    match get_record(&mut record_store, 1) {
+        Ok(fetched_record) => record = fetched_record,
+        Err(ApplicationRmsGetCallError::Uncaught(error)) => return Err(error),
+        Err(
+            ApplicationRmsGetCallError::RecordStoreNotFound
+            | ApplicationRmsGetCallError::RecordStore
+            | ApplicationRmsGetCallError::OtherException,
+        ) => return Ok(record),
+    }
+    match close_record_store(record_store) {
+        Ok(())
+        | Err(ApplicationRmsGetCallError::RecordStoreNotFound)
+        | Err(ApplicationRmsGetCallError::RecordStore)
+        | Err(ApplicationRmsGetCallError::OtherException) => Ok(record),
+        Err(ApplicationRmsGetCallError::Uncaught(error)) => Err(error),
     }
 }
 
@@ -3310,6 +3360,119 @@ mod tests {
         });
         assert_eq!(failure, Err("play-sound"));
         assert_eq!(calls, 2);
+    }
+
+    #[test]
+    fn rms_get_preserves_open_get_close_order_and_the_fetched_record() {
+        let name = [0_u16, 0xd800, 0xffff];
+        let expected_name_pointer = name.as_ptr();
+        let order = core::cell::RefCell::new(alloc::vec::Vec::new());
+        let open_failure = application_rms_get(
+            Some(name.as_slice()),
+            |observed, create| {
+                order.borrow_mut().push('O');
+                assert_eq!(observed.unwrap().as_ptr(), expected_name_pointer);
+                assert!(!create);
+                Err::<u32, _>(ApplicationRmsGetCallError::<&'static str>::OtherException)
+            },
+            |_, _| panic!("getRecord must not follow an open failure"),
+            |_| panic!("closeRecordStore must not follow an open failure"),
+        );
+        assert_eq!(open_failure, Ok(None));
+        assert_eq!(*order.borrow(), ['O']);
+
+        order.borrow_mut().clear();
+        let get_failure = application_rms_get(
+            None::<&[u16]>,
+            |observed, create| {
+                order.borrow_mut().push('O');
+                assert_eq!(observed, None);
+                assert!(!create);
+                Ok::<_, ApplicationRmsGetCallError<&'static str>>(17_u32)
+            },
+            |store, record_id| {
+                order.borrow_mut().push('G');
+                assert_eq!(*store, 17);
+                assert_eq!(record_id, 1);
+                Err(ApplicationRmsGetCallError::RecordStore)
+            },
+            |_| panic!("closeRecordStore must not follow a getRecord failure"),
+        );
+        assert_eq!(get_failure, Ok(None));
+        assert_eq!(*order.borrow(), ['O', 'G']);
+
+        order.borrow_mut().clear();
+        let expected_record = alloc::vec![0_u8, 1, 255];
+        let expected_record_pointer = expected_record.as_ptr();
+        let close_failure = application_rms_get(
+            name.as_slice(),
+            |observed, create| {
+                order.borrow_mut().push('O');
+                assert_eq!(observed.as_ptr(), expected_name_pointer);
+                assert!(!create);
+                Ok::<_, ApplicationRmsGetCallError<&'static str>>(41_u32)
+            },
+            |store, record_id| {
+                order.borrow_mut().push('G');
+                assert_eq!(*store, 41);
+                assert_eq!(record_id, 1);
+                Ok(Some(expected_record))
+            },
+            |store| {
+                order.borrow_mut().push('C');
+                assert_eq!(store, 41);
+                Err(ApplicationRmsGetCallError::OtherException)
+            },
+        )
+        .expect("a caught close failure must preserve normal completion")
+        .expect("a close failure must retain the fetched record");
+        assert_eq!(close_failure.as_ptr(), expected_record_pointer);
+        assert_eq!(close_failure, [0, 1, 255]);
+        assert_eq!(*order.borrow(), ['O', 'G', 'C']);
+
+        order.borrow_mut().clear();
+        let null_record = application_rms_get(
+            None::<&[u16]>,
+            |_, _| {
+                order.borrow_mut().push('O');
+                Ok::<_, ApplicationRmsGetCallError<&'static str>>(9_u32)
+            },
+            |_, record_id| {
+                order.borrow_mut().push('G');
+                assert_eq!(record_id, 1);
+                Ok(None)
+            },
+            |_| {
+                order.borrow_mut().push('C');
+                Ok(())
+            },
+        );
+        assert_eq!(null_record, Ok(None));
+        assert_eq!(*order.borrow(), ['O', 'G', 'C']);
+
+        let open_error = application_rms_get(
+            None::<&[u16]>,
+            |_, _| Err::<u32, _>(ApplicationRmsGetCallError::Uncaught("open-error")),
+            |_, _| panic!("getRecord must not follow an open Error"),
+            |_| panic!("closeRecordStore must not follow an open Error"),
+        );
+        assert_eq!(open_error, Err("open-error"));
+
+        let get_error = application_rms_get(
+            None::<&[u16]>,
+            |_, _| Ok::<_, ApplicationRmsGetCallError<&'static str>>(3_u32),
+            |_, _| Err(ApplicationRmsGetCallError::Uncaught("get-error")),
+            |_| panic!("closeRecordStore must not follow a getRecord Error"),
+        );
+        assert_eq!(get_error, Err("get-error"));
+
+        let close_error = application_rms_get(
+            None::<&[u16]>,
+            |_, _| Ok::<_, ApplicationRmsGetCallError<&'static str>>(5_u32),
+            |_, _| Ok(Some(alloc::vec![7_u8])),
+            |_| Err(ApplicationRmsGetCallError::Uncaught("close-error")),
+        );
+        assert_eq!(close_error, Err("close-error"));
     }
 
     #[test]

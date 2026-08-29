@@ -7,8 +7,8 @@ use orphan_game_xlat::{
     application_clear_all_rms, application_destroy_app, application_free_memory, application_new,
     application_paint, application_pause_app, application_print_array,
     application_repaint_canvas_if_possible, application_resource_make_subchunk,
-    application_rms_delete, application_room_repaint_run, application_save_chunk_ini,
-    application_set_display, array_copy_string_handles, char_to_string,
+    application_rms_delete, application_rms_get, application_room_repaint_run,
+    application_save_chunk_ini, application_set_display, array_copy_string_handles, char_to_string,
     cheat_controller_initialize, cheat_controller_new, coded_string, dir, find,
     game_canvas_key_jad_entry_as_int, game_canvas_key_pressed, game_canvas_key_released,
     game_canvas_new, game_canvas_paint, game_canvas_resume_sound, game_canvas_show_notify,
@@ -47,13 +47,14 @@ use orphan_game_xlat::{
     silent_hill_game_new, splash_more_exists, text_id_new, text_replace_first, tick_based_time,
     tick_based_time_reset, tick_based_time_update, to_boolean, to_int, write_string,
     ApplicationRepaintCanvasIfPossibleError, ApplicationResourceMakeSubChunkError,
-    ApplicationRmsDeleteError, ApplicationState, CheatControllerStatics, GameCanvasState,
-    GameResourceState, GameResourceStatics, InkEnginePopupCreateError, InkEngineState,
-    InkInterpreterState, InkInterpreterStatics, InkScriptExecuteEventError,
-    InkScriptGetItemNameError, InkScriptRegistryValue, InkScriptState, InkScriptStatics,
-    InkVariableError, JavaObject, JavaOwnedObject, JavaResourceId, MenuState, MenuStatics,
-    ResourceRequestState, RoomObjectEnterHoverError, RoomObjectState, RoomObjectStatics,
-    RoomObjectStringEventError, SilentHillGameStatics, GAME_CANVAS_INITIAL_TRANSFORM_TABLE,
+    ApplicationRmsDeleteError, ApplicationRmsGetCallError, ApplicationState,
+    CheatControllerStatics, GameCanvasState, GameResourceState, GameResourceStatics,
+    InkEnginePopupCreateError, InkEngineState, InkInterpreterState, InkInterpreterStatics,
+    InkScriptExecuteEventError, InkScriptGetItemNameError, InkScriptRegistryValue, InkScriptState,
+    InkScriptStatics, InkVariableError, JavaObject, JavaOwnedObject, JavaResourceId, MenuState,
+    MenuStatics, ResourceRequestState, RoomObjectEnterHoverError, RoomObjectState,
+    RoomObjectStatics, RoomObjectStringEventError, SilentHillGameStatics,
+    GAME_CANVAS_INITIAL_TRANSFORM_TABLE,
 };
 
 fn value(parts: &[&str], index: usize) -> i32 {
@@ -1973,6 +1974,107 @@ fn main() {
                     Err(_) => "NPE",
                 };
                 format!("{status}:{}:{}", calls.get(), identity.get())
+            }
+            Some("rms-get") if parts.len() == 6 => {
+                let name = utf16(parts[1]);
+                let open_mode = value(&parts, 2);
+                let get_mode = value(&parts, 3);
+                let close_mode = value(&parts, 4);
+                let data = bytes(parts[5]);
+                let expected_data_pointer = data.as_deref().map(<[u8]>::as_ptr);
+                let expected_data_length = data.as_deref().map(<[u8]>::len);
+                let open_calls = core::cell::Cell::new(0);
+                let name_identity = core::cell::Cell::new("-");
+                let open_create = core::cell::Cell::new(false);
+                let get_calls = core::cell::Cell::new(0);
+                let get_id = core::cell::Cell::new(None);
+                let close_calls = core::cell::Cell::new(0);
+                let result = application_rms_get(
+                    name.as_deref(),
+                    |observed_name, create| {
+                        open_calls.set(open_calls.get() + 1);
+                        name_identity.set(match (observed_name, name.as_deref()) {
+                            (None, None) => "I",
+                            (Some(left), Some(right))
+                                if left.as_ptr() == right.as_ptr() && left.len() == right.len() =>
+                            {
+                                "I"
+                            }
+                            _ => "W",
+                        });
+                        open_create.set(create);
+                        match open_mode {
+                            0 => Ok(17_u32),
+                            1 => Err(ApplicationRmsGetCallError::RecordStoreNotFound),
+                            2 => Err(ApplicationRmsGetCallError::RecordStore),
+                            3 => Err(ApplicationRmsGetCallError::Uncaught(())),
+                            4 => Err(ApplicationRmsGetCallError::OtherException),
+                            _ => unreachable!(),
+                        }
+                    },
+                    |store, record_id| {
+                        get_calls.set(get_calls.get() + 1);
+                        get_id.set(Some(record_id));
+                        assert_eq!(*store, 17);
+                        match get_mode {
+                            0 => Ok(data),
+                            1 => Err(ApplicationRmsGetCallError::RecordStoreNotFound),
+                            2 => Err(ApplicationRmsGetCallError::RecordStore),
+                            3 => Err(ApplicationRmsGetCallError::Uncaught(())),
+                            4 => Err(ApplicationRmsGetCallError::OtherException),
+                            _ => unreachable!(),
+                        }
+                    },
+                    |store| {
+                        close_calls.set(close_calls.get() + 1);
+                        assert_eq!(store, 17);
+                        match close_mode {
+                            0 => Ok(()),
+                            1 => Err(ApplicationRmsGetCallError::RecordStoreNotFound),
+                            2 => Err(ApplicationRmsGetCallError::RecordStore),
+                            3 => Err(ApplicationRmsGetCallError::Uncaught(())),
+                            4 => Err(ApplicationRmsGetCallError::OtherException),
+                            _ => unreachable!(),
+                        }
+                    },
+                );
+                let (status, returned, data_identity) = match result {
+                    Err(()) => ("ERR", "null".to_owned(), "-"),
+                    Ok(returned) => {
+                        let identity = if get_calls.get() == 1 && get_mode == 0 {
+                            match (
+                                returned.as_deref(),
+                                expected_data_pointer,
+                                expected_data_length,
+                            ) {
+                                (None, None, None) => "I",
+                                (Some(value), Some(pointer), Some(length))
+                                    if value.as_ptr() == pointer && value.len() == length =>
+                                {
+                                    "I"
+                                }
+                                _ => "W",
+                            }
+                        } else {
+                            "-"
+                        };
+                        let output = returned
+                            .as_deref()
+                            .map_or_else(|| "null".to_owned(), bytes_output);
+                        ("OK", output, identity)
+                    }
+                };
+                let get_id = get_id
+                    .get()
+                    .map_or_else(|| "-".to_owned(), |record_id| record_id.to_string());
+                format!(
+                    "{status}:{returned}:{data_identity}:{}:{}:{}:{}:{get_id}:{}",
+                    open_calls.get(),
+                    name_identity.get(),
+                    i32::from(open_create.get()),
+                    get_calls.get(),
+                    close_calls.get()
+                )
             }
             Some("save-chunk-ini") if parts.len() == 3 => {
                 let stream_mode = value(&parts, 1);
