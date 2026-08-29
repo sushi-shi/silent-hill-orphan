@@ -1,6 +1,11 @@
 package javax.microedition.lcdui;
 
 public abstract class Canvas extends Displayable {
+    public static Canvas oracleFullScreenReceiver;
+    public static int oracleFullScreenCalls;
+    public static boolean oracleFullScreenMode;
+    public static boolean oracleFailFullScreen;
+
     public static final int UP = 1;
     public static final int LEFT = 2;
     public static final int RIGHT = 5;
@@ -53,5 +58,19 @@ public abstract class Canvas extends Displayable {
 
     public final void serviceRepaints() {}
 
-    public void setFullScreenMode(boolean mode) {}
+    public void setFullScreenMode(boolean mode) {
+        oracleFullScreenCalls++;
+        oracleFullScreenReceiver = this;
+        oracleFullScreenMode = mode;
+        if (oracleFailFullScreen) {
+            throw new NullPointerException("injected setFullScreenMode failure");
+        }
+    }
+
+    public static void oracleResetFullScreen(boolean fail) {
+        oracleFullScreenReceiver = null;
+        oracleFullScreenCalls = 0;
+        oracleFullScreenMode = false;
+        oracleFailFullScreen = fail;
+    }
 }

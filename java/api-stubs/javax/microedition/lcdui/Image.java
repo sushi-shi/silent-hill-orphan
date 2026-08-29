@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class Image {
+    public static int oracleStringCreateCalls;
+    public static String oracleStringCreateName;
+    public static Image oracleStringCreatedImage;
+
     protected Image() {}
 
     public static Image createImage(int width, int height) {
@@ -11,7 +15,10 @@ public class Image {
     }
 
     public static Image createImage(String name) throws IOException {
-        return new Image();
+        oracleStringCreateCalls++;
+        oracleStringCreateName = name;
+        oracleStringCreatedImage = new Image();
+        return oracleStringCreatedImage;
     }
 
     public static Image createImage(byte[] imageData, int imageOffset, int imageLength) {
@@ -24,6 +31,12 @@ public class Image {
 
     public static Image createImage(InputStream stream) throws IOException {
         return new Image();
+    }
+
+    public static void oracleResetStringCreate() {
+        oracleStringCreateCalls = 0;
+        oracleStringCreateName = null;
+        oracleStringCreatedImage = null;
     }
 
     public Graphics getGraphics() {

@@ -4,12 +4,14 @@ use orphan_formats::Reader;
 use orphan_game_xlat::{
     abs, action_key_get_script_id, action_key_id_convert, action_key_init_system,
     action_key_keycode_to_action_key, action_key_unset_all_keys, application_app_start,
-    application_clear_all_rms, application_destroy_app, application_new, application_pause_app,
-    application_print_array, application_room_repaint_run, array_copy_string_handles,
+    application_clear_all_rms, application_destroy_app, application_free_memory, application_new,
+    application_paint, application_pause_app, application_print_array,
+    application_room_repaint_run, application_set_display, array_copy_string_handles,
     char_to_string, cheat_controller_initialize, cheat_controller_new, coded_string, dir, find,
-    game_canvas_key_pressed, game_canvas_key_released, game_canvas_paint, game_canvas_show_notify,
-    game_language_path, game_resource_equals, game_resource_initialize, game_resource_new,
-    game_resource_paint, game_resource_paint_simple, get_game_text, get_game_text_from_string,
+    game_canvas_key_jad_entry_as_int, game_canvas_key_pressed, game_canvas_key_released,
+    game_canvas_new, game_canvas_paint, game_canvas_show_notify, game_language_path,
+    game_resource_equals, game_resource_initialize, game_resource_new, game_resource_paint,
+    game_resource_paint_simple, get_game_text, get_game_text_from_string,
     get_language_selection_position, get_left, get_top, ink_codes_new,
     ink_engine_inventory_equip_unequip_handling, ink_engine_new, ink_engine_popup_create,
     ink_engine_popup_create_with_max_time, ink_engine_popup_set_next, ink_engine_wrap_string,
@@ -39,15 +41,16 @@ use orphan_game_xlat::{
     room_object_bp_set_time, room_object_enter_hover, room_object_execute_event,
     room_object_get_move_direction, room_object_get_name, room_object_initialize,
     room_object_is_over, room_object_new, room_remove_last_from_history, room_set_current,
-    set_key_status, silent_hill_game_new, splash_more_exists, text_id_new, text_replace_first,
-    tick_based_time, tick_based_time_reset, tick_based_time_update, to_boolean, to_int,
-    write_string, ApplicationState, CheatControllerStatics, GameCanvasState, GameResourceState,
+    set_key_status, silent_hill_game_app_init, silent_hill_game_menu_reset_ingame_values,
+    silent_hill_game_new, splash_more_exists, text_id_new, text_replace_first, tick_based_time,
+    tick_based_time_reset, tick_based_time_update, to_boolean, to_int, write_string,
+    ApplicationState, CheatControllerStatics, GameCanvasState, GameResourceState,
     GameResourceStatics, InkEnginePopupCreateError, InkEngineState, InkInterpreterState,
     InkInterpreterStatics, InkScriptExecuteEventError, InkScriptGetItemNameError,
     InkScriptRegistryValue, InkScriptState, InkScriptStatics, InkVariableError, JavaObject,
     JavaOwnedObject, JavaResourceId, MenuState, MenuStatics, ResourceRequestState,
     RoomObjectEnterHoverError, RoomObjectState, RoomObjectStatics, RoomObjectStringEventError,
-    GAME_CANVAS_INITIAL_TRANSFORM_TABLE,
+    SilentHillGameStatics, GAME_CANVAS_INITIAL_TRANSFORM_TABLE,
 };
 
 fn value(parts: &[&str], index: usize) -> i32 {
@@ -347,6 +350,8 @@ fn server_state(variable_token: &str, hint_token: &str, changed: bool) -> Applic
     ApplicationState {
         tick_based_time_value: 0,
         canvas_width: 0,
+        fade_frames: 0,
+        demo_frames: 0,
         key_last_pressed: 0,
         key_new: false,
         key_pressed: false,
@@ -362,6 +367,8 @@ fn server_state(variable_token: &str, hint_token: &str, changed: bool) -> Applic
         languages: None,
         resource_heap_sources: None,
         random_instance: None,
+        runtime_instance: None,
+        midlet_instance: None,
         ink_server_variables: string_table(variable_token),
         ink_server_hints: string_table(hint_token),
         game_changed_since_last_save: changed,
@@ -1571,6 +1578,142 @@ fn main() {
                 };
                 format!("{}:{attempts}", if result.is_ok() { "OK" } else { "NPE" })
             }
+            Some("game-canvas-new") if parts.len() == 3 => {
+                let super_fails = value(&parts, 1) != 0;
+                let full_screen_fails = value(&parts, 2) != 0;
+                let super_calls = core::cell::Cell::new(0);
+                let full_screen_calls = core::cell::Cell::new(0);
+                let suppress_keys = core::cell::Cell::new(true);
+                let full_screen_mode = core::cell::Cell::new(false);
+                let constructor_receiver = core::cell::Cell::new(None);
+                let full_screen_receiver = core::cell::Cell::new(None);
+                let status = if game_canvas_new(
+                    41,
+                    |canvas, suppress| {
+                        super_calls.set(super_calls.get() + 1);
+                        constructor_receiver.set(Some(canvas));
+                        suppress_keys.set(suppress);
+                        if super_fails {
+                            Err("super")
+                        } else {
+                            Ok(())
+                        }
+                    },
+                    |canvas, full_screen| {
+                        full_screen_calls.set(full_screen_calls.get() + 1);
+                        full_screen_receiver.set(Some(canvas));
+                        full_screen_mode.set(full_screen);
+                        if full_screen_fails {
+                            Err("full-screen")
+                        } else {
+                            Ok(())
+                        }
+                    },
+                )
+                .is_ok()
+                {
+                    "OK"
+                } else {
+                    "NPE"
+                };
+                let same_receiver = if full_screen_calls.get() == 0 {
+                    "-"
+                } else if full_screen_receiver.get() == constructor_receiver.get() {
+                    "1"
+                } else {
+                    "0"
+                };
+                format!(
+                    "{status}:{}:{}:{}:{}:{same_receiver}",
+                    super_calls.get(),
+                    i32::from(suppress_keys.get()),
+                    full_screen_calls.get(),
+                    i32::from(full_screen_mode.get())
+                )
+            }
+            Some("menu-reset-ingame-values") if parts.len() == 3 => {
+                let mut statics = SilentHillGameStatics {
+                    hud_ammo_number_width: value(&parts, 1),
+                    hud_ammo_update_needed: value(&parts, 2) != 0,
+                    ink_menu_logo: None,
+                };
+                let mut ingame_margin = i32::MIN;
+                silent_hill_game_menu_reset_ingame_values(&mut statics, || {
+                    ingame_margin = 4;
+                    Ok::<(), orphan_jvm::NullPointerException>(())
+                })
+                .expect("reviewed InkEngine reset callback succeeds");
+                format!(
+                    "{ingame_margin}:{}:{}",
+                    statics.hud_ammo_number_width,
+                    i32::from(statics.hud_ammo_update_needed)
+                )
+            }
+            Some("app-init") if parts.len() == 2 => {
+                let old_logo = (value(&parts, 1) != 0).then_some(7);
+                let mut statics = SilentHillGameStatics {
+                    hud_ammo_number_width: 0,
+                    hud_ammo_update_needed: false,
+                    ink_menu_logo: old_logo,
+                };
+                let mut load_calls = 0;
+                let mut requested_path = String::from("-");
+                let mut canvas_width = i32::MIN;
+                let result = silent_hill_game_app_init(
+                    &mut statics,
+                    |path| {
+                        load_calls += 1;
+                        requested_path = String::from_utf16(path)
+                            .expect("reviewed menu-logo path is valid UTF-16");
+                        Some(41)
+                    },
+                    || {
+                        canvas_width = 240;
+                        Err(orphan_jvm::NullPointerException)
+                    },
+                );
+                let logo = if statics.ink_menu_logo == Some(41) {
+                    "NEW"
+                } else if statics.ink_menu_logo == old_logo {
+                    "OLD"
+                } else {
+                    "WRONG"
+                };
+                format!(
+                    "{}:{load_calls}:{requested_path}:{logo}:{}",
+                    if result.is_ok() { "OK" } else { "NPE" },
+                    i32::from(canvas_width != i32::MIN)
+                )
+            }
+            Some("key-jad-entry") if parts.len() == 5 => {
+                let mut application = server_state("-", "-", false);
+                application.midlet_instance = (value(&parts, 1) != 0).then_some(19);
+                let key = utf16(parts[2]);
+                let lookup_fails = value(&parts, 3) != 0;
+                let property = utf16(parts[4]);
+                let mut calls = 0;
+                let mut receiver = "-";
+                let mut key_identity = "-";
+                let parsed = game_canvas_key_jad_entry_as_int(
+                    &application,
+                    key.as_deref(),
+                    |midlet, observed_key| {
+                        calls += 1;
+                        receiver = if midlet == 19 { "M" } else { "W" };
+                        key_identity = if observed_key == key.as_deref() {
+                            "K"
+                        } else {
+                            "W"
+                        };
+                        if lookup_fails {
+                            Err(orphan_jvm::NullPointerException)
+                        } else {
+                            Ok(property.clone())
+                        }
+                    },
+                );
+                format!("{parsed}:{calls}:{receiver}:{key_identity}")
+            }
             Some("url-encode") if parts.len() == 2 => {
                 let input = utf16(parts[1]);
                 match resource_url_encode(input.as_deref()) {
@@ -1697,11 +1840,104 @@ fn main() {
                      {important_count}:{downloads}:{scripts}"
                 )
             }
+            Some("free-memory") if parts.len() == 2 => {
+                let runtime_present = value(&parts, 1) != 0;
+                let mut state = server_state("-", "-", false);
+                state.runtime_instance = runtime_present.then_some(37);
+                let collect_calls = core::cell::Cell::new(0);
+                let sample_calls = core::cell::Cell::new(0);
+                match application_free_memory(
+                    &state,
+                    || collect_calls.set(collect_calls.get() + 1),
+                    |runtime| {
+                        assert_eq!(runtime, 37);
+                        sample_calls.set(sample_calls.get() + 1);
+                        4096
+                    },
+                ) {
+                    Ok(available) => {
+                        assert_eq!(collect_calls.get(), 1);
+                        assert_eq!(sample_calls.get(), 1);
+                        format!("OK:{}", i32::from(available >= 0))
+                    }
+                    Err(_) => {
+                        assert_eq!(collect_calls.get(), 1);
+                        assert_eq!(sample_calls.get(), 0);
+                        "NPE:-".to_owned()
+                    }
+                }
+            }
+            Some("set-display") if parts.len() == 5 => {
+                let expected_midlet = (value(&parts, 1) != 0).then_some(11);
+                let expected_current = (value(&parts, 2) != 0).then_some(29);
+                let get_mode = value(&parts, 3);
+                let set_mode = value(&parts, 4);
+                let mut state = server_state("-", "-", false);
+                state.midlet_instance = expected_midlet;
+                let get_calls = core::cell::Cell::new(0);
+                let set_calls = core::cell::Cell::new(0);
+                let observed_midlet = core::cell::Cell::new(None);
+                let observed_receiver = core::cell::Cell::new(None);
+                let observed_current = core::cell::Cell::new(None);
+                let status = if application_set_display(
+                    &state,
+                    expected_current,
+                    |midlet| {
+                        get_calls.set(get_calls.get() + 1);
+                        observed_midlet.set(Some(midlet));
+                        match get_mode {
+                            0 => Ok(Some(17)),
+                            1 => Ok(None),
+                            2 => Err("get"),
+                            _ => unreachable!(),
+                        }
+                    },
+                    |display, current| {
+                        set_calls.set(set_calls.get() + 1);
+                        observed_receiver.set(Some(display));
+                        observed_current.set(Some(current));
+                        if set_mode == 0 {
+                            Ok(())
+                        } else {
+                            Err("set")
+                        }
+                    },
+                )
+                .is_ok()
+                {
+                    "OK"
+                } else {
+                    "NPE"
+                };
+                let midlet = match observed_midlet.get() {
+                    Some(None) => "N",
+                    Some(value) if value == expected_midlet => "M",
+                    _ => "W",
+                };
+                let receiver = match observed_receiver.get() {
+                    None => "-",
+                    Some(17) => "D",
+                    Some(_) => "W",
+                };
+                let current = match observed_current.get() {
+                    None => "-",
+                    Some(None) => "N",
+                    Some(value) if value == expected_current => "C",
+                    _ => "W",
+                };
+                format!(
+                    "{status}:{}:{}:{midlet}:{receiver}:{current}",
+                    get_calls.get(),
+                    set_calls.get()
+                )
+            }
             Some("resource-restart-importants") if parts.len() == 2 => {
                 let old_length = value(&parts, 1);
                 let mut state = ApplicationState {
                     tick_based_time_value: 0,
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -1721,6 +1957,8 @@ fn main() {
                     languages: None,
                     resource_heap_sources: None,
                     random_instance: None,
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: None,
                     ink_server_hints: None,
                     game_changed_since_last_save: false,
@@ -1752,6 +1990,8 @@ fn main() {
                 let state = ApplicationState {
                     tick_based_time_value: 0,
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -1767,6 +2007,8 @@ fn main() {
                     languages: None,
                     resource_heap_sources: None,
                     random_instance: None,
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: None,
                     ink_server_hints: None,
                     game_changed_since_last_save: false,
@@ -1788,6 +2030,8 @@ fn main() {
                 let state = ApplicationState {
                     tick_based_time_value: 0,
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -1803,6 +2047,8 @@ fn main() {
                     languages: None,
                     resource_heap_sources: None,
                     random_instance: None,
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: None,
                     ink_server_hints: None,
                     game_changed_since_last_save: false,
@@ -1814,6 +2060,8 @@ fn main() {
                 let state = ApplicationState {
                     tick_based_time_value: 0,
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -1829,6 +2077,8 @@ fn main() {
                     languages: None,
                     resource_heap_sources: None,
                     random_instance: None,
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: None,
                     ink_server_hints: None,
                     game_changed_since_last_save: false,
@@ -1843,6 +2093,8 @@ fn main() {
                 let state = ApplicationState {
                     tick_based_time_value: 0,
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -1858,6 +2110,8 @@ fn main() {
                     languages: None,
                     resource_heap_sources: None,
                     random_instance: None,
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: None,
                     ink_server_hints: None,
                     game_changed_since_last_save: false,
@@ -1891,6 +2145,8 @@ fn main() {
                 let state = ApplicationState {
                     tick_based_time_value: 0,
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -1906,6 +2162,8 @@ fn main() {
                     languages: script_ids(parts[1]),
                     resource_heap_sources: None,
                     random_instance: None,
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: None,
                     ink_server_hints: None,
                     game_changed_since_last_save: false,
@@ -1921,6 +2179,8 @@ fn main() {
                 let state = ApplicationState {
                     tick_based_time_value: 0,
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -1936,6 +2196,8 @@ fn main() {
                     languages: None,
                     resource_heap_sources: ints(parts[2]),
                     random_instance: None,
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: None,
                     ink_server_hints: None,
                     game_changed_since_last_save: false,
@@ -1954,6 +2216,8 @@ fn main() {
                 let state = ApplicationState {
                     tick_based_time_value: 0,
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -1969,6 +2233,8 @@ fn main() {
                     languages: None,
                     resource_heap_sources: None,
                     random_instance: has_random.then_some(1),
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: None,
                     ink_server_hints: None,
                     game_changed_since_last_save: false,
@@ -1984,6 +2250,8 @@ fn main() {
                 let state = ApplicationState {
                     tick_based_time_value: 0,
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -1999,6 +2267,8 @@ fn main() {
                     languages: None,
                     resource_heap_sources: None,
                     random_instance: None,
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: if parts[1] == "variable" {
                         table.clone()
                     } else {
@@ -2113,6 +2383,8 @@ fn main() {
                 let state = ApplicationState {
                     tick_based_time_value: 0,
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2128,6 +2400,8 @@ fn main() {
                     languages: None,
                     resource_heap_sources: None,
                     random_instance: None,
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: string_table(parts[1]),
                     ink_server_hints: None,
                     game_changed_since_last_save: false,
@@ -2142,6 +2416,8 @@ fn main() {
                 let state = ApplicationState {
                     tick_based_time_value: 0,
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2157,6 +2433,8 @@ fn main() {
                     languages: None,
                     resource_heap_sources: None,
                     random_instance: None,
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: string_table(parts[1]),
                     ink_server_hints: None,
                     game_changed_since_last_save: false,
@@ -2172,6 +2450,8 @@ fn main() {
                 let state = ApplicationState {
                     tick_based_time_value: 0,
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2187,6 +2467,8 @@ fn main() {
                     languages: None,
                     resource_heap_sources: None,
                     random_instance: None,
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: string_table(parts[1]),
                     ink_server_hints: None,
                     game_changed_since_last_save: false,
@@ -2201,6 +2483,8 @@ fn main() {
                 let state = ApplicationState {
                     tick_based_time_value: 0,
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2216,6 +2500,8 @@ fn main() {
                     languages: None,
                     resource_heap_sources: None,
                     random_instance: None,
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: string_table(parts[1]),
                     ink_server_hints: None,
                     game_changed_since_last_save: false,
@@ -2230,6 +2516,8 @@ fn main() {
                 let state = ApplicationState {
                     tick_based_time_value: 0,
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2245,6 +2533,8 @@ fn main() {
                     languages: None,
                     resource_heap_sources: None,
                     random_instance: None,
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: None,
                     ink_server_hints: None,
                     game_changed_since_last_save: false,
@@ -2264,6 +2554,8 @@ fn main() {
                 let state = ApplicationState {
                     tick_based_time_value: 0,
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2279,6 +2571,8 @@ fn main() {
                     languages: None,
                     resource_heap_sources: None,
                     random_instance: None,
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: None,
                     ink_server_hints: None,
                     game_changed_since_last_save: false,
@@ -2306,6 +2600,8 @@ fn main() {
                 let state = ApplicationState {
                     tick_based_time_value: 0,
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2321,6 +2617,8 @@ fn main() {
                     languages: None,
                     resource_heap_sources: None,
                     random_instance: None,
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: None,
                     ink_server_hints: None,
                     game_changed_since_last_save: false,
@@ -2509,6 +2807,8 @@ fn main() {
                 let mut state = ApplicationState {
                     tick_based_time_value: 0,
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2524,6 +2824,8 @@ fn main() {
                     languages: None,
                     resource_heap_sources: None,
                     random_instance: None,
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: None,
                     ink_server_hints: None,
                     game_changed_since_last_save: false,
@@ -2701,6 +3003,8 @@ fn main() {
                 let state = ApplicationState {
                     tick_based_time_value: value(&parts, 1),
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2716,6 +3020,8 @@ fn main() {
                     languages: None,
                     resource_heap_sources: None,
                     random_instance: None,
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: None,
                     ink_server_hints: None,
                     game_changed_since_last_save: false,
@@ -2727,6 +3033,8 @@ fn main() {
                 let mut state = ApplicationState {
                     tick_based_time_value: value(&parts, 1),
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2742,6 +3050,8 @@ fn main() {
                     languages: None,
                     resource_heap_sources: None,
                     random_instance: None,
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: None,
                     ink_server_hints: None,
                     game_changed_since_last_save: false,
@@ -2754,6 +3064,8 @@ fn main() {
                 let mut state = ApplicationState {
                     tick_based_time_value: value(&parts, 1),
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2769,6 +3081,8 @@ fn main() {
                     languages: None,
                     resource_heap_sources: None,
                     random_instance: None,
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: None,
                     ink_server_hints: None,
                     game_changed_since_last_save: false,
@@ -2781,6 +3095,8 @@ fn main() {
                 let state = ApplicationState {
                     tick_based_time_value: 0,
                     canvas_width: 0,
+                    fade_frames: 0,
+                    demo_frames: 0,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2796,6 +3112,8 @@ fn main() {
                     languages: None,
                     resource_heap_sources: None,
                     random_instance: None,
+                    runtime_instance: None,
+                    midlet_instance: None,
                     ink_server_variables: None,
                     ink_server_hints: None,
                     game_changed_since_last_save: false,
@@ -3057,23 +3375,30 @@ fn main() {
             Some("canvas-paint") if parts.len() == 4 => {
                 let argument = (value(&parts, 1) != 0).then_some(73_u32);
                 let delegate_enabled = value(&parts, 2) != 0;
+                let mut application = server_state("-", "-", false);
+                application.fade_frames = if delegate_enabled { 0 } else { 1 };
+                application.demo_frames = 0;
                 let mut captured_graphics = Some(41_u32);
                 let mut painting = value(&parts, 3) != 0;
                 let mut loading_bar_marker_x = 73;
-                let mut calls = 0;
-                let status = game_canvas_paint(argument, |graphics| {
-                    calls += 1;
-                    if delegate_enabled {
+                let mut application_calls = 0;
+                let mut engine_calls = 0;
+                let result = game_canvas_paint(argument, |graphics| {
+                    application_calls += 1;
+                    application_paint(&application, graphics, |graphics| {
+                        engine_calls += 1;
                         captured_graphics = graphics;
                         if graphics.is_none() {
-                            return "NPE";
+                            return Err(orphan_jvm::NullPointerException);
                         }
                         loading_bar_marker_x = -20;
                         painting = false;
-                    }
-                    "OK"
+                        Ok(())
+                    })
                 });
-                assert_eq!(calls, 1);
+                assert_eq!(application_calls, 1);
+                assert_eq!(engine_calls, usize::from(delegate_enabled));
+                let status = if result.is_ok() { "OK" } else { "NPE" };
                 let graphics_state = if captured_graphics == argument {
                     if argument.is_none() {
                         "NULL"

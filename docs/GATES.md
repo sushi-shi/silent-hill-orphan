@@ -32,7 +32,7 @@ row when you add a gate.
 | Recovered-JAR/canonical Java behavior | `just java-original-oracle` | `just java-original-oracle-canfail` (one recovered-JAR result is changed; exactly one case diverges) |
 | Pure-method Java/Rust differential | `just pure-oracle` | `just pure-oracle-canfail` (both recovered JARs and canonical Java are independent authorities; one Rust result is changed and exactly one case diverges) |
 | Three-authority method/declaration audit | `just method-audit-check` | `just method-audit-canfail` changes one reviewed original opcode digest; `just method-crosswalk-canfail` and `just declaration-crosswalk-canfail` each leave one `javac` node without a semantic owner; all are rejected, and the AST-walker unit test requires statement-position boundary macros to be visible (finding O-1) |
-| Production Rust ownership scope | `just method-audit-check` | `just method-ownership-canfail` injects an unowned production constant; the reverse `syn` inventory rejects it and separately accounts for every function, value declaration, and owner container. The first 168/1075 Java fields map exhaustively to 135 Rust fields in fifteen hash-locked owner structs, thirty-three typed scalar constants, and one mutable-array initializer template. |
+| Production Rust ownership scope | `just method-audit-check` | `just method-ownership-canfail` injects an unowned production constant; the reverse `syn` inventory rejects it and separately accounts for every function, value declaration, and owner container. The first 175/1075 Java fields map exhaustively to 142 Rust fields in sixteen hash-locked owner structs, thirty-three typed scalar constants, and one mutable-array initializer template. |
 
 ## Content-addressed affected-gate loop
 

@@ -11,7 +11,7 @@ pub use state::{
     ApplicationState, CheatControllerStatics, GameCanvasState, GameResourceState,
     GameResourceStatics, InkEngineState, InkInterpreterState, InkInterpreterStatics,
     InkScriptState, InkScriptStatics, MenuState, MenuStatics, ResourceRequestState,
-    RoomObjectState, RoomObjectStatics, GAME_CANVAS_INITIAL_TRANSFORM_TABLE,
+    RoomObjectState, RoomObjectStatics, SilentHillGameStatics, GAME_CANVAS_INITIAL_TRANSFORM_TABLE,
 };
 
 #[derive(Clone, Copy)]
@@ -62,6 +62,17 @@ pub enum InkEnginePopupCreateError<E> {
 pub enum ApplicationClearAllRmsError<E> {
     ResourceClear(E),
     ScriptListNull,
+}
+
+pub enum ApplicationSetDisplayError<E> {
+    GetDisplay(E),
+    DisplayNull,
+    SetCurrent(E),
+}
+
+pub enum GameCanvasNewError<E> {
+    SuperConstructor(E),
+    SetFullScreen(E),
 }
 
 pub enum JavaResourceId {
@@ -204,6 +215,53 @@ where
     Ok(())
 }
 
+pub fn application_free_memory<CollectGarbage, FreeMemory>(
+    state: &ApplicationState,
+    collect_garbage: CollectGarbage,
+    free_memory: FreeMemory,
+) -> Result<i64, orphan_jvm::NullPointerException>
+where
+    CollectGarbage: FnOnce(),
+    FreeMemory: FnOnce(u32) -> i64,
+{
+    collect_garbage();
+    let runtime = state
+        .runtime_instance
+        .ok_or(orphan_jvm::NullPointerException)?;
+    Ok(free_memory(runtime))
+}
+
+pub fn application_set_display<GetDisplay, SetCurrent, E>(
+    state: &ApplicationState,
+    displayable: Option<u32>,
+    get_display: GetDisplay,
+    set_current: SetCurrent,
+) -> Result<(), ApplicationSetDisplayError<E>>
+where
+    GetDisplay: FnOnce(Option<u32>) -> Result<Option<u32>, E>,
+    SetCurrent: FnOnce(u32, Option<u32>) -> Result<(), E>,
+{
+    let display = get_display(state.midlet_instance)
+        .map_err(ApplicationSetDisplayError::GetDisplay)?
+        .ok_or(ApplicationSetDisplayError::DisplayNull)?;
+    set_current(display, displayable).map_err(ApplicationSetDisplayError::SetCurrent)?;
+    Ok(())
+}
+
+pub fn application_paint<Graphics, Paint, E>(
+    state: &ApplicationState,
+    graphics: Graphics,
+    paint: Paint,
+) -> Result<(), E>
+where
+    Paint: FnOnce(Graphics) -> Result<(), E>,
+{
+    if state.fade_frames <= state.demo_frames {
+        paint(graphics)?;
+    }
+    Ok(())
+}
+
 pub fn ink_engine_wrap_string<Text, Font, Output>(
     text: Text,
     maximum_length: i32,
@@ -338,6 +396,35 @@ where
     super_constructor()
 }
 
+pub fn silent_hill_game_menu_reset_ingame_values<ResetIngameValues, E>(
+    statics: &mut SilentHillGameStatics,
+    reset_ingame_values: ResetIngameValues,
+) -> Result<(), E>
+where
+    ResetIngameValues: FnOnce() -> Result<(), E>,
+{
+    reset_ingame_values()?;
+    statics.hud_ammo_number_width = -1;
+    statics.hud_ammo_update_needed = true;
+    Ok(())
+}
+
+pub fn silent_hill_game_app_init<LoadImage, EngineAppInit, E>(
+    statics: &mut SilentHillGameStatics,
+    load_image: LoadImage,
+    engine_app_init: EngineAppInit,
+) -> Result<(), E>
+where
+    LoadImage: FnOnce(&[u16]) -> Option<u32>,
+    EngineAppInit: FnOnce() -> Result<(), E>,
+{
+    statics.ink_menu_logo = load_image(&[
+        103, 102, 120, 47, 109, 101, 110, 117, 95, 108, 111, 103, 111, 46, 112, 110, 103,
+    ]);
+    engine_app_init()?;
+    Ok(())
+}
+
 pub fn ink_engine_new<SuperConstructor, E>(super_constructor: SuperConstructor) -> Result<(), E>
 where
     SuperConstructor: FnOnce() -> Result<(), E>,
@@ -364,6 +451,37 @@ where
     SuperConstructor: FnOnce() -> Result<(), E>,
 {
     super_constructor()
+}
+
+pub fn game_canvas_new<SuperConstructor, SetFullScreen, E>(
+    canvas: u32,
+    super_constructor: SuperConstructor,
+    set_full_screen: SetFullScreen,
+) -> Result<(), GameCanvasNewError<E>>
+where
+    SuperConstructor: FnOnce(u32, bool) -> Result<(), E>,
+    SetFullScreen: FnOnce(u32, bool) -> Result<(), E>,
+{
+    super_constructor(canvas, false).map_err(GameCanvasNewError::SuperConstructor)?;
+    set_full_screen(canvas, true).map_err(GameCanvasNewError::SetFullScreen)?;
+    Ok(())
+}
+
+pub fn game_canvas_key_jad_entry_as_int<GetAppProperty, E>(
+    application: &ApplicationState,
+    jad_entry: Option<&[u16]>,
+    get_app_property: GetAppProperty,
+) -> i32
+where
+    GetAppProperty: FnOnce(u32, Option<&[u16]>) -> Result<Option<alloc::vec::Vec<u16>>, E>,
+{
+    let Some(midlet) = application.midlet_instance else {
+        return 0;
+    };
+    let Ok(property) = get_app_property(midlet, jad_entry) else {
+        return 0;
+    };
+    property.as_deref().and_then(parse_java_i32).unwrap_or(0)
 }
 
 pub fn resource_url_encode(
@@ -3046,10 +3164,387 @@ mod tests {
     }
 
     #[test]
+    fn free_memory_collects_before_resolving_and_sampling_the_runtime() {
+        let mut application = ApplicationState {
+            tick_based_time_value: 0,
+            canvas_width: 0,
+            fade_frames: 0,
+            demo_frames: 0,
+            key_last_pressed: 0,
+            key_new: false,
+            key_pressed: false,
+            load_bar_active: false,
+            goto_dissolve_fx_counter: 0,
+            loading_mode: 0,
+            load_thread: None,
+            room_repaint_thread: None,
+            resource_importants: None,
+            resources_to_download: None,
+            game_id: None,
+            game_texts: None,
+            save_is_possible: false,
+            languages: None,
+            resource_heap_sources: None,
+            random_instance: None,
+            runtime_instance: Some(37),
+            midlet_instance: None,
+            ink_server_variables: None,
+            ink_server_hints: None,
+            game_changed_since_last_save: false,
+        };
+        let calls = core::cell::RefCell::new(alloc::vec::Vec::new());
+        let result = application_free_memory(
+            &application,
+            || calls.borrow_mut().push("gc"),
+            |runtime| {
+                calls.borrow_mut().push("free");
+                assert_eq!(runtime, 37);
+                i64::MIN
+            },
+        );
+        assert_eq!(result, Ok(i64::MIN));
+        assert_eq!(&*calls.borrow(), &["gc", "free"]);
+
+        application.runtime_instance = None;
+        calls.borrow_mut().clear();
+        let result = application_free_memory(
+            &application,
+            || calls.borrow_mut().push("gc"),
+            |_| {
+                calls.borrow_mut().push("free");
+                0
+            },
+        );
+        assert_eq!(result, Err(orphan_jvm::NullPointerException));
+        assert_eq!(&*calls.borrow(), &["gc"]);
+    }
+
+    #[test]
+    fn set_display_forwards_midlet_display_and_displayable_in_order() {
+        let mut application = ApplicationState {
+            tick_based_time_value: 0,
+            canvas_width: 0,
+            fade_frames: 0,
+            demo_frames: 0,
+            key_last_pressed: 0,
+            key_new: false,
+            key_pressed: false,
+            load_bar_active: false,
+            goto_dissolve_fx_counter: 0,
+            loading_mode: 0,
+            load_thread: None,
+            room_repaint_thread: None,
+            resource_importants: None,
+            resources_to_download: None,
+            game_id: None,
+            game_texts: None,
+            save_is_possible: false,
+            languages: None,
+            resource_heap_sources: None,
+            random_instance: None,
+            runtime_instance: None,
+            midlet_instance: Some(11),
+            ink_server_variables: None,
+            ink_server_hints: None,
+            game_changed_since_last_save: false,
+        };
+        let calls = core::cell::RefCell::new(alloc::vec::Vec::new());
+        let success = application_set_display(
+            &application,
+            Some(29),
+            |midlet| {
+                calls.borrow_mut().push("get");
+                assert_eq!(midlet, Some(11));
+                Ok::<_, &'static str>(Some(17))
+            },
+            |display, displayable| {
+                calls.borrow_mut().push("set");
+                assert_eq!(display, 17);
+                assert_eq!(displayable, Some(29));
+                Ok(())
+            },
+        );
+        assert!(success.is_ok());
+        assert_eq!(&*calls.borrow(), &["get", "set"]);
+
+        application.midlet_instance = None;
+        calls.borrow_mut().clear();
+        let null_display = application_set_display(
+            &application,
+            None,
+            |midlet| {
+                calls.borrow_mut().push("get");
+                assert_eq!(midlet, None);
+                Ok::<_, &'static str>(None)
+            },
+            |_, _| {
+                calls.borrow_mut().push("set");
+                Ok(())
+            },
+        );
+        assert!(matches!(
+            null_display,
+            Err(ApplicationSetDisplayError::DisplayNull)
+        ));
+        assert_eq!(&*calls.borrow(), &["get"]);
+
+        let get_failure = application_set_display(
+            &application,
+            None,
+            |_| Err::<Option<u32>, _>("get"),
+            |_, _| Ok(()),
+        );
+        assert!(matches!(
+            get_failure,
+            Err(ApplicationSetDisplayError::GetDisplay("get"))
+        ));
+
+        let set_failure =
+            application_set_display(&application, None, |_| Ok(Some(17)), |_, _| Err("set"));
+        assert!(matches!(
+            set_failure,
+            Err(ApplicationSetDisplayError::SetCurrent("set"))
+        ));
+    }
+
+    #[test]
+    fn application_paint_delegates_only_at_or_below_the_demo_frame() {
+        let mut application = ApplicationState {
+            tick_based_time_value: 0,
+            canvas_width: 0,
+            fade_frames: 4,
+            demo_frames: 4,
+            key_last_pressed: 0,
+            key_new: false,
+            key_pressed: false,
+            load_bar_active: false,
+            goto_dissolve_fx_counter: 0,
+            loading_mode: 0,
+            load_thread: None,
+            room_repaint_thread: None,
+            resource_importants: None,
+            resources_to_download: None,
+            game_id: None,
+            game_texts: None,
+            save_is_possible: false,
+            languages: None,
+            resource_heap_sources: None,
+            random_instance: None,
+            runtime_instance: None,
+            midlet_instance: None,
+            ink_server_variables: None,
+            ink_server_hints: None,
+            game_changed_since_last_save: false,
+        };
+        let mut calls = 0;
+        let failed = application_paint(&application, Some(31_u32), |graphics| {
+            calls += 1;
+            assert_eq!(graphics, Some(31));
+            Err("paint")
+        });
+        assert_eq!(failed, Err("paint"));
+        assert_eq!(calls, 1);
+
+        application.fade_frames = 5;
+        let skipped = application_paint(&application, None::<u32>, |_| {
+            calls += 1;
+            Err::<(), _>("unreachable")
+        });
+        assert_eq!(skipped, Ok(()));
+        assert_eq!(calls, 1);
+    }
+
+    #[test]
+    fn game_canvas_constructor_calls_super_false_then_full_screen_true() {
+        let calls = core::cell::RefCell::new(alloc::vec::Vec::new());
+        let success = game_canvas_new(
+            41,
+            |canvas, suppress_keys| {
+                assert_eq!(canvas, 41);
+                calls.borrow_mut().push(("super", suppress_keys));
+                Ok::<(), &'static str>(())
+            },
+            |canvas, full_screen| {
+                assert_eq!(canvas, 41);
+                calls.borrow_mut().push(("full", full_screen));
+                Ok(())
+            },
+        );
+        assert!(success.is_ok());
+        assert_eq!(&*calls.borrow(), &[("super", false), ("full", true)]);
+
+        calls.borrow_mut().clear();
+        let super_failure = game_canvas_new(
+            41,
+            |canvas, suppress_keys| {
+                assert_eq!(canvas, 41);
+                calls.borrow_mut().push(("super", suppress_keys));
+                Err("super")
+            },
+            |canvas, full_screen| {
+                assert_eq!(canvas, 41);
+                calls.borrow_mut().push(("full", full_screen));
+                Ok(())
+            },
+        );
+        assert!(matches!(
+            super_failure,
+            Err(GameCanvasNewError::SuperConstructor("super"))
+        ));
+        assert_eq!(&*calls.borrow(), &[("super", false)]);
+
+        calls.borrow_mut().clear();
+        let full_screen_failure = game_canvas_new(
+            41,
+            |canvas, suppress_keys| {
+                assert_eq!(canvas, 41);
+                calls.borrow_mut().push(("super", suppress_keys));
+                Ok(())
+            },
+            |canvas, full_screen| {
+                assert_eq!(canvas, 41);
+                calls.borrow_mut().push(("full", full_screen));
+                Err("full")
+            },
+        );
+        assert!(matches!(
+            full_screen_failure,
+            Err(GameCanvasNewError::SetFullScreen("full"))
+        ));
+        assert_eq!(&*calls.borrow(), &[("super", false), ("full", true)]);
+    }
+
+    #[test]
+    fn key_jad_entry_catches_lookup_and_decimal_parse_failures() {
+        let mut application = ApplicationState {
+            tick_based_time_value: 0,
+            canvas_width: 0,
+            fade_frames: 0,
+            demo_frames: 0,
+            key_last_pressed: 0,
+            key_new: false,
+            key_pressed: false,
+            load_bar_active: false,
+            goto_dissolve_fx_counter: 0,
+            loading_mode: 0,
+            load_thread: None,
+            room_repaint_thread: None,
+            resource_importants: None,
+            resources_to_download: None,
+            game_id: None,
+            game_texts: None,
+            save_is_possible: false,
+            languages: None,
+            resource_heap_sources: None,
+            random_instance: None,
+            runtime_instance: None,
+            midlet_instance: None,
+            ink_server_variables: None,
+            ink_server_hints: None,
+            game_changed_since_last_save: false,
+        };
+        let mut calls = 0;
+        assert_eq!(
+            game_canvas_key_jad_entry_as_int(&application, None, |_, _| {
+                calls += 1;
+                Ok::<_, &'static str>(Some(alloc::vec![49]))
+            }),
+            0
+        );
+        assert_eq!(calls, 0);
+
+        application.midlet_instance = Some(19);
+        let key = [0xd800_u16];
+        assert_eq!(
+            game_canvas_key_jad_entry_as_int(&application, Some(&key), |midlet, observed| {
+                calls += 1;
+                assert_eq!(midlet, 19);
+                assert_eq!(observed, Some(key.as_slice()));
+                Ok::<_, &'static str>(Some("-2147483648".encode_utf16().collect()))
+            }),
+            i32::MIN
+        );
+        assert_eq!(calls, 1);
+        assert_eq!(
+            game_canvas_key_jad_entry_as_int(&application, None, |_, _| {
+                Err::<Option<alloc::vec::Vec<u16>>, _>("lookup")
+            }),
+            0
+        );
+        assert_eq!(
+            game_canvas_key_jad_entry_as_int(&application, None, |_, _| {
+                Ok::<_, &'static str>(Some("2147483648".encode_utf16().collect()))
+            }),
+            0
+        );
+    }
+
+    #[test]
+    fn menu_reset_ingame_values_delegates_before_invalidating_ammo_layout() {
+        let mut statics = SilentHillGameStatics {
+            hud_ammo_number_width: i32::MIN,
+            hud_ammo_update_needed: false,
+            ink_menu_logo: None,
+        };
+        let mut calls = 0;
+        let succeeded = silent_hill_game_menu_reset_ingame_values(&mut statics, || {
+            calls += 1;
+            Ok::<(), &'static str>(())
+        });
+        assert_eq!(succeeded, Ok(()));
+        assert_eq!(calls, 1);
+        assert_eq!(statics.hud_ammo_number_width, -1);
+        assert!(statics.hud_ammo_update_needed);
+
+        statics.hud_ammo_number_width = i32::MAX;
+        statics.hud_ammo_update_needed = false;
+        let failed = silent_hill_game_menu_reset_ingame_values(&mut statics, || Err("reset"));
+        assert_eq!(failed, Err("reset"));
+        assert_eq!(statics.hud_ammo_number_width, i32::MAX);
+        assert!(!statics.hud_ammo_update_needed);
+    }
+
+    #[test]
+    fn app_init_publishes_the_exact_menu_logo_before_engine_initialization() {
+        let mut statics = SilentHillGameStatics {
+            hud_ammo_number_width: 0,
+            hud_ammo_update_needed: false,
+            ink_menu_logo: Some(7),
+        };
+        let calls = core::cell::RefCell::new(alloc::vec::Vec::new());
+        let succeeded = silent_hill_game_app_init(
+            &mut statics,
+            |path| {
+                calls.borrow_mut().push("load");
+                assert_eq!(
+                    path,
+                    "gfx/menu_logo.png"
+                        .encode_utf16()
+                        .collect::<alloc::vec::Vec<_>>()
+                );
+                Some(41)
+            },
+            || {
+                calls.borrow_mut().push("engine");
+                Ok::<(), &'static str>(())
+            },
+        );
+        assert_eq!(succeeded, Ok(()));
+        assert_eq!(statics.ink_menu_logo, Some(41));
+        assert_eq!(&*calls.borrow(), &["load", "engine"]);
+
+        let failed = silent_hill_game_app_init(&mut statics, |_| None, || Err("engine"));
+        assert_eq!(failed, Err("engine"));
+        assert_eq!(statics.ink_menu_logo, None);
+    }
+
+    #[test]
     fn room_repaint_run_clears_the_thread_only_after_success() {
         let mut application = ApplicationState {
             tick_based_time_value: 0,
             canvas_width: 0,
+            fade_frames: 0,
+            demo_frames: 0,
             key_last_pressed: 0,
             key_new: false,
             key_pressed: false,
@@ -3066,6 +3561,8 @@ mod tests {
             languages: None,
             resource_heap_sources: None,
             random_instance: None,
+            runtime_instance: None,
+            midlet_instance: None,
             ink_server_variables: None,
             ink_server_hints: None,
             game_changed_since_last_save: false,
@@ -3108,6 +3605,8 @@ mod tests {
         let mut application = ApplicationState {
             tick_based_time_value: i32::MAX,
             canvas_width: 0,
+            fade_frames: 0,
+            demo_frames: 0,
             key_last_pressed: 0,
             key_new: false,
             key_pressed: false,
@@ -3123,6 +3622,8 @@ mod tests {
             languages: None,
             resource_heap_sources: None,
             random_instance: None,
+            runtime_instance: None,
+            midlet_instance: None,
             ink_server_variables: None,
             ink_server_hints: None,
             game_changed_since_last_save: false,

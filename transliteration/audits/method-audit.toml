@@ -1,17 +1,17 @@
 schema_version = 1
 baseline_sha256 = "ca9a874ce7c7fb11ed444701b65e967919d3d7c0bcf73f80a9fcf825fb6a4be7"
 total_body_count = 350
-reviewed_body_count = 148
-semantic_reviewed_body_count = 148
+reviewed_body_count = 155
+semantic_reviewed_body_count = 155
 total_field_count = 1075
-semantic_reviewed_field_count = 168
-total_rust_function_count = 150
-reviewed_rust_function_count = 150
-total_rust_value_declaration_count = 197
-reviewed_rust_value_declaration_count = 197
-total_rust_container_count = 26
-reviewed_rust_container_count = 26
-total_rust_declaration_count = 373
+semantic_reviewed_field_count = 175
+total_rust_function_count = 157
+reviewed_rust_function_count = 157
+total_rust_value_declaration_count = 209
+reviewed_rust_value_declaration_count = 209
+total_rust_container_count = 29
+reviewed_rust_container_count = 29
+total_rust_declaration_count = 395
 
 [[field]]
 java_class = "Cheat"
@@ -862,6 +862,36 @@ semantic_review = "ApplicationState is the sole owner. Option preserves the null
 [[field]]
 java_class = "M"
 canonical_class = "Application"
+java_name = "runtime"
+descriptor = "Ljava/lang/Runtime;"
+java_item = "<field:runtime>"
+java_ast_sha256 = "a7b85eeca7ae4afbcdb3202c7d425154427088222f2bc48a331105a8eaa2af4f"
+java_nodes_sha256 = "e0fb2a3b78122d7af14440efa44b8d49a80f7c894c1388b0df7903c975c568ca"
+java_node_count = 3
+rust_node_counts = [3]
+operation = [{ semantic = "declare the nullable Application-owned Java Runtime handle", java_node_ranges = [[0, 2]], rust_node_ranges = [{ target = 0, start = 0, end = 2 }] }]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/state.rs", item = "field:ApplicationState::runtime_instance", ast_sha256 = "f76bb2cbdb65707cdd9c06c6948b40da3bbc9aa32697b187d97f32adb3403408", nodes_sha256 = "01d8a1500611c893e37be2041f5b2074c3a2d0750d903e713dd5af5a06f3755c", node_count = 3 }]
+semantic_status = "crosswalked"
+semantic_review = "ApplicationState is the sole owner. Option preserves the reflection-observable null state, while u32 retains opaque Runtime identity at the strict game boundary; actual garbage collection and heap accounting belong to the JVM host callbacks."
+
+[[field]]
+java_class = "M"
+canonical_class = "Application"
+java_name = "midlet"
+descriptor = "LM;"
+java_item = "<field:midlet>"
+java_ast_sha256 = "a989f173b24c402514b1067f8fa5cc5de5ba7716f1845b622dc1de15d6b9979e"
+java_nodes_sha256 = "e6478be21cbf8fb6fb93b7715eeb284e748672f4261d08d0ad1195c5b94aef5f"
+java_node_count = 3
+rust_node_counts = [3]
+operation = [{ semantic = "declare the nullable Application-owned MIDlet handle", java_node_ranges = [[0, 2]], rust_node_ranges = [{ target = 0, start = 0, end = 2 }] }]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/state.rs", item = "field:ApplicationState::midlet_instance", ast_sha256 = "c3e0d638b56551884adf30c2959575c26dde6897467eda7c0fc6cbf4a072fff2", nodes_sha256 = "44a134addd7b056fa5d142274e5d6852d40179e05489de09f709c24bb204b59e", node_count = 3 }]
+semantic_status = "crosswalked"
+semantic_review = "ApplicationState is the sole owner. Option preserves null and u32 preserves opaque MIDlet identity; the setDisplay oracle checks the exact handle passed to Display.getDisplay without importing MIDP object storage into the game body."
+
+[[field]]
+java_class = "M"
+canonical_class = "Application"
 java_name = "inkServerVariables"
 descriptor = "Ljava/util/Hashtable;"
 java_item = "<field:inkServerVariables>"
@@ -1153,7 +1183,7 @@ semantic_review = "Single-owner container for CheatController's reviewed static 
 [[rust_container]]
 file = "transliteration/crates/orphan-game-xlat/src/state.rs"
 item = "struct:ApplicationState"
-ast_sha256 = "fcfa87c7137d70294b7bfacfa82547098abd39c5d7b01f47683607c86c2e8246"
+ast_sha256 = "dcc064c6e55a45d9fb5df73f5eeb4bf4d370d5a4e9ff21c81143d256ab3d8ae9"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
 semantic_review = "Structural owner for the reviewed Application fields; its complete syn AST is locked while its field nodes are owned by the field crosswalks."
@@ -3771,6 +3801,113 @@ oracle = "pure-method-v1"
 semantic_status = "crosswalked"
 semantic_review = "Six cases agree across both recovered JARs, canonical Java, and Rust. A null resourceSCData forces resourceClear to fail after publishing its two heap-array replacements; script registries with zero or two entries remain untouched, and a null registry is never dereferenced. The successful resource path publishes subchunk byte zero, size one, an empty important-resource list, and null downloads before the second statement. Crossing that path with null, empty, and two-entry script registries distinguishes the post-resource null fault from successful Hashtable.clear. The opaque callback grants no coverage to resourceClear; the already-owned InkScriptStatics registry receives the exact clear operation."
 
+[[body]]
+java_class = "M"
+canonical_class = "Application"
+java_name = "freeMemory"
+descriptor = "()J"
+java_item = "freeMemory()"
+code_sha256 = "6a0f38d8b92065688421f30ecab6996bb38787deaf4e80fe8f0591e56ebc60c9"
+opcode_sha256 = "b3b9338c1a8034800905a6372c70625bdb9a6c7ee8d227a8bd7b1741b10e9c4e"
+java_ast_sha256 = "daa1fc6ec5089461dd36d297a5d3f3311d026c40b265451ae75644444bcd93c2"
+java_nodes_sha256 = "3ac5598d9748991265b33f0e55c6f15c082385a1260ca3dc9ad86007d63b1213"
+java_node_count = 9
+rust_node_counts = [20]
+operation = [
+  { semantic = "own the ordered collect-then-sample body", java_nodes = [0], rust_nodes = ["0:0"] },
+  { semantic = "request garbage collection exactly once before reading the Runtime field", java_node_ranges = [[1, 4]], rust_node_ranges = [{ target = 0, start = 1, end = 3 }] },
+  { semantic = "resolve the nullable class-owned Runtime, invoke freeMemory on that exact handle, and return its full long result", java_node_ranges = [[5, 8]], rust_node_ranges = [{ target = 0, start = 4, end = 9 }, { target = 0, start = 15, end = 19 }] },
+]
+adaptation = [{ side = "rust", reason = "The explicit NullPointerException and Result wrapper expose Java's implicit getstatic receiver fault and normal long return without changing the collection-before-dereference schedule.", rust_node_ranges = [{ target = 0, start = 10, end = 14 }] }]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:application_free_memory", ast_sha256 = "72cf85693f3a4e1c426925f00241dcfdd173fcec31a4c3b486aa169adfabf9db", nodes_sha256 = "a7bc86c6efa3bd047834da840b1f24f08d6171e330db5b0fbad90bdae0cd0062", node_count = 20 }]
+oracle = "pure-method-v1"
+semantic_status = "crosswalked"
+semantic_review = "Two cases agree across both recovered JARs, canonical Java, and Rust. A null Runtime faults only after System.gc; a real Runtime returns a nonnegative heap measurement in all three JVM authorities, while the Rust oracle asserts one collection callback, exact handle forwarding, and one sampling callback. The focused Rust test additionally forwards i64::MIN unchanged and records gc before sampling. Original code/opcode hashes and all nine Java/twenty Rust nodes prove the two native/runtime calls and their order even though cross-process heap byte counts are inherently nondeterministic."
+
+[[body]]
+java_class = "M"
+canonical_class = "Application"
+java_name = "setDisplay"
+descriptor = "(Ljavax/microedition/lcdui/Displayable;)V"
+java_item = "setDisplay(Displayable)"
+code_sha256 = "636ad749fdfffa633e69630f1755c128b11dc726f8a66257b99686e785dda29f"
+opcode_sha256 = "9559df04b2cda61ac2ca8df5c63c66196f37f0e6d39a11c09b2f151acfed795f"
+java_ast_sha256 = "b5a4e908e8ae7facfc5bafde5e072f99ff2091bd11871462aeeb3aac2c649081"
+java_nodes_sha256 = "81d53ef6adeaaba0ac380cbd170993785e3177bda3d136351d151df1258a4787"
+java_node_count = 9
+rust_node_counts = [31]
+operation = [
+  { semantic = "own the complete Display lookup and publication body", java_nodes = [0], rust_nodes = ["0:0"] },
+  { semantic = "read the class-owned nullable MIDlet and pass its exact identity to Display.getDisplay", java_node_ranges = [[4, 7]], rust_nodes = ["0:1"], rust_node_ranges = [{ target = 0, start = 6, end = 11 }] },
+  { semantic = "invoke setCurrent on the exact returned Display and forward the nullable Displayable argument unchanged", java_node_ranges = [[1, 3]], java_nodes = [8], rust_node_ranges = [{ target = 0, start = 18, end = 24 }] },
+]
+adaptation = [
+  { side = "rust", reason = "Typed get-display failure and null-Display paths expose the two implicit Java failures before setCurrent is reachable.", rust_node_ranges = [{ target = 0, start = 2, end = 5 }, { target = 0, start = 12, end = 15 }] },
+  { side = "rust", reason = "Typed set-current failure and successful unit Result expose Java's second platform-call failure boundary and normal void return.", rust_node_ranges = [{ target = 0, start = 16, end = 17 }, { target = 0, start = 25, end = 30 }] },
+]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:application_set_display", ast_sha256 = "0c803747e061f7aa01b85e6b67e43326e78fe5ece544efa64a80febd38a5baa0", nodes_sha256 = "2a154babd1abc6ec0226c621456943cb6372b8a87722358ee6f9f69c05538d10", node_count = 31 }]
+oracle = "pure-method-v1"
+semantic_status = "crosswalked"
+semantic_review = "Twenty-four cases agree across both recovered JARs, canonical Java, and Rust. Null and nonnull MIDlet and Displayable identities cross successful, null-returning, and throwing getDisplay behavior plus successful or throwing setCurrent. Output records both call counts, the exact MIDlet, returned Display receiver, and current Displayable after failure. This proves argument identity, lookup-before-publication, null-receiver failure, and setCurrent's attempted mutation; neither MIDP method receives game-body coverage."
+
+[[field]]
+java_class = "M"
+canonical_class = "Application"
+java_name = "FADE_FRAMES"
+descriptor = "I"
+java_item = "<field:FADE_FRAMES>"
+java_ast_sha256 = "8f81e29248e4ff0a087cc900a7b3df33a590b2e547055ca00b0ada73edd6cf69"
+java_nodes_sha256 = "ccf258fd8102f045ded4f8fb793cfcf36b88a2f75cb76a644d794a6133fa5c86"
+java_node_count = 4
+rust_node_counts = [2]
+operation = [{ semantic = "declare the Application-owned mutable signed fade-frame counter", java_node_ranges = [[0, 2]], rust_node_ranges = [{ target = 0, start = 0, end = 1 }] }]
+adaptation = [{ side = "java", reason = "The source initializer zero is executed by the not-yet-admitted Application class initializer; explicit Rust state construction supplies that startup value unless an oracle deliberately seeds another state.", java_nodes = [3] }]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/state.rs", item = "field:ApplicationState::fade_frames", ast_sha256 = "aaea90860b1e1abacf5346a7a69aba22ae286c7e248a3c8f8c04a80ea3a3ece8", nodes_sha256 = "e459644216b354b4b506c225af1f71a01687cefb43a94f344c67ce25b0db77a6", node_count = 2 }]
+semantic_status = "crosswalked"
+semantic_review = "ApplicationState remains the sole mutable owner and i32 preserves the complete JVM int comparison domain used by paint."
+
+[[field]]
+java_class = "M"
+canonical_class = "Application"
+java_name = "DEMO_FRAMES"
+descriptor = "I"
+java_item = "<field:DEMO_FRAMES>"
+java_ast_sha256 = "f4f4c0651f3783222e0402af377f130f12be99130d5cbcdaac133f55bd66abb0"
+java_nodes_sha256 = "471a5365eaec0cfe800e500a1a9a29e04689a8e2d5d00a02ef7214817918a400"
+java_node_count = 4
+rust_node_counts = [2]
+operation = [{ semantic = "declare the Application-owned mutable signed demo-frame threshold", java_node_ranges = [[0, 2]], rust_node_ranges = [{ target = 0, start = 0, end = 1 }] }]
+adaptation = [{ side = "java", reason = "The source initializer two is executed by the not-yet-admitted Application class initializer; the field remains mutable and explicit Rust construction supplies its intended startup or hostile oracle value.", java_nodes = [3] }]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/state.rs", item = "field:ApplicationState::demo_frames", ast_sha256 = "a6a7e7758466221ffbbf32b08cf657c049f268779eaa66657661dc33280f565a", nodes_sha256 = "c4d6d8ea99b2c10389dda167cb6fba82937bccee78c64759153ea2b4fc4b30f8", node_count = 2 }]
+semantic_status = "crosswalked"
+semantic_review = "ApplicationState remains the sole mutable owner and i32 preserves the inclusive signed comparison against FADE_FRAMES."
+
+[[body]]
+java_class = "M"
+canonical_class = "Application"
+java_name = "paint"
+descriptor = "(Ljavax/microedition/lcdui/Graphics;)V"
+java_item = "paint(Graphics)"
+code_sha256 = "f46f450b4a86c91ab1c9383503553fe038bac7b6c2d8463e45acb5d831d7e8ea"
+opcode_sha256 = "64817f294a93d9872163e5232726fd0659543ddefbe8e747556c2197a325d585"
+java_ast_sha256 = "9975548ee2bf70dc22278f9c0a52f50caa3fc03d9fdd88f5d7a04241c2e9013c"
+java_nodes_sha256 = "3fc6ac6c1bf3dc9783ed620f06e0e721f43693b1923c1680d1be6205015d2ce8"
+java_node_count = 12
+rust_node_counts = [20]
+operation = [
+  { semantic = "own the complete conditional paint body", java_nodes = [0], rust_nodes = ["0:0"] },
+  { semantic = "read both mutable signed frame fields once and enter the paint branch exactly when FADE_FRAMES is less than or equal to DEMO_FRAMES", java_node_ranges = [[1, 5]], rust_node_ranges = [{ target = 0, start = 1, end = 8 }] },
+  { semantic = "inside the accepted branch, forward the nullable Graphics identity unchanged to InkEngine.paint", java_node_ranges = [[6, 11]], rust_node_ranges = [{ target = 0, start = 9, end = 9 }, { target = 0, start = 11, end = 15 }] },
+]
+adaptation = [
+  { side = "rust", reason = "The try node exposes an uncaught InkEngine.paint failure at the same conditional call site.", rust_nodes = ["0:10"] },
+  { side = "rust", reason = "Ok unit represents Java void completion for both the skipped branch and a successful delegated paint.", rust_node_ranges = [{ target = 0, start = 16, end = 19 }] },
+]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:application_paint", ast_sha256 = "11cb06f222f0db1e1735d3c75e5bdf671a8f8f81e00d245b83b5044607772448", nodes_sha256 = "62a20fb87279d154673e2b2eaf36a61d869d13f3b9a9d9939b78d96403feac8f", node_count = 20 }]
+oracle = "pure-method-v1"
+semantic_status = "crosswalked"
+semantic_review = "The existing six applicable canvas-paint cases now execute the admitted GameCanvas.paint and Application.paint Rust bodies compositionally. They cross both sides of the inclusive frame predicate, nullable/non-null Graphics where delegation is reachable, and hostile painting/marker state; Java and Rust agree on skip, exact argument identity, downstream NPE, and mutations. The focused test covers equality explicitly and proves delegated failure propagation. All twelve javac and twenty syn body nodes plus both four-to-two field declaration crosswalks are owned."
+
 [[field]]
 java_class = "ExtBase"
 canonical_class = "InkEngine"
@@ -4720,6 +4857,80 @@ oracle = "pure-method-v1"
 semantic_status = "crosswalked"
 semantic_review = "Construction succeeds in both recovered JARs, canonical Java, and no_std Rust. Allocation belongs to the caller; this five-byte <init> body contains only aload_0, invokespecial Object.<init>, and return, represented by an explicit superclass-constructor adapter rather than invented instance state."
 
+[[rust_value]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "variant:GameCanvasNewError::SuperConstructor"
+ast_sha256 = "5f8f721a627dc50b1fccd7a10b3bd6ce3357404deea33b9024366f323ed93ce0"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Rust-only transparent wrapper that preserves an uncaught failure from the GameCanvas superclass constructor and keeps the later fullscreen call unreachable."
+
+[[rust_value]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "variant:GameCanvasNewError::SetFullScreen"
+ast_sha256 = "7711e31c889c585f78c8e16689cc6c34f09170b019a3b14c07bc8eed5095d0b1"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Rust-only transparent wrapper that preserves an uncaught setFullScreenMode failure after successful superclass construction."
+
+[[rust_container]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "enum:GameCanvasNewError"
+ast_sha256 = "9b47605b84c0cc19bbbbecf7cb1ad9f9640ad3b6e08e74739676d20449a584f7"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Rust-only typed boundary retaining the constructor's two ordered platform failure sites without claiming either Java ME implementation as translated game code."
+
+[[body]]
+java_class = "MyCanvas"
+canonical_class = "GameCanvas"
+java_name = "<init>"
+descriptor = "()V"
+java_item = "<init>()"
+code_sha256 = "d3e950566863b0e15845b0e199ee249188cb24b193670462b889c644e8f4b974"
+opcode_sha256 = "a03eccdcf069050873779b1400a0c5ae8bcd7fd461807c3233c84ed9ee5d2b7a"
+java_ast_sha256 = "7ec366b54b835fcd823bb3d5add2727a15cc6978f55663ab58d77107c8fdaad6"
+java_nodes_sha256 = "6b3db06329ba2638081682ffad187000785e406b5fe1d53002b35090a07a681c"
+java_node_count = 9
+rust_node_counts = [25]
+operation = [
+  { semantic = "own the complete ordered constructor body", java_nodes = [0], rust_nodes = ["0:0"] },
+  { semantic = "invoke the GameCanvas superclass constructor on this exact canvas identity with suppressKeyEvents false", java_node_ranges = [[1, 4]], rust_node_ranges = [{ target = 0, start = 3, end = 8 }] },
+  { semantic = "after successful superclass construction, invoke setFullScreenMode on the same canvas identity with true", java_node_ranges = [[5, 8]], rust_node_ranges = [{ target = 0, start = 13, end = 18 }] },
+]
+adaptation = [
+  { side = "rust", reason = "Result, try, and typed error mapping expose Java's implicit superclass-constructor failure without changing its position before the fullscreen call.", rust_node_ranges = [{ target = 0, start = 1, end = 2 }, { target = 0, start = 9, end = 10 }] },
+  { side = "rust", reason = "Result, try, and typed error mapping expose Java's implicit setFullScreenMode failure after construction.", rust_node_ranges = [{ target = 0, start = 11, end = 12 }, { target = 0, start = 19, end = 20 }] },
+  { side = "rust", reason = "Ok unit makes the Java constructor's implicit normal void completion explicit.", rust_node_ranges = [{ target = 0, start = 21, end = 24 }] },
+]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:game_canvas_new", ast_sha256 = "734a09d892d1c75b600e32751ec27635234604e56a2948110edb45ae4061b2f4", nodes_sha256 = "9bb24f7ab204a6175dad0a9451dbf8b6ca945339abbdeb8e8fbf891ff10052b9", node_count = 25 }]
+oracle = "pure-method-v1"
+semantic_status = "crosswalked"
+semantic_review = "Four hostile cases agree across both recovered JARs, canonical Java, and Rust. Instrumented Java ME stubs and Rust callbacks prove the false/true arguments, exact shared receiver identity, call order, superclass-failure suppression of fullscreen publication, and post-super fullscreen failure. Original code/opcode hashes and exhaustive ownership account for every nine-node javac and twenty-five-node syn body node."
+
+[[body]]
+java_class = "MyCanvas"
+canonical_class = "GameCanvas"
+java_name = "keyJadEntryAsInt"
+descriptor = "(Ljava/lang/String;)I"
+java_item = "keyJadEntryAsInt(String)"
+code_sha256 = "a7e22083e0642cdb5fd04cca1d678f1295ce3710b1524fb18fea42d7e8051ae1"
+opcode_sha256 = "d05efd1ea667b7ffe024fc990bc713bdd4e6dba7e2bb68d42e711a08f17a7fc9"
+java_ast_sha256 = "b1ae4dd36e647f22fb8ad72754a0b997a0c79339d549245ed9616a2839cb398a"
+java_nodes_sha256 = "e148546fb20ef39cd7081b63ef242f304f5da7a74c6d4c384a50fe4c7b7dba5f"
+java_node_count = 19
+rust_node_counts = [31]
+operation = [
+  { semantic = "own the complete property-lookup and integer-conversion body", java_nodes = [0], rust_nodes = ["0:0"] },
+  { semantic = "on the successful path, dereference the class-owned MIDlet, forward the nullable key unchanged to getAppProperty, and parse the nullable result with the already crosswalked Java decimal-int rules", java_node_ranges = [[3, 11]], rust_node_ranges = [{ target = 0, start = 1, end = 5 }, { target = 0, start = 10, end = 18 }, { target = 0, start = 23, end = 29 }] },
+  { semantic = "catch every Exception from a null MIDlet, property lookup, null/malformed/overflowing property, or decimal parse and return exact zero", java_node_ranges = [[12, 18]], rust_node_ranges = [{ target = 0, start = 6, end = 9 }, { target = 0, start = 19, end = 22 }], rust_nodes = ["0:30"] },
+]
+adaptation = [{ side = "java", reason = "Java's try and successful-block wrapper nodes define the exception region; Rust expresses the same region through explicit Option/Result pattern branches whose nodes are paired with the successful and caught operations.", java_node_ranges = [[1, 2]] }]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:game_canvas_key_jad_entry_as_int", ast_sha256 = "3800f28fac53f3aef76061c21ea120f9e6f1079e7c77d8a3b1a2b1d3127df9ff", nodes_sha256 = "f288a1e66606d2c11d0934517aa4c7010cfc7451efd91db6e9360d23bab228ce", node_count = 31 }]
+oracle = "pure-method-v1"
+semantic_status = "crosswalked"
+semantic_review = "Two hundred cases agree across both recovered JARs, canonical Java, and Rust. They cross null/non-null MIDlets; null, empty, ordinary, NUL, and isolated-surrogate keys; successful and throwing property lookup; null/empty/signed-bound/overflow/whitespace/plus/non-ASCII-decimal values; and exact receiver/key forwarding. The focused test also proves a null MIDlet skips lookup. parse_java_i32 remains separately AST-owned by its earlier admission; this body owns only the call edge. All nineteen javac and thirty-one syn nodes have exactly one owner."
+
 [[body]]
 java_class = "Ext"
 canonical_class = "SilentHillGame"
@@ -4737,6 +4948,112 @@ rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "f
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
 semantic_review = "A real SilentHillGame instance is constructed in both recovered JARs and canonical Java; Rust executes one explicit superclass adapter. The body has no instance-field work beyond the verified invokespecial InkEngine.<init> edge."
+
+[[field]]
+java_class = "Ext"
+canonical_class = "SilentHillGame"
+java_name = "HUD_ammoNumWidth"
+descriptor = "I"
+java_item = "<field:HUD_ammoNumWidth>"
+java_ast_sha256 = "70637619362202f3854b1f83d52bd7678b68b96e8327016922ab38992866f46e"
+java_nodes_sha256 = "9eb39fbec12661c2a6a6a403ccab9bc79b6bc653fe1ebfb0fa9023f62e6dd3d7"
+java_node_count = 3
+rust_node_counts = [2]
+operation = [{ semantic = "declare the SilentHillGame-owned signed 32-bit cached width of the rendered HUD ammunition number", java_node_ranges = [[0, 2]], rust_node_ranges = [{ target = 0, start = 0, end = 1 }] }]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/state.rs", item = "field:SilentHillGameStatics::hud_ammo_number_width", ast_sha256 = "f2c1ae584d1a22f5369fd49a7f175881ecd341f0e8d07a80ce5063c59b829026", nodes_sha256 = "69d3597f47b73c7a93e96e6fce19efec670f7aa0618333048bb8c3525b511a90", node_count = 2 }]
+semantic_status = "crosswalked"
+semantic_review = "SilentHillGameStatics is the sole mutable owner. Rust i32 preserves the JVM int domain, including hostile seeds and the exact minus-one invalid-width sentinel written by menuResetIngameValues."
+
+[[field]]
+java_class = "Ext"
+canonical_class = "SilentHillGame"
+java_name = "HUD_ammoUpdateNeeded"
+descriptor = "Z"
+java_item = "<field:HUD_ammoUpdateNeeded>"
+java_ast_sha256 = "f3282aea6e1cf4982be14143e814420b0baf70d36f8cd61a4fe03ab732e88f6f"
+java_nodes_sha256 = "f7aee481ea4e2f93133e3c5a6faa35664f3d97c19656a9af632dc2cad5f01b22"
+java_node_count = 3
+rust_node_counts = [2]
+operation = [{ semantic = "declare the SilentHillGame-owned boolean latch requesting HUD ammunition-number regeneration", java_node_ranges = [[0, 2]], rust_node_ranges = [{ target = 0, start = 0, end = 1 }] }]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/state.rs", item = "field:SilentHillGameStatics::hud_ammo_update_needed", ast_sha256 = "7cd15b942392d955a62818288237dce9fe0ac70a396cc8b10254ee3f853974ab", nodes_sha256 = "e472089b3abe4d5101db3c3365ca830fc572738f8b005cb80ba4255f969a462c", node_count = 2 }]
+semantic_status = "crosswalked"
+semantic_review = "SilentHillGameStatics is the sole mutable owner. Rust bool exactly preserves the Java boolean domain and the reset body overwrites either hostile seed with true."
+
+[[rust_container]]
+file = "transliteration/crates/orphan-game-xlat/src/state.rs"
+item = "struct:SilentHillGameStatics"
+ast_sha256 = "e08d0476b7236b045a785428fdb4274a158fd899a871d7ac5ff1a83dc2f99863"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Class-static structural owner for the three admitted SilentHillGame HUD/menu fields; the container AST is locked separately from all exhaustive field declaration crosswalks."
+
+[[body]]
+java_class = "Ext"
+canonical_class = "SilentHillGame"
+java_name = "menuResetIngameValues"
+descriptor = "()V"
+java_item = "menuResetIngameValues()"
+code_sha256 = "711ccd650cd299d8feda2049457131e23085d233f211f3934e1bc394987e44b9"
+opcode_sha256 = "1d2f04a34a36f3f74493bbe38f914e91b171ccb86d20936849fa1715b964348b"
+java_ast_sha256 = "4b1d7a0fcd99b4ad5289bc663c9c292a736030f522c176eaf89de404897505e6"
+java_nodes_sha256 = "206220e93e1f36edb729700b2395e9e1fdbfcf38033b972fca082fe580016604"
+java_node_count = 13
+rust_node_counts = [20]
+operation = [
+  { semantic = "own the complete ordered reset wrapper body", java_nodes = [0], rust_nodes = ["0:0"] },
+  { semantic = "delegate first to InkEngine.menuResetIngameValues before mutating SilentHillGame HUD cache state", java_node_ranges = [[1, 4]], rust_node_ranges = [{ target = 0, start = 2, end = 4 }] },
+  { semantic = "invalidate the cached ammunition-number width with exact signed sentinel minus one", java_node_ranges = [[5, 8]], rust_node_ranges = [{ target = 0, start = 5, end = 10 }] },
+  { semantic = "mark ammunition-number regeneration needed last", java_node_ranges = [[9, 12]], rust_node_ranges = [{ target = 0, start = 11, end = 15 }] },
+]
+adaptation = [
+  { side = "rust", reason = "The try node exposes any uncaught delegated reset failure and preserves Java's rule that both later stores remain unreachable.", rust_nodes = ["0:1"] },
+  { side = "rust", reason = "Ok unit makes normal Java void completion explicit after both stores.", rust_node_ranges = [{ target = 0, start = 16, end = 19 }] },
+]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:silent_hill_game_menu_reset_ingame_values", ast_sha256 = "dd7b53cfd4862f8810b5036dc6c6256f2685d0430b525d87f29d85fe00e05017", nodes_sha256 = "79cb7fc9720f9acfca4ff9bcc895a2e5bb4388ffc3a8942364bbfa65a8186cb7", node_count = 20 }]
+oracle = "pure-method-v1"
+semantic_status = "crosswalked"
+semantic_review = "Twenty hostile seed cases agree across both recovered JARs, canonical Java, and Rust. A separately observed ingame-margin reset proves delegation occurred before the two exact HUD stores; the focused Rust test injects delegated failure and proves both hostile fields remain untouched. Original hashes and exhaustive AST ownership account for all thirteen javac and twenty syn body nodes, both field declarations, and their static owner."
+
+[[field]]
+java_class = "Ext"
+canonical_class = "SilentHillGame"
+java_name = "INK_menu_logo"
+descriptor = "Ljavax/microedition/lcdui/Image;"
+java_item = "<field:INK_menu_logo>"
+java_ast_sha256 = "65d5a2629a801ed77cdf344f03d9eb745aba068c2bc3dfeb0159b20f71d9e13d"
+java_nodes_sha256 = "3a5e8f4faee00e053f424aa12ed5b80ecf2643bfa65d3747f02277c2c61cf619"
+java_node_count = 3
+rust_node_counts = [3]
+operation = [{ semantic = "declare the SilentHillGame-owned nullable menu-logo image identity", java_node_ranges = [[0, 2]], rust_node_ranges = [{ target = 0, start = 0, end = 2 }] }]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/state.rs", item = "field:SilentHillGameStatics::ink_menu_logo", ast_sha256 = "b83151c6f2c6e4b36496c07836790a7a38063359bbc9f6e69f0b32d71dbd58a6", nodes_sha256 = "b1a6f9f192979c99646815f15a270ae0a50020741c134df085f11034565e1e51", node_count = 3 }]
+semantic_status = "crosswalked"
+semantic_review = "Option preserves the Java static's nullable reference domain and u32 preserves opaque image identity. appInit replaces either null or an old image before entering the engine initializer."
+
+[[body]]
+java_class = "Ext"
+canonical_class = "SilentHillGame"
+java_name = "appInit"
+descriptor = "()V"
+java_item = "appInit()"
+code_sha256 = "3d1591160f28e865ee0f32befee403cb4c73892d3a20b22498c65998c02acca7"
+opcode_sha256 = "8976bed659d59bc67fe91fc461615db9e45f2d7703a2172e8181358d9e9f212c"
+java_ast_sha256 = "90324e048adcaf5ff6201d8736dea7dc0eafa63dfb5fa1ab802e21be538a780b"
+java_nodes_sha256 = "2f78124d259b0a421f5c113900879c6c0cec4ca3a80e857e2f8be06b9051b146"
+java_node_count = 12
+rust_node_counts = [35]
+operation = [
+  { semantic = "own the complete ordered application-initialization wrapper", java_nodes = [0], rust_nodes = ["0:0"] },
+  { semantic = "request the exact UTF-16 path gfx/menu_logo.png from Application.loadImageFromJAR and publish its nullable image result before engine initialization", java_node_ranges = [[1, 7]], rust_node_ranges = [{ target = 0, start = 1, end = 26 }] },
+  { semantic = "delegate to InkEngine.appInit only after the new nullable logo identity is stored", java_node_ranges = [[8, 11]], rust_node_ranges = [{ target = 0, start = 28, end = 30 }] },
+]
+adaptation = [
+  { side = "rust", reason = "The try node exposes an uncaught failure from the not-yet-admitted engine initializer while retaining the already published logo.", rust_nodes = ["0:27"] },
+  { side = "rust", reason = "Ok unit makes normal Java void completion explicit after the engine initializer returns.", rust_node_ranges = [{ target = 0, start = 31, end = 34 }] },
+]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:silent_hill_game_app_init", ast_sha256 = "377bd1a886c92e63cefa39aa22d0a4b80bc2fd8d3746219042bc721641327ff9", nodes_sha256 = "f28fc56ae4c35d44fd5c97458c42c7c88370c3ad64bd0a2446ead06caa4907f5", node_count = 35 }]
+oracle = "pure-method-v1"
+semantic_status = "crosswalked"
+semantic_review = "Two old-logo seeds agree across both recovered JARs, canonical Java, and Rust: exactly one load observes the normalized gfx/menu_logo.png argument, the returned identity replaces the old field, and the engine initializer begins before its deliberately exposed NPE. The baseline engine callee writes canvas width 130 while canonical/source-named writes 240, so this wrapper oracle compares only the stable hostile-width-changed invariant; exact callee internals remain outside this body's claim. A focused Rust test supplies both successful and failing engine callbacks and locks logo-before-engine order. All twelve javac and thirty-five syn body nodes plus the field declaration have one owner."
 
 [[body]]
 java_class = "ExtBase"
@@ -5014,6 +5331,38 @@ ast_sha256 = "17cdf82d471a008f18c457f72ddb265d633cd7f6822b8552f247a77a195495f1"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
 semantic_review = "Rust-only typed failure boundary preserving the two sequential uncaught-failure sites of Application.clearAllRMS without merging their observable partial states."
+
+[[rust_value]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "variant:ApplicationSetDisplayError::GetDisplay"
+ast_sha256 = "3b099833849b1b467316a6ba885a4e38fcbbd1d974c27a4c0efe18c1ed2ac9f8"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Rust-only transparent wrapper for an uncaught failure from the Display.getDisplay platform boundary."
+
+[[rust_value]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "variant:ApplicationSetDisplayError::DisplayNull"
+ast_sha256 = "58e82d92df06d9b2fd207894729d47984ec0fa21dfe1c42409acf00884f2ee8e"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Rust-only explicit representation of invokevirtual setCurrent on a null Display returned by the platform lookup."
+
+[[rust_value]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "variant:ApplicationSetDisplayError::SetCurrent"
+ast_sha256 = "b05cbfc4ef56b6f7a4c0b35b284af16522a62c0ba6ac86ac26110b39cce8d033"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Rust-only transparent wrapper for an uncaught failure from Display.setCurrent after the receiver and argument are resolved."
+
+[[rust_container]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "enum:ApplicationSetDisplayError"
+ast_sha256 = "3c9670c4262c3ffca018e3a08bf92473451798c631272552cc9b575abddd4954"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Rust-only typed boundary retaining the three distinct failure sites in Application.setDisplay without claiming either MIDP callee."
 
 [[body]]
 java_class = "ExtBase"

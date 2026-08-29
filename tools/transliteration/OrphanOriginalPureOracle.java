@@ -12,9 +12,13 @@ import java.lang.reflect.Method;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
+import javax.microedition.lcdui.Canvas;
+import javax.microedition.lcdui.Display;
+import javax.microedition.lcdui.Displayable;
 import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
+import javax.microedition.midlet.MIDlet;
 
 /** Calls package-private static methods on the verified original {@code M}. */
 public final class OrphanOriginalPureOracle {
@@ -834,12 +838,17 @@ public final class OrphanOriginalPureOracle {
         Method popupSetNext = method(inkEngine, "popupSetNext");
         Method inventoryEquipUnequipHandling = method(
                 inkEngine, "inventoryEquipUnequipHandling", Integer.TYPE);
+        Method menuResetIngameValues = method(silentHillGame, "menuResetIngameValues");
+        Method silentHillGameAppInit = method(silentHillGame, "appInit");
+        Method keyJadEntryAsInt = method(canvas, "keyJadEntryAsInt", String.class);
         Method resourceUrlEncode = method(application, "resourceURLEncode", String.class);
         Method codedString = method(application, "codedString", byte[].class);
         Method printArray = method(application, "printArray", byte[][].class);
         Method resourceRestartImportants = method(application, "resourceRestartImportants");
         Method roomRepaintRun = method(application, "roomRepaintRun");
         Method clearAllRms = method(application, "clearAllRMS");
+        Method freeMemory = method(application, "freeMemory");
+        Method setDisplay = method(application, "setDisplay", Displayable.class);
         Method resetLoad = method(application, "resetLoad");
         Method resourcePathForString = method(application, "loadRequest_getResourcePath",
                 Integer.TYPE, String.class);
@@ -1025,6 +1034,10 @@ public final class OrphanOriginalPureOracle {
         Field inkServerHints = field(application, "inkServerHint");
         Field gameChangedSinceLastSave = field(application, "gameChangedSinceLastSave");
         Field cheatLastKey = field(cheatController, "lastKey");
+        Field hudAmmoNumberWidth = field(silentHillGame, "HUD_ammoNumWidth");
+        Field hudAmmoUpdateNeeded = field(silentHillGame, "HUD_ammoUpdateNeeded");
+        Field inkMenuLogo = field(silentHillGame, "INK_menu_logo");
+        Field ingameMargin = field(inkEngine, "ingameMargin");
         Field keyNew = field(application, "keyNew");
         Field keyPressed = field(application, "keyPressed");
         Field keyLastPressed = field(application, "keyLastPressed");
@@ -1383,6 +1396,84 @@ public final class OrphanOriginalPureOracle {
                     throw new AssertionError("unknown constructor request");
                 }
                 result = "OK:1";
+            } else if (parts[0].equals("game-canvas-new") && parts.length == 3) {
+                javax.microedition.lcdui.game.GameCanvas.oracleResetConstructor(
+                        value(parts, 1) != 0);
+                Canvas.oracleResetFullScreen(value(parts, 2) != 0);
+                String status;
+                try {
+                    canvasConstructor.newInstance();
+                    status = "OK";
+                } catch (InvocationTargetException exception) {
+                    if (!(exception.getCause() instanceof NullPointerException)) {
+                        throw exception;
+                    }
+                    status = "NPE";
+                }
+                String sameReceiver = Canvas.oracleFullScreenCalls == 0
+                        ? "-" : Canvas.oracleFullScreenReceiver
+                                == javax.microedition.lcdui.game.GameCanvas.oracleConstructorReceiver
+                                        ? "1" : "0";
+                result = status + ":"
+                        + javax.microedition.lcdui.game.GameCanvas.oracleConstructorCalls + ":"
+                        + (javax.microedition.lcdui.game.GameCanvas.oracleSuppressKeyEvents
+                                ? "1" : "0") + ":"
+                        + Canvas.oracleFullScreenCalls + ":"
+                        + (Canvas.oracleFullScreenMode ? "1" : "0") + ":" + sameReceiver;
+                javax.microedition.lcdui.game.GameCanvas.oracleResetConstructor(false);
+                Canvas.oracleResetFullScreen(false);
+            } else if (parts[0].equals("menu-reset-ingame-values")
+                    && parts.length == 3) {
+                hudAmmoNumberWidth.setInt(null, value(parts, 1));
+                hudAmmoUpdateNeeded.setBoolean(null, value(parts, 2) != 0);
+                ingameMargin.setInt(null, Integer.MIN_VALUE);
+                menuResetIngameValues.invoke(null);
+                result = ingameMargin.getInt(null) + ":"
+                        + hudAmmoNumberWidth.getInt(null) + ":"
+                        + (hudAmmoUpdateNeeded.getBoolean(null) ? "1" : "0");
+            } else if (parts[0].equals("app-init") && parts.length == 2) {
+                Image oldLogo = value(parts, 1) == 0 ? null : Image.createImage(1, 1);
+                inkMenuLogo.set(null, oldLogo);
+                applicationMidlet.set(null, null);
+                canvasWidth.setInt(null, Integer.MIN_VALUE);
+                Display.oracleReset(0, 0);
+                Image.oracleResetStringCreate();
+                String status;
+                PrintStream previous = System.out;
+                try {
+                    System.setOut(new PrintStream(new java.io.ByteArrayOutputStream()));
+                    silentHillGameAppInit.invoke(null);
+                    status = "OK";
+                } catch (InvocationTargetException exception) {
+                    if (!(exception.getCause() instanceof NullPointerException)) {
+                        throw exception;
+                    }
+                    status = "NPE";
+                } finally {
+                    System.setOut(previous);
+                }
+                String requestedPath = Image.oracleStringCreateName == null
+                        ? "-" : Image.oracleStringCreateName.substring(1);
+                Object currentLogo = inkMenuLogo.get(null);
+                String logo = currentLogo == Image.oracleStringCreatedImage
+                        ? "NEW" : currentLogo == oldLogo ? "OLD" : "WRONG";
+                String engineStarted = canvasWidth.getInt(null) == Integer.MIN_VALUE ? "0" : "1";
+                result = status + ":" + Image.oracleStringCreateCalls + ":"
+                        + requestedPath + ":" + logo + ":" + engineStarted;
+                Image.oracleResetStringCreate();
+            } else if (parts[0].equals("key-jad-entry") && parts.length == 5) {
+                Object expectedMidlet = value(parts, 1) == 0
+                        ? null : applicationConstructor.newInstance();
+                String expectedKey = utf16(parts[2]);
+                applicationMidlet.set(null, expectedMidlet);
+                MIDlet.oracleResetProperty(utf16(parts[4]), value(parts, 3) != 0);
+                int parsed = ((Integer) keyJadEntryAsInt.invoke(null, expectedKey)).intValue();
+                String receiver = MIDlet.oraclePropertyCalls == 0
+                        ? "-" : MIDlet.oraclePropertyReceiver == expectedMidlet ? "M" : "W";
+                String key = MIDlet.oraclePropertyCalls == 0
+                        ? "-" : MIDlet.oraclePropertyKey == expectedKey ? "K" : "W";
+                result = parsed + ":" + MIDlet.oraclePropertyCalls + ":" + receiver + ":" + key;
+                MIDlet.oracleResetProperty(null, false);
             } else if (parts[0].equals("url-encode") && parts.length == 2) {
                 try {
                     result = utf16Output((String) resourceUrlEncode.invoke(null,
@@ -1492,6 +1583,46 @@ public final class OrphanOriginalPureOracle {
                         + ":" + subchunk + ":" + Integer.toString(resourceSubchunkSize.getInt(null))
                         + ":" + Integer.toString(((Vector) resourceImportants.get(null)).size())
                         + ":" + downloads + ":" + scripts;
+            } else if (parts[0].equals("free-memory") && parts.length == 2) {
+                applicationRuntime.set(
+                        null, value(parts, 1) == 0 ? null : Runtime.getRuntime());
+                try {
+                    long available = ((Long) freeMemory.invoke(null)).longValue();
+                    result = "OK:" + (available >= 0L ? "1" : "0");
+                } catch (InvocationTargetException exception) {
+                    if (!(exception.getCause() instanceof NullPointerException)) {
+                        throw exception;
+                    }
+                    result = "NPE:-";
+                }
+            } else if (parts[0].equals("set-display") && parts.length == 5) {
+                Object expectedMidlet = value(parts, 1) == 0
+                        ? null : applicationConstructor.newInstance();
+                Displayable expectedCurrent = value(parts, 2) == 0
+                        ? null : new Displayable() {};
+                applicationMidlet.set(null, expectedMidlet);
+                Display.oracleReset(value(parts, 3), value(parts, 4));
+                String status;
+                try {
+                    setDisplay.invoke(null, expectedCurrent);
+                    status = "OK";
+                } catch (InvocationTargetException exception) {
+                    if (!(exception.getCause() instanceof NullPointerException)) {
+                        throw exception;
+                    }
+                    status = "NPE";
+                }
+                String observedMidlet = Display.oracleMidlet == null
+                        ? "N" : Display.oracleMidlet == expectedMidlet ? "M" : "W";
+                String receiver = Display.oracleSetCurrentReceiver == null
+                        ? "-" : Display.oracleSetCurrentReceiver == Display.oracleIssuedDisplay
+                                ? "D" : "W";
+                String current = Display.oracleSetCurrentCalls == 0
+                        ? "-" : Display.oracleCurrent == null
+                                ? "N" : Display.oracleCurrent == expectedCurrent ? "C" : "W";
+                result = status + ":" + Display.oracleGetDisplayCalls + ":"
+                        + Display.oracleSetCurrentCalls + ":" + observedMidlet + ":"
+                        + receiver + ":" + current;
             } else if (parts[0].equals("resource-restart-importants") && parts.length == 2) {
                 int oldLength = value(parts, 1);
                 Vector oldValues = oldLength < 0 ? null : new Vector();

@@ -4,7 +4,26 @@ import javax.microedition.lcdui.Canvas;
 import javax.microedition.lcdui.Graphics;
 
 public abstract class GameCanvas extends Canvas {
-    protected GameCanvas(boolean suppressKeyEvents) {}
+    public static GameCanvas oracleConstructorReceiver;
+    public static int oracleConstructorCalls;
+    public static boolean oracleSuppressKeyEvents;
+    public static boolean oracleFailConstructor;
+
+    protected GameCanvas(boolean suppressKeyEvents) {
+        oracleConstructorCalls++;
+        oracleConstructorReceiver = this;
+        oracleSuppressKeyEvents = suppressKeyEvents;
+        if (oracleFailConstructor) {
+            throw new NullPointerException("injected GameCanvas constructor failure");
+        }
+    }
+
+    public static void oracleResetConstructor(boolean fail) {
+        oracleConstructorReceiver = null;
+        oracleConstructorCalls = 0;
+        oracleSuppressKeyEvents = true;
+        oracleFailConstructor = fail;
+    }
 
     public Graphics getGraphics() {
         return null;

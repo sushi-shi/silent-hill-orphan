@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare 148 methods across recovered JARs, canonical Java, and Rust."""
+"""Compare 155 methods across recovered JARs, canonical Java, and Rust."""
 
 from __future__ import annotations
 
@@ -269,6 +269,44 @@ def requests() -> list[str]:
         f"default-constructor {owner}"
         for owner in ("cheat", "game", "engine", "application", "codes", "text-id")
     )
+    result.extend(
+        f"game-canvas-new {super_fails} {full_screen_fails}"
+        for super_fails in (0, 1)
+        for full_screen_fails in (0, 1)
+    )
+    result.extend(
+        f"menu-reset-ingame-values {width} {update_needed}"
+        for width in edges
+        for update_needed in (0, 1)
+    )
+    result.extend(f"app-init {logo_present}" for logo_present in (0, 1))
+    jad_keys: tuple[list[int] | None, ...] = (
+        None,
+        [],
+        [0],
+        [0xD800],
+        [ord(character) for character in "key"],
+    )
+    jad_values: tuple[list[int] | None, ...] = (
+        None,
+        [],
+        [ord(character) for character in "0"],
+        [ord(character) for character in "-1"],
+        [ord(character) for character in "+1"],
+        [ord(character) for character in "2147483647"],
+        [ord(character) for character in "-2147483648"],
+        [ord(character) for character in "2147483648"],
+        [ord(character) for character in " 1"],
+        [0x0661, 0x0662],
+    )
+    result.extend(
+        "key-jad-entry "
+        f"{midlet_present} {utf16_token(key)} {lookup_fails} {utf16_token(property_value)}"
+        for midlet_present in (0, 1)
+        for key in jad_keys
+        for lookup_fails in (0, 1)
+        for property_value in jad_values
+    )
 
     result.extend(("url-encode null", "url-encode -"))
     result.extend(
@@ -357,6 +395,14 @@ def requests() -> list[str]:
         f"clear-all-rms {resource_succeeds} {script_count}"
         for resource_succeeds in (0, 1)
         for script_count in (-1, 0, 2)
+    )
+    result.extend(f"free-memory {runtime_present}" for runtime_present in (0, 1))
+    result.extend(
+        f"set-display {midlet_present} {displayable_present} {get_mode} {set_mode}"
+        for midlet_present in (0, 1)
+        for displayable_present in (0, 1)
+        for get_mode in (0, 1, 2)
+        for set_mode in (0, 1)
     )
 
     path_strings: list[list[int] | None] = [

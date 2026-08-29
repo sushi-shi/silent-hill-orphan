@@ -56,19 +56,19 @@ of the body.
 
 ## A-3 — application, resource, menu, script, and interpreter fields have shaped owners
 
-The 135 mutable fields reached by the reviewed methods—including application timing,
+The 142 mutable fields reached by the reviewed methods—including application timing,
 resource/language/Ink-server state, menu and input state, script/interpreter
 state, and room-object/battle-panel state—live in `ApplicationState`,
 `ResourceRequestState`, `InkEngineState`, `GameCanvasState`, `MenuState`,
 `MenuStatics`, `InkInterpreterState`, `InkInterpreterStatics`, `InkScriptState`,
 `InkScriptStatics`, `RoomObjectState`, `RoomObjectStatics`, `GameResourceState`,
-`GameResourceStatics`, and `CheatControllerStatics`. Each Rust field has a direct
+`GameResourceStatics`, `CheatControllerStatics`, and `SilentHillGameStatics`. Each Rust field has a direct
 original-field and canonical-`javac` declaration claim with complete
-non-overlapping node ownership. The fifteen structural owner ASTs are hash-locked
+non-overlapping node ownership. The sixteen structural owner ASTs are hash-locked
 separately, and the reverse `syn` inventory rejects any unreviewed function,
 value declaration, or container. Opaque handles retain Thread/Menu/Resource
 identity where the current methods observe only nullness, identity, or stack
-position, keeping the strict crate no_std. The oracle writes the real
+position, keeping the strict boundary explicit. The oracle writes the real
 recovered/canonical fields before each call, constructs the corresponding Rust
 owner, and compares return values, exceptions, identity, and mutations.
 
@@ -185,7 +185,7 @@ of the accepted `toInt` crosswalk.
 Cross-language evaluation order must be demonstrated by adversarial execution
 and then made visible in the AST claim.
 
-## A-8 — Java Object categories and parseInt stay explicit in no_std Rust
+## A-8 — Java Object categories and parseInt stay explicit in typed Rust
 
 `Application.toInt` and `toBoolean` distinguish null, boxed Integer, String,
 and every other Object. `JavaObject` represents those four categories without
@@ -207,7 +207,7 @@ independently visible to the audit.
 ## A-9 — Language text IDs are radix-35 UTF-16, not decimal host integers
 
 `Application.getGameText(String)` parses text IDs with radix 35 and catches both
-parse failures and failures from the delegated table lookup. The no_std Rust path
+parse failures and failures from the delegated table lookup. The strict Rust path
 therefore implements Java sign, Unicode-digit, ASCII/fullwidth letter, and i32
 overflow rules explicitly. Its oracle covers every UTF-16 code unit and a real
 nullable 35-slot language table; using ordinary decimal parsing would miss valid
@@ -303,8 +303,8 @@ reason for the disagreement.
 The oracle now validates those two exact member signatures against the
 hash-locked source-named variant ledger before excluding only their 6,196
 requests from the naming-reference comparison. The recovered baseline,
-canonical Java, and Rust still compare on all 991,016 cases. The
-naming-reference JAR still compares on the remaining 984,820 cases, and
+canonical Java, and Rust still compare on all 991,268 cases. The
+naming-reference JAR still compares on the remaining 985,072 cases, and
 `Application.setKeyStatus` remains a four-authority comparison because its body
 is common. Complete post-state checks prove the sticky new-key latch, current
 pressed state, last-key write, and signed-byte scroll reset—not merely the
@@ -1228,9 +1228,11 @@ coverage.
 `GameCanvas.paint(Graphics)` contains exactly one operation: forward the same
 nullable graphics reference to `Application.paint`. Its Rust translation uses
 an injected callback boundary, and the exhaustive crosswalk pairs all six javac
-nodes with all six syn nodes. That boundary is intentional: it proves the
-one-call wrapper without pretending that the still-unreviewed
-`Application.paint` body has been transliterated.
+nodes with all six syn nodes. That boundary was intentional: it proved the
+one-call wrapper without prematurely claiming the then-unreviewed
+`Application.paint` body. Now that the callee is admitted independently, the
+same boundary composes the two real Rust bodies while each crosswalk continues
+to own only its own nodes.
 
 Six cross-build-stable oracle cases cover both prior painting states, the open
 and closed fade guard, nonnull reference identity, and null with the delegate
@@ -1342,15 +1344,192 @@ partial state produced by the first call and the exact failure cut before the
 second mutation; an oracle must expose both owners, while the AST crosswalk
 keeps the unreviewed callee outside the coverage claim.
 
+## A-50 — nondeterministic native results make structural evidence indispensable
+
+`Application.freeMemory()` first calls `System.gc()`, then resolves the nullable
+class-owned `Runtime`, invokes `freeMemory()`, and returns its `long`. Raw free
+heap bytes cannot be expected to match across three separate JVM processes and
+a Rust host: process layout, prior allocations, and collector timing are all
+independent. The two four-authority cases therefore compare only the stable
+observable contract—a null Runtime faults and a real Runtime reports a
+nonnegative value.
+
+That normalization does not weaken the structural proof. The exact original
+code/opcode hashes and exhaustive nine-node `javac`/twenty-node `syn` crosswalk
+lock the collection-before-field-read schedule. Rust owns the Runtime as a
+nullable opaque handle and exposes collection and sampling as two callbacks. A
+focused test records their order, proves null skips only sampling, checks handle
+identity, and forwards `i64::MIN` unchanged, independently establishing that the
+game body does not clamp or reinterpret the returned Java `long`.
+
+**Lesson.** Normalize only an intrinsically nondeterministic observation, and
+replace the lost comparison strength with stronger orthogonal evidence. Here
+the live oracle proves stable outcomes, while bytecode and every AST node prove
+that `System.gc()` was neither removed nor moved after the heap measurement.
+
+## A-51 — a nested platform-call expression has two independent failure cuts
+
+`Application.setDisplay(Displayable)` is one Java expression but two ordered
+MIDP calls: read the nullable class-owned MIDlet and call
+`Display.getDisplay(midlet)`, then invoke `setCurrent(displayable)` on the exact
+returned Display. Rust keeps both platform methods as callbacks and owns the
+MIDlet as an opaque nullable handle; a typed three-way error distinguishes a
+throwing lookup, a null returned receiver, and a throwing publication call.
+
+The instrumented declaration stub records both call counts and the identities
+of the MIDlet, returned Display receiver, and nullable Displayable. Twenty-four
+four-authority cases cross null/non-null arguments, successful, null-returning,
+and throwing lookup modes, and successful/throwing publication. A failed
+`setCurrent` still exposes its attempted receiver and argument, while either
+lookup failure leaves the second call unreachable. All nine `javac` and
+thirty-one `syn` body nodes plus both three-node MIDlet declarations are owned.
+
+**Lesson.** Do not translate a chained call as one convenient host operation.
+Split it at the same receiver-producing boundary as the JVM, retain exact
+identity across that boundary, and make each failure cut observable without
+claiming either platform implementation as translated game code.
+
+## A-52 — constructor allocation and constructor-body effects are separate evidence
+
+`GameCanvas.<init>()` does not allocate the canvas. Its eleven-byte retail body
+first invokes the Java ME `GameCanvas(boolean)` superclass constructor with
+`false`, then calls `setFullScreenMode(true)` on the same `this`. Rust therefore
+accepts an already allocated opaque canvas identity and exposes the two platform
+operations as ordered callbacks instead of inventing a Rust-owned canvas object.
+
+Four hostile cases inject failure independently at both calls. Instrumented
+Java ME stubs and the Rust oracle record both boolean arguments, both call
+counts, and receiver identity. A superclass failure prevents the fullscreen
+call; a fullscreen failure occurs only after successful superclass construction.
+The oracle also resets injected stub state after each request, because failure
+hooks leaking into unrelated later cases would make the harness—not the game
+body—the source of behavior. Both recovered JARs, canonical Java, and Rust agree
+on all four cases.
+
+The original code and opcode digests lock the two `invokespecial`/`invokevirtual`
+edges. All nine `javac` and twenty-five `syn` nodes have exactly one semantic
+owner or an explicit Rust-only `Result` adaptation; the two error variants and
+their enum container are independently hash-locked by the reverse declaration
+inventory.
+
+**Lesson.** Treat object allocation as caller work when transliterating a JVM
+constructor. Preserve the constructor body's exact receiver, argument, order,
+and failure cuts, and ensure hostile oracle instrumentation is isolated between
+requests.
+
+## A-53 — a thin wrapper still owns call-before-store ordering
+
+`SilentHillGame.menuResetIngameValues()` first delegates to the larger, not-yet-
+admitted `InkEngine.menuResetIngameValues()`, then writes the HUD ammunition
+width sentinel `-1`, then raises the update-needed latch. Rust keeps the callee
+as an explicit callback and introduces `SilentHillGameStatics` as the sole owner
+of the two game-level fields; it does not absorb the engine reset into this
+twelve-byte wrapper.
+
+Twenty cases run through all four authorities, seeding the width across signed-int edges and the latch
+with both booleans. A hostile engine-margin marker becomes exactly four, proving
+the delegated reset ran, while both wrapper fields end at their exact constants.
+A focused Rust fault case complements that live comparison: if the delegated
+callee fails, neither later store occurs. Thus the partial-state boundary is
+locked even though the full engine reset has not yet entered the transliteration
+ratchet.
+
+All thirteen `javac` and twenty `syn` body nodes have exactly one owner or a
+reasoned `Result` adaptation. Both three-node Java field declarations map
+exhaustively to their two-node Rust fields, and the new owner container is
+independently hash-locked.
+
+**Lesson.** Do not inline or prematurely claim a large unreviewed callee merely
+because a leaf wrapper invokes it. Preserve the call edge and exact subsequent
+stores now; replace the callback with the separately admitted callee when its own
+body reaches the frontier.
+
+## A-54 — observe only stable callee facts when admitting a wrapper
+
+`SilentHillGame.appInit()` loads `gfx/menu_logo.png`, publishes the nullable
+image into `INK_menu_logo`, and only then enters the much larger
+`InkEngine.appInit()`. Rust represents the image as a nullable opaque handle and
+passes the exact seventeen UTF-16 code units to a loader callback; the engine
+initializer remains a second callback and therefore outside this wrapper's
+semantic claim.
+
+The two old-logo cases prove exact load count, normalized requested path, new
+image identity, and publication before the engine callback. For a controlled
+failure cut, both Java harnesses force a null MIDlet, so the engine initializer
+starts and then faults after its initial canvas setup; Rust injects the same
+post-publication failure. The focused Rust test also covers successful engine
+completion and a loader returning null.
+
+This exercise exposed a genuine build difference inside the unreviewed callee:
+the selected baseline writes canvas width 130, while canonical/source-named Java
+writes 240. The wrapper oracle intentionally compares only the stable fact that
+the hostile width changed, not its variant value. Original appInit hashes still
+prove the exact load-store-call schedule, and all twelve `javac`, thirty-five
+`syn`, three Java field, and three Rust field nodes are exhaustively owned.
+
+**Lesson.** A wrapper's oracle may use a callee side effect to prove the call
+edge, but it must not silently promote variant callee internals into the
+wrapper's contract. Normalize the smallest explicit invariant and leave the
+callee for its own bytecode- and AST-bound admission.
+
+## A-55 — a catch-all leaf is better expressed as explicit branch ownership
+
+`GameCanvas.keyJadEntryAsInt(String)` dereferences the class-owned MIDlet,
+forwards the nullable key to `getAppProperty`, parses the nullable property with
+Java's decimal `Integer.parseInt`, and catches every `Exception` from that
+entire chain as zero. Rust makes the implicit fault sites explicit: a missing
+MIDlet or failed lookup returns zero immediately, and the already admitted
+`parse_java_i32` helper maps null, malformed, and overflowing values to the same
+zero fallback.
+
+Two hundred four-authority cases cross null/non-null MIDlets; null, empty, NUL,
+ordinary, and isolated-surrogate keys; successful and throwing lookups; and
+null, empty, signed-bound, overflow, whitespace, plus-prefixed, and Arabic-
+Indic-decimal property values. The Java MIDlet stub and Rust callback also
+record the exact receiver and key, while a focused test proves null receiver
+suppresses the platform call.
+
+All nineteen `javac` and thirty-one `syn` nodes are owned exactly once. The
+Java-only try/block wrapper is documented as the structural counterpart of the
+Rust Option/Result pattern branches; the successful lookup/parse path and every
+zero-return path are paired separately. The parse helper's own 193-node AST is
+not double-claimed—it remains under its earlier method admission.
+
+**Lesson.** Transliterate broad Java catches by enumerating the actual fault
+sites and their common fallback. Reusing an already verified helper is sound,
+but the new body's audit should own only its call edge, never the helper AST a
+second time.
+
+## A-56 — admitted wrappers compose without merging their AST claims
+
+`Application.paint(Graphics)` reads the mutable signed `FADE_FRAMES` and
+`DEMO_FRAMES` fields and delegates to `InkEngine.paint` exactly when the first
+is less than or equal to the second. The Rust body keeps that inclusive signed
+comparison visible and forwards the exact graphics value through an injected
+paint callback. Its focused test covers equality, the skipped greater-than
+case, exact argument identity, and delegated failure propagation.
+
+The six existing `GameCanvas.paint` oracle cases now execute
+`game_canvas_paint` and `application_paint` compositionally. They still compare
+both recovered JARs, canonical Java, and Rust on the wrapper's observable
+contract, but the audit does not merge coverage: the six wrapper nodes remain
+owned by the wrapper entry and the twelve Java/twenty Rust callee nodes remain
+owned by the callee entry. `FADE_FRAMES` and `DEMO_FRAMES` additionally receive
+complete four-to-two declaration crosswalks in the same admission.
+
+**Lesson.** Once a callback-delimited callee is admitted, route the wrapper's
+oracle through the real callee body. Runtime composition strengthens the
+evidence while separate manifests preserve exact per-body AST ownership.
+
 ## Verified clean so far
 
-- 148/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
+- 155/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
   and `syn` node ownership.
-- 168/1,075 Java fields have complete declaration-node ownership: 135 map into
-  fifteen hash-locked Rust owner containers, thirty-three map to typed scalar constants,
+- 175/1,075 Java fields have complete declaration-node ownership: 142 map into
+  sixteen hash-locked Rust owner containers, thirty-three map to typed scalar constants,
   and one mutable array also owns a separately inventoried initializer template.
-- The differential currently runs 991,016 cases against the recovered baseline,
-  canonical Java, and Rust; the naming-reference JAR agrees on all 984,820
+- The differential currently runs 991,268 cases against the recovered baseline,
+  canonical Java, and Rust; the naming-reference JAR agrees on all 985,072
   cases outside its two ledger-reviewed input-timing variants.
 - Exhaustive subdomains include all Java `char` values, every pair of singleton
   unsigned comparator bytes, all 256 signed menu-scroll counter states, and all

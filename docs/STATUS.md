@@ -12,18 +12,18 @@ Living record of what is recovered and verified. Newest first.
   `orphan-me` starts the deterministic MIDP subset with a clipped CPU ARGB
   framebuffer. These are device/runtime implementations, not transliterated
   game bodies.
-- The first 148/350 game methods (`M.min`, `max`, `abs`, `dir`, `toInt`,
+- The first 155/350 game methods (`M.min`, `max`, `abs`, `dir`, `toInt`,
   `toBoolean`, `getLeft`,
   `getTop`, `resourceExit`, `destroyApp`, `pauseApp`, `appStart`, `resourceURLEncode`, `codedString`, `charToString`,
   the default constructors for `Application`, `CheatController`, `SilentHillGame`,
-  `InkEngine`, `InkCodes`, and `TextId`,
+  `InkEngine`, `InkCodes`, and `TextId`, `SilentHillGame.menuResetIngameValues`, `appInit`,
   `CheatController.<clinit>`,
   `resourceMergeSortCmp`, the one-argument `printArray`,
   `resourceRestartImportants`, `resetLoad`, `find`, `readString`, `writeString`, `readStringList`,
   `tickBasedTime`, `tickBasedTimeUpdate`, `tickBasedTimeReset`, `getGameLangPath`,
   both `getGameText` overloads, `getPosInLanguageSelectionList`,
   `txtStringReplace`, `removeStringPrefix`, both Ink-server getters and mutators,
-  `resetVariableSystem`, `roomRepaintRun`, `clearAllRMS`, `roomGetCurrent`, `roomSetCurrent`, `roomGetHistorySize`,
+  `resetVariableSystem`, `roomRepaintRun`, `clearAllRMS`, `freeMemory`, `setDisplay`, `paint`, `roomGetCurrent`, `roomSetCurrent`, `roomGetHistorySize`,
   `roomGetLastInRoomHistory`, `roomAddToRoomHistory`, `roomRemoveLastInRoomHistory`,
   `resourceIsOnHeap`, `random`, `arrayCopyString`,
   both `LoadRequest` constructors, `createFromInputStream`, `getID`, `getDescription`, `equals`,
@@ -34,7 +34,7 @@ Living record of what is recovered and verified. Newest first.
   `actionKeyUnsetAllKeys`, `actionKeyInitSystem`, `isMenuScrollAllowed`,
   `inventoryEquipUnequipHandling`, `splashMoreExists`, the two-argument `wrapString`,
   `M.loading`, all three `loadRequest_getResourcePath` overloads,
-  `M.setKeyStatus`, and `MyCanvas.paint`, `showNotify`, `keyInit`, `keyConvertToKeyId`, `keyPressed`, `keyReleased`,
+  `M.setKeyStatus`, and `MyCanvas.<init>`, `paint`, `showNotify`, `keyInit`, `keyJadEntryAsInt`, `keyConvertToKeyId`, `keyPressed`, `keyReleased`,
   both `Menu.addChoice` overloads, `getChoiceNr`, `countChoices`,
   `getChoiceID`, `nextChoice`, `previousChoice`, `setPosition`, `setCurrent`,
   `scrollIncrease`, `scrollDecrease`, `setTop`,
@@ -49,25 +49,25 @@ Living record of what is recovered and verified. Newest first.
   `getMoveDir`, and `enterHover`) are strict
   Rust translations. Each is hash-bound to original
   bytecode and opcode streams, complete `javac` and `syn` ASTs, a written
-  per-node semantic crosswalk, and a live 991,016-case oracle in which the
+  per-node semantic crosswalk, and a live 991,268-case oracle in which the
   recovered baseline, canonical Java, and Rust agree. The naming-reference JAR
-  agrees on all 984,820 non-variant cases; its two extra input-timing policies
+  agrees on all 985,072 non-variant cases; its two extra input-timing policies
   are scoped by live validation of the variant ledger. Coverage stays an
-  explicit ratchet; the other 202 bodies are not claimed.
-- The 168 Java fields reached by those methods are exhaustively mapped: 135 mutable
-  fields become 135 Rust fields in `CheatControllerStatics`, `ApplicationState`, `ResourceRequestState`, `GameResourceState`, `GameResourceStatics`, `InkEngineState`, `GameCanvasState`,
+  explicit ratchet; the other 195 bodies are not claimed.
+- The 175 Java fields reached by those methods are exhaustively mapped: 142 mutable
+  fields become 142 Rust fields in `CheatControllerStatics`, `SilentHillGameStatics`, `ApplicationState`, `ResourceRequestState`, `GameResourceState`, `GameResourceStatics`, `InkEngineState`, `GameCanvasState`,
   `MenuState`, `MenuStatics`, `InkInterpreterState`, `InkInterpreterStatics`,
   `InkScriptState`, `InkScriptStatics`, `RoomObjectState`, and `RoomObjectStatics`; thirty-three final
   coded-string/Ink constants become typed Rust constants, and the mutable transform
   table's eight class-initializer values have their own constant template. Each declaration
-  has complete `javac`/`syn` node ownership; all fifteen state-container ASTs are
+  has complete `javac`/`syn` node ownership; all sixteen state-container ASTs are
   hash-locked. Typed `JavaObject`, `JavaOwnedObject`, `JavaResourceId`,
   `InkVariableError`, `InkScriptRegistryValue`, `InkScriptExecuteEventError`,
-  `InkScriptGetItemNameError`, `InkEnginePopupCreateError`, and
+  `InkScriptGetItemNameError`, `InkEnginePopupCreateError`, `ApplicationSetDisplayError`, and
   `RoomObjectStringEventError` and `RoomObjectEnterHoverError` enums and their variants are independently claimed
   as Rust-only adaptations.
-  The reverse `syn` inventory permits only the 150 reviewed functions, 197
-  reviewed value declarations, and twenty-six reviewed containers (373 total
+  The reverse `syn` inventory permits only the 157 reviewed functions, 209
+  reviewed value declarations, and twenty-nine reviewed containers (395 total
   declarations), and its
   injected unowned-constant proof goes red.
 

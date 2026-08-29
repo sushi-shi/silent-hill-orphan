@@ -10,9 +10,17 @@ pub struct CheatControllerStatics {
     pub last_key: i32,
 }
 
+pub struct SilentHillGameStatics {
+    pub hud_ammo_number_width: i32,
+    pub hud_ammo_update_needed: bool,
+    pub ink_menu_logo: Option<u32>,
+}
+
 pub struct ApplicationState {
     pub tick_based_time_value: i32,
     pub canvas_width: i32,
+    pub fade_frames: i32,
+    pub demo_frames: i32,
     pub key_last_pressed: i32,
     pub key_new: bool,
     pub key_pressed: bool,
@@ -29,6 +37,8 @@ pub struct ApplicationState {
     pub languages: Option<Vec<Option<Vec<u16>>>>,
     pub resource_heap_sources: Option<Vec<i32>>,
     pub random_instance: Option<u32>,
+    pub runtime_instance: Option<u32>,
+    pub midlet_instance: Option<u32>,
     pub ink_server_variables: Option<Vec<(Vec<u16>, Vec<u16>)>>,
     pub ink_server_hints: Option<Vec<(Vec<u16>, Vec<u16>)>>,
     pub game_changed_since_last_save: bool,
