@@ -1,0 +1,861 @@
+schema_version = 1
+baseline_build = 'silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_106'
+baseline_sha256 = 'ca9a874ce7c7fb11ed444701b65e967919d3d7c0bcf73f80a9fcf825fb6a4be7'
+reference_build = 'silent_hill_orphan_j2me_en_v010_9_zip_silent_hill_2007_konam_41'
+reference_sha256 = '9f638bcd52b8d3314014ced473a1b510279b7453819ff9387647524e2152b7ea'
+evidence = [
+  "Both payloads preserve the same thirteen author class names and every baseline field/method signature.",
+  "Normalized classfile shapes, code sizes, and call-set digests below are recomputed from verified bytes.",
+  "CFR/JADX trees are disposable review aids; this ledger is bound to classfile evidence.",
+]
+
+[[classes]]
+owner = 'Cheat'
+canonical_owner = 'CheatController'
+baseline_field_count = 5
+reference_field_count = 5
+baseline_method_count = 4
+reference_method_count = 4
+common_exact_methods = 4
+common_methods_sha256 = '51521fef52a9b9b97c5480d650b2065da694427cafc60de6b3bb281eadf3be3c'
+evidence = ["Author names and descriptors are identical across both source-named payloads; body differences are enumerated below."]
+
+[[classes]]
+owner = 'Ext'
+canonical_owner = 'SilentHillGame'
+baseline_field_count = 100
+reference_field_count = 100
+baseline_method_count = 29
+reference_method_count = 29
+common_exact_methods = 24
+common_methods_sha256 = 'c6fe58f766951a51d984671a0b09d732fc07119edaa0f04a32063c1ab330f285'
+evidence = ["Author names and descriptors are identical across both source-named payloads; body differences are enumerated below."]
+
+[[classes.variants]]
+name = 'HUD_update'
+descriptor = '()V'
+presence = 'both'
+classification = 'device-ui-policy'
+policy = 'device-ui-state-policy'
+baseline_shape_sha256 = '9fd54c46de8c2bf491bf616a520fb4215f348948b76ed192c87eff3f4b5ee5a0'
+baseline_code_bytes = 326
+baseline_calls_sha256 = '64be940c564689024b6c9a3746a5b363bca0f662caaf9b108db2590075935ba2'
+reference_shape_sha256 = '70f25d4c5851d1be33ea836600c7bad3ab08da3e050d749546bd65453e7ca431'
+reference_code_bytes = 324
+reference_calls_sha256 = '64be940c564689024b6c9a3746a5b363bca0f662caaf9b108db2590075935ba2'
+evidence = ['The source-named builds preserve the same signature while their reviewed UI/device state machines compile to different normalized bodies.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'appPaint'
+descriptor = '()V'
+presence = 'both'
+classification = 'rendering-policy'
+policy = 'device-rendering-and-layout'
+baseline_shape_sha256 = '9f3e21683161e8bf19da476a943b2c9677eef3c50ec8dddcdaf1b090063c8757'
+baseline_code_bytes = 2980
+baseline_calls_sha256 = 'c04c4ad59e7a7efcf45dc6e0c4d451e46f50bee0930a54421cf5922f33edc1c4'
+reference_shape_sha256 = 'f9b68fff766d8ce5bdcf4e17f7c4da5ea85eb37438a390ebd245f66a98004a90'
+reference_code_bytes = 2985
+reference_calls_sha256 = 'c04c4ad59e7a7efcf45dc6e0c4d451e46f50bee0930a54421cf5922f33edc1c4'
+evidence = ['The two classfiles retain the same semantic signature but use distinct clipping, layout, wrapping, or draw-region bytecode shapes.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'battleUpdate'
+descriptor = '()V'
+presence = 'both'
+classification = 'vibration-policy'
+policy = 'optional-vibration-and-persistence'
+baseline_shape_sha256 = 'e76a9f569d6653d010bfa24a9996bf959334394b1e7bf492ab8000aec509f03a'
+baseline_code_bytes = 1335
+baseline_calls_sha256 = 'aec5eca34b76c48aff92df0776b981ad96c67efce226aff9a3ca1083135e85c9'
+reference_shape_sha256 = 'ba3d2a00ff2435410cb190658b7c00e6b735e6dc9acc9cd1fd02de5d588f6a6a'
+reference_code_bytes = 1355
+reference_calls_sha256 = '5a4ac5fc68e86e5e72898c1cb84b609b31cbb820bfdb87d7fac7527a894e371e'
+evidence = ['The reference variant exposes vibration state, persistence, menu routing, or Display.vibrate calls that the baseline omits.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'menuPaintEngine'
+descriptor = '(LMenu;)V'
+presence = 'both'
+classification = 'rendering-policy'
+policy = 'device-rendering-and-layout'
+baseline_shape_sha256 = '1cb652eab9258c9c75dcc921ee6cd0912e239bf98633395cf1b61ce54833e215'
+baseline_code_bytes = 1637
+baseline_calls_sha256 = 'b00ce8c09f02f9e1594137f5f8956325b67688532195afe539005522ad37b152'
+reference_shape_sha256 = 'b4175647d0b5294a2a4a9e7c2f81537d346d4da6e62adb81b2ef5252c7c23ef8'
+reference_code_bytes = 1556
+reference_calls_sha256 = 'ae1d3483d7427317920b3b30f328920cc9d62da47282709d9228f2fa718d925d'
+evidence = ['The two classfiles retain the same semantic signature but use distinct clipping, layout, wrapping, or draw-region bytecode shapes.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'popupPaint'
+descriptor = '(Ljavax/microedition/lcdui/Graphics;)V'
+presence = 'both'
+classification = 'rendering-policy'
+policy = 'device-rendering-and-layout'
+baseline_shape_sha256 = '891a65ddd2fb2c02d812ed6f707da00c33066fa844fb824274eba1afe65ce7e8'
+baseline_code_bytes = 634
+baseline_calls_sha256 = '9a08aa240b177af46a50545dc51ed01675934fd2cc0f4ef5df6166f5dd39aeeb'
+reference_shape_sha256 = 'ca69ebdac80c6a68ee7ed04021bf008675cc3187c8ad98f523c439a3ac02e78c'
+reference_code_bytes = 632
+reference_calls_sha256 = '9a08aa240b177af46a50545dc51ed01675934fd2cc0f4ef5df6166f5dd39aeeb'
+evidence = ['The two classfiles retain the same semantic signature but use distinct clipping, layout, wrapping, or draw-region bytecode shapes.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes]]
+owner = 'ExtBase'
+canonical_owner = 'InkEngine'
+baseline_field_count = 271
+reference_field_count = 273
+reference_only_fields = [{ name = 'HideCursorWhenLoading', descriptor = 'Z', access_flags = 9 }, { name = 'noLogo', descriptor = 'Z', access_flags = 9 }]
+baseline_method_count = 83
+reference_method_count = 83
+common_exact_methods = 52
+common_methods_sha256 = '555c0a6012ebaf4175b83a0e78211d645ccbf503f2f45b2b821226018f931639'
+evidence = ["Author names and descriptors are identical across both source-named payloads; body differences are enumerated below."]
+
+[[classes.variants]]
+name = '<clinit>'
+descriptor = '()V'
+presence = 'both'
+classification = 'lifecycle-policy'
+policy = 'variant-state-initialization'
+baseline_shape_sha256 = '47a8d40c89204d9835be6bd5ca44435d90cb1d50b8144dad5cbfec0f0004eefa'
+baseline_code_bytes = 410
+baseline_calls_sha256 = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+reference_shape_sha256 = '42660bcf7c659dc5f2dce6d9b37894beed9bff86fc539ce5d190c4e770debf8a'
+reference_code_bytes = 414
+reference_calls_sha256 = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+evidence = ['The class initializer or shutdown path accounts for fields/state present only in one reviewed device policy.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'appInit'
+descriptor = '()V'
+presence = 'both'
+classification = 'vibration-policy'
+policy = 'optional-vibration-and-persistence'
+baseline_shape_sha256 = 'e0237e4bdf534c8b5fd6511caec97b1fa116b9a32e675d8c1956d27b5ceaee3c'
+baseline_code_bytes = 493
+baseline_calls_sha256 = '14e3334e772cd75d37490ea3737dfc09138ff123134cfcbdd196ab5f379ed780'
+reference_shape_sha256 = '56747ec47587aca0b8fe346dbd0ff9861590d2de3a286db00e48fb93f768e156'
+reference_code_bytes = 516
+reference_calls_sha256 = '4353cb10904b578e8d44f1308d87fd0fea577324625d9ad7df5caa65df39313c'
+evidence = ['The reference variant exposes vibration state, persistence, menu routing, or Display.vibrate calls that the baseline omits.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'appKeyHandling'
+descriptor = '()V'
+presence = 'both'
+classification = 'device-ui-policy'
+policy = 'device-ui-state-policy'
+baseline_shape_sha256 = '7ce2d1a4dbcd6662c9b3fe4278a7b989fb6e553703779146d7d968f10c625b5b'
+baseline_code_bytes = 361
+baseline_calls_sha256 = '7d7079fef9570030a7c7f1abfbed01e33f65c222d9515d4880c71fcaa0bc3271'
+reference_shape_sha256 = '768753c1a781f2f40e742f23ad79cbef053de99a4deed1397604c9cd790bc816'
+reference_code_bytes = 361
+reference_calls_sha256 = '7d7079fef9570030a7c7f1abfbed01e33f65c222d9515d4880c71fcaa0bc3271'
+evidence = ['The source-named builds preserve the same signature while their reviewed UI/device state machines compile to different normalized bodies.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'appPaint'
+descriptor = '()V'
+presence = 'both'
+classification = 'rendering-policy'
+policy = 'device-rendering-and-layout'
+baseline_shape_sha256 = '4d2e3f7958c52ea7f57469adc1e5c99a3118349feed7b587ff2dcc68e7e9a3e9'
+baseline_code_bytes = 493
+baseline_calls_sha256 = 'd57861b98ca8705a5e75d2423fb6b6193926d4c4dc054ec5991907e489e31cdc'
+reference_shape_sha256 = 'cf130c8073d16b173d727f7a57786d6a91a29d6071047493795618533f6fa11e'
+reference_code_bytes = 499
+reference_calls_sha256 = 'd57861b98ca8705a5e75d2423fb6b6193926d4c4dc054ec5991907e489e31cdc'
+evidence = ['The two classfiles retain the same semantic signature but use distinct clipping, layout, wrapping, or draw-region bytecode shapes.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'createEngineFullscreenEngineMenu'
+descriptor = '(Ljava/lang/String;)V'
+presence = 'both'
+classification = 'device-ui-policy'
+policy = 'device-ui-state-policy'
+baseline_shape_sha256 = '251dc09d6166048a40a1b25f2a9499c2c2383d8bd15df0d36a581d9e3d49a44f'
+baseline_code_bytes = 64
+baseline_calls_sha256 = 'fad4fb6214e4a223ad799022977150f18d5b9e814d2370857867e2633ceee984'
+reference_shape_sha256 = 'e6ceb4717854aff8c337e5f92637cabbbc0823061c83df367ac4a1cf8e15452c'
+reference_code_bytes = 64
+reference_calls_sha256 = 'fad4fb6214e4a223ad799022977150f18d5b9e814d2370857867e2633ceee984'
+evidence = ['The source-named builds preserve the same signature while their reviewed UI/device state machines compile to different normalized bodies.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'createEngineFullscreenEngineMenu2'
+descriptor = '(Ljava/lang/String;)V'
+presence = 'both'
+classification = 'device-ui-policy'
+policy = 'device-ui-state-policy'
+baseline_shape_sha256 = '2a824445aabd9de1cb0bc0ca5ad4175e45920e80f07861b8ba37649a695d067d'
+baseline_code_bytes = 45
+baseline_calls_sha256 = 'fad4fb6214e4a223ad799022977150f18d5b9e814d2370857867e2633ceee984'
+reference_shape_sha256 = '7dc122a11a0d519a40cbf43270f2f1c75653f061e744fa32edac06e367b6c3bf'
+reference_code_bytes = 45
+reference_calls_sha256 = 'fad4fb6214e4a223ad799022977150f18d5b9e814d2370857867e2633ceee984'
+evidence = ['The source-named builds preserve the same signature while their reviewed UI/device state machines compile to different normalized bodies.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'createIngameSettingsMenu'
+descriptor = '()LMenu;'
+presence = 'both'
+classification = 'vibration-policy'
+policy = 'optional-vibration-and-persistence'
+baseline_shape_sha256 = 'f2b6bcba32425d5abf51e27d50ff43cba9455698e246cde37ac2436007786f5c'
+baseline_code_bytes = 88
+baseline_calls_sha256 = 'a2aa23f95fbe5d0c481b450e28fc849d64ad4c6dabda077aad0c734387d5b483'
+reference_shape_sha256 = 'fa006b24ba1234292f0c23e1ddb74746fed25fdce4c1eafe0c515c49f81d67ed'
+reference_code_bytes = 140
+reference_calls_sha256 = 'a2aa23f95fbe5d0c481b450e28fc849d64ad4c6dabda077aad0c734387d5b483'
+evidence = ['The reference variant exposes vibration state, persistence, menu routing, or Display.vibrate calls that the baseline omits.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'createInventory'
+descriptor = '(IZ)LMenu;'
+presence = 'both'
+classification = 'device-ui-policy'
+policy = 'device-ui-state-policy'
+baseline_shape_sha256 = '8ce8eac412cdd93cf90d74595b9d3f41ee34324bd5a076aad4d3eea0da056209'
+baseline_code_bytes = 113
+baseline_calls_sha256 = '1722710cfc10063ec933327622ce2d623737f038a9ab4eb4ed9176ff288eeea7'
+reference_shape_sha256 = '1e9cda9c46cf6562c214886f88663c611b00b82e8a89a0f44f8e973c3ef51ced'
+reference_code_bytes = 109
+reference_calls_sha256 = '1722710cfc10063ec933327622ce2d623737f038a9ab4eb4ed9176ff288eeea7'
+evidence = ['The source-named builds preserve the same signature while their reviewed UI/device state machines compile to different normalized bodies.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'createMainMenu'
+descriptor = '()V'
+presence = 'both'
+classification = 'device-ui-policy'
+policy = 'device-ui-state-policy'
+baseline_shape_sha256 = 'a69f858d31abcc6c6bc66d74ad3c8ce9501d257412cd86b4b1f2a5d3f8976001'
+baseline_code_bytes = 305
+baseline_calls_sha256 = 'a8585c14cdfbeaee326c9611563b9297b88de28f3af66b678cb506825858dfb0'
+reference_shape_sha256 = 'aad424e398b5ce0f015c3566972a63b6803501b86ab0bffed350b87d8841eccb'
+reference_code_bytes = 308
+reference_calls_sha256 = 'a8585c14cdfbeaee326c9611563b9297b88de28f3af66b678cb506825858dfb0'
+evidence = ['The source-named builds preserve the same signature while their reviewed UI/device state machines compile to different normalized bodies.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'createSettingsMenu'
+descriptor = '()LMenu;'
+presence = 'both'
+classification = 'vibration-policy'
+policy = 'optional-vibration-and-persistence'
+baseline_shape_sha256 = 'c68f5b496f6d01e3cd86674d1908d51ae34919f21a8fe2ad6589d8f2eca6a1ca'
+baseline_code_bytes = 163
+baseline_calls_sha256 = '74b86d9d1fab0c83583992f4b71d7e622ca4f05b82bf71c60f93e76bb18d2a15'
+reference_shape_sha256 = '0f198dc6ddb00cdb6288e48cc1c94a1cff86ef157ea7c8559addb13e39025a3e'
+reference_code_bytes = 215
+reference_calls_sha256 = '74b86d9d1fab0c83583992f4b71d7e622ca4f05b82bf71c60f93e76bb18d2a15'
+evidence = ['The reference variant exposes vibration state, persistence, menu routing, or Display.vibrate calls that the baseline omits.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'createVibraSoundMenu'
+descriptor = '()LMenu;'
+presence = 'both'
+classification = 'vibration-policy'
+policy = 'optional-vibration-and-persistence'
+baseline_shape_sha256 = '2fb36e57f2cb148d8b383f171ac4f48495a439e212e20b19c1f408760f79de5d'
+baseline_code_bytes = 95
+baseline_calls_sha256 = '0ff5716909dce3e03534d2084fa91e847dbb0fffcc7b05e24c1eabefa9c2e53c'
+reference_shape_sha256 = 'aca00cfbec877db14398ba893cf5e58c936c677131da77c8531bfe2ef1447cba'
+reference_code_bytes = 147
+reference_calls_sha256 = '0ff5716909dce3e03534d2084fa91e847dbb0fffcc7b05e24c1eabefa9c2e53c'
+evidence = ['The reference variant exposes vibration state, persistence, menu routing, or Display.vibrate calls that the baseline omits.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'engineMenuKeyHandling'
+descriptor = '()V'
+presence = 'both'
+classification = 'device-ui-policy'
+policy = 'device-ui-state-policy'
+baseline_shape_sha256 = 'ffcbe9e6d325012d938abe462ca462b30650e4aca0e8569837e1455da35f094e'
+baseline_code_bytes = 1928
+baseline_calls_sha256 = '39e2d7a30ec7c3d6f104eac708c13a3f1d398ed11afc935329f9942deabea94e'
+reference_shape_sha256 = 'ed68e79a2a7479bcf25ef943cec87afb7c2773ad5eb724b8890a71c5e1268602'
+reference_code_bytes = 1976
+reference_calls_sha256 = 'e15dbabf3194609523d597b26adc08fb126999bc17682ae2b245eb452ae0a130'
+evidence = ['The source-named builds preserve the same signature while their reviewed UI/device state machines compile to different normalized bodies.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'executeCommand'
+descriptor = '(LScriptThread;I[Ljava/lang/Object;)Ljava/lang/Object;'
+presence = 'both'
+classification = 'vibration-policy'
+policy = 'optional-vibration-and-persistence'
+baseline_shape_sha256 = 'e38e0a6ea7ec4e3c747370752573c170dded632b8e747229a2ca2ae7ebffad7a'
+baseline_code_bytes = 1315
+baseline_calls_sha256 = '8b8c6ea4f6fe1e25cb6d14a1d808cb8ac97799f745a18442cd5c940d00f60ed0'
+reference_shape_sha256 = '33ce240e05887788889d014ed8e73238fb0d2a5e9212e84777f7b2b086a14e86'
+reference_code_bytes = 1353
+reference_calls_sha256 = '9107065331ff299f5aba9d272ff10d85650badfa618bbb34db6f8e07432b244a'
+evidence = ['The reference variant exposes vibration state, persistence, menu routing, or Display.vibrate calls that the baseline omits.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'ingameMenuKeyHandling'
+descriptor = '()V'
+presence = 'both'
+classification = 'device-ui-policy'
+policy = 'device-ui-state-policy'
+baseline_shape_sha256 = '6255964f53b2e2062a84911fd16cfcbe120fa0c2de1482c3605fd64d5b4b9a63'
+baseline_code_bytes = 1679
+baseline_calls_sha256 = 'd1f1c3caedaa9d2d6983c7479c304b733291b24b94107baf401b75814a9d77e1'
+reference_shape_sha256 = 'd45ea740e914eb79b7cf68874b81f4059657b90457b17cee544b7f32c61a7c70'
+reference_code_bytes = 1775
+reference_calls_sha256 = '509460cd71799695b6653ba63d18e315ff7a22a948e1354dec50a3a24a2ac977'
+evidence = ['The source-named builds preserve the same signature while their reviewed UI/device state machines compile to different normalized bodies.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'inventoryMenuPaint'
+descriptor = '(LMenu;)V'
+presence = 'both'
+classification = 'rendering-policy'
+policy = 'device-rendering-and-layout'
+baseline_shape_sha256 = '712b25cbd7bc989ea271b8a4449a6ec14cc49a62e0efba124881f64857259476'
+baseline_code_bytes = 852
+baseline_calls_sha256 = 'f38213c5a91635429216bce04b3d7671f6ea115bb11d3cb67b0b4e268e8ee637'
+reference_shape_sha256 = '93ab6defb0d5e09349a7647122194a7ad6d8482538608b21b58d06ea1c7a678e'
+reference_code_bytes = 897
+reference_calls_sha256 = 'f38213c5a91635429216bce04b3d7671f6ea115bb11d3cb67b0b4e268e8ee637'
+evidence = ['The two classfiles retain the same semantic signature but use distinct clipping, layout, wrapping, or draw-region bytecode shapes.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'logoHandling'
+descriptor = '()V'
+presence = 'both'
+classification = 'device-ui-policy'
+policy = 'device-ui-state-policy'
+baseline_shape_sha256 = 'd71f0d6ffe69f307bc2938496a6c9822827ce92b96f2d45343cc623ab0022b89'
+baseline_code_bytes = 279
+baseline_calls_sha256 = '849759d10dfa9fdfeef0c7c8526328df7ace245e778c45ecc9cb60e6ab0cb1be'
+reference_shape_sha256 = 'c81e01028e333d163216f58a706833338d3f17d76129b3f701c52f6c9f7aff61'
+reference_code_bytes = 290
+reference_calls_sha256 = '849759d10dfa9fdfeef0c7c8526328df7ace245e778c45ecc9cb60e6ab0cb1be'
+evidence = ['The source-named builds preserve the same signature while their reviewed UI/device state machines compile to different normalized bodies.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'logoStart'
+descriptor = '()V'
+presence = 'both'
+classification = 'device-ui-policy'
+policy = 'device-ui-state-policy'
+baseline_shape_sha256 = '8aac660ae611035755d3191cf076d694846e3d3be71151f32c79e01cbb2a0e98'
+baseline_code_bytes = 88
+baseline_calls_sha256 = '20309074ca9df2c4e1d5fa58ab09db63cd7354e0e54383b545160717d53905eb'
+reference_shape_sha256 = '024c2f607aa7400ce8eea84fd819d46532cc0bac8face50ec4001529249bc0b2'
+reference_code_bytes = 92
+reference_calls_sha256 = '20309074ca9df2c4e1d5fa58ab09db63cd7354e0e54383b545160717d53905eb'
+evidence = ['The source-named builds preserve the same signature while their reviewed UI/device state machines compile to different normalized bodies.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'menuCreateHeaderFooterImages'
+descriptor = '()V'
+presence = 'both'
+classification = 'rendering-policy'
+policy = 'device-rendering-and-layout'
+baseline_shape_sha256 = '3c450275ed57c6e1896b9a1139ab833599569b39a0b7fbe31fc6f72ce079cd36'
+baseline_code_bytes = 246
+baseline_calls_sha256 = '815b90308acf2be52d37c4e0a0cf5977885fe22a8f476d3e37184b76cd3b356f'
+reference_shape_sha256 = '45a1982a75e9bc1fd66efe40d2b1a95dc9388ecc1b5bc5bd64947934a911bcca'
+reference_code_bytes = 246
+reference_calls_sha256 = '815b90308acf2be52d37c4e0a0cf5977885fe22a8f476d3e37184b76cd3b356f'
+evidence = ['The two classfiles retain the same semantic signature but use distinct clipping, layout, wrapping, or draw-region bytecode shapes.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'menuPaintCurrentEngine'
+descriptor = '()V'
+presence = 'both'
+classification = 'rendering-policy'
+policy = 'device-rendering-and-layout'
+baseline_shape_sha256 = 'ad05887af2b5ac1f0515ddb30862350b9fe6b7154e033b84e0538b6500049b21'
+baseline_code_bytes = 393
+baseline_calls_sha256 = 'ab675b425822c575667d7bcbc042c2b5950f419668d0f2203ebfc464dd7d2164'
+reference_shape_sha256 = 'f713da63d6bc6129e1047f09cae2b2eb74227de8d197eebd528c267f586f9355'
+reference_code_bytes = 407
+reference_calls_sha256 = 'ab675b425822c575667d7bcbc042c2b5950f419668d0f2203ebfc464dd7d2164'
+evidence = ['The two classfiles retain the same semantic signature but use distinct clipping, layout, wrapping, or draw-region bytecode shapes.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'menuPaintEngine'
+descriptor = '(LMenu;)V'
+presence = 'both'
+classification = 'rendering-policy'
+policy = 'device-rendering-and-layout'
+baseline_shape_sha256 = '1135d9f30122852b4dbb2e5789aaf2294ae55ceab9435f63d663e03f6a0438a3'
+baseline_code_bytes = 1058
+baseline_calls_sha256 = 'e4c943e891e5993222c4ba3cdcd37e5cf5e3e2cabb45058a60599171b5f2979a'
+reference_shape_sha256 = '69673c3dd5b7e15ab33343b391013b01b8d09291f8629d921c31e889b98cb9fe'
+reference_code_bytes = 1055
+reference_calls_sha256 = 'e4c943e891e5993222c4ba3cdcd37e5cf5e3e2cabb45058a60599171b5f2979a'
+evidence = ['The two classfiles retain the same semantic signature but use distinct clipping, layout, wrapping, or draw-region bytecode shapes.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'menuPaintIngame'
+descriptor = '(LMenu;)V'
+presence = 'both'
+classification = 'rendering-policy'
+policy = 'device-rendering-and-layout'
+baseline_shape_sha256 = '7fef0af58b1366d540631c9777ba570211a2c6825bfb729dc855bb0d7452e385'
+baseline_code_bytes = 2431
+baseline_calls_sha256 = '2eff32743e279d6c094539715d4fd8cbf47f280d204c62ad300cf615479766f8'
+reference_shape_sha256 = 'abd3f5f7d7da7f2a171fe5a762e74b92bfcc5021f4c7170d7bc0d965d9e42711'
+reference_code_bytes = 2437
+reference_calls_sha256 = '2eff32743e279d6c094539715d4fd8cbf47f280d204c62ad300cf615479766f8'
+evidence = ['The two classfiles retain the same semantic signature but use distinct clipping, layout, wrapping, or draw-region bytecode shapes.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'menuPaintLoadingBar'
+descriptor = '()V'
+presence = 'both'
+classification = 'rendering-policy'
+policy = 'device-rendering-and-layout'
+baseline_shape_sha256 = '826e0ea90cf99aff581358754256562ed945178e78f39e997323e95e9b698828'
+baseline_code_bytes = 288
+baseline_calls_sha256 = 'acf5b0745acbbc825a9d1e6362ebea0159e1ba95fc324e0be65916466d7fc73c'
+reference_shape_sha256 = '6586ef5e6deec90f68a046e253330b4b45c456a61399a3752038949191117c8b'
+reference_code_bytes = 296
+reference_calls_sha256 = 'acf5b0745acbbc825a9d1e6362ebea0159e1ba95fc324e0be65916466d7fc73c'
+evidence = ['The two classfiles retain the same semantic signature but use distinct clipping, layout, wrapping, or draw-region bytecode shapes.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'menuPaintWithoutSoftkeys'
+descriptor = '()V'
+presence = 'both'
+classification = 'rendering-policy'
+policy = 'device-rendering-and-layout'
+baseline_shape_sha256 = '55d50d453984c3a9d3011446ff9ec8ada453c17fd1f025050597e33b6ec91adb'
+baseline_code_bytes = 50
+baseline_calls_sha256 = '72a6c2d6e603cc587eb97e331df754898f5017384447d77a76a35a4b662068dd'
+reference_shape_sha256 = '858611223cca61420523ede78548600793c0c08fc6a9c321c78dcdb0b2bf07d7'
+reference_code_bytes = 67
+reference_calls_sha256 = '4d4959e8577345ea996e933cc2c4dd2c85d68af9f224bfa8863328799fd1580f'
+evidence = ['The two classfiles retain the same semantic signature but use distinct clipping, layout, wrapping, or draw-region bytecode shapes.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'menuUpdateIngame'
+descriptor = '(LMenu;)V'
+presence = 'both'
+classification = 'device-ui-policy'
+policy = 'device-ui-state-policy'
+baseline_shape_sha256 = 'b3a557e65bb50e1a606bc40f7775e8ff429d44d46546aed266b9f6c2c8247edb'
+baseline_code_bytes = 1879
+baseline_calls_sha256 = '10ba9905ea32f4a85542624c30eff19c68a414ab0bfc8307c0cf5e32dcbdf1d7'
+reference_shape_sha256 = '496bd74a13243c1b417f0d7bc9b2108beacc7602fa79584732de2a5ff7c92f7f'
+reference_code_bytes = 1864
+reference_calls_sha256 = '10ba9905ea32f4a85542624c30eff19c68a414ab0bfc8307c0cf5e32dcbdf1d7'
+evidence = ['The source-named builds preserve the same signature while their reviewed UI/device state machines compile to different normalized bodies.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'paint'
+descriptor = '(Ljavax/microedition/lcdui/Graphics;)V'
+presence = 'both'
+classification = 'rendering-policy'
+policy = 'device-rendering-and-layout'
+baseline_shape_sha256 = '2af42d826fe0aaee91bc1b9c46cef3069f85c8f8163283f4b31abe36d1f35988'
+baseline_code_bytes = 146
+baseline_calls_sha256 = 'b75bb48aa3ee564329e5ba5046c0cc6ad856e0294b4393eaf16c2917bcf33d0b'
+reference_shape_sha256 = 'd7dc2ce7325ef78d46298b88e8f3ed8cc4e8447a32079e4705bcc4bfa739c960'
+reference_code_bytes = 28
+reference_calls_sha256 = '62933294706187af5b69ea68a4f51505805b5be8650c410abb9e3a848de6b629'
+evidence = ['The two classfiles retain the same semantic signature but use distinct clipping, layout, wrapping, or draw-region bytecode shapes.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'popupCreate'
+descriptor = '(Ljava/lang/String;II)V'
+presence = 'both'
+classification = 'device-ui-policy'
+policy = 'device-ui-state-policy'
+baseline_shape_sha256 = 'd54ff53a6c213c58ec3cea656b26da9253120bcd96de469966e3d59f1dcbd349'
+baseline_code_bytes = 107
+baseline_calls_sha256 = '4527f3f78d4a6a63d26a5f49968b77e00d23d9e02f170ef80266ac10a9e7dcf1'
+reference_shape_sha256 = '1ef38b3af3d1252fced97da7f7eaa14fe03bd9ac758939a90d5330caa3f2ecc4'
+reference_code_bytes = 106
+reference_calls_sha256 = '4527f3f78d4a6a63d26a5f49968b77e00d23d9e02f170ef80266ac10a9e7dcf1'
+evidence = ['The source-named builds preserve the same signature while their reviewed UI/device state machines compile to different normalized bodies.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'popupPaint'
+descriptor = '(Ljavax/microedition/lcdui/Graphics;)V'
+presence = 'both'
+classification = 'rendering-policy'
+policy = 'device-rendering-and-layout'
+baseline_shape_sha256 = 'ceb73d4ff853d843ad45ac7ec98b5ed04d9504b3dda6a7e6e3229c5b7b509018'
+baseline_code_bytes = 480
+baseline_calls_sha256 = 'b32881f9155e9a5e7750a62a0cfabf742b689c2ae49b6fb57999eb7a2bb82b05'
+reference_shape_sha256 = 'cc637638334ce20f4233907df687ea76fb4a0e4d41d27208287cd75db2e7a0ac'
+reference_code_bytes = 478
+reference_calls_sha256 = 'b32881f9155e9a5e7750a62a0cfabf742b689c2ae49b6fb57999eb7a2bb82b05'
+evidence = ['The two classfiles retain the same semantic signature but use distinct clipping, layout, wrapping, or draw-region bytecode shapes.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'roomInit'
+descriptor = '(Ljava/lang/String;Z)V'
+presence = 'both'
+classification = 'rendering-policy'
+policy = 'device-rendering-and-layout'
+baseline_shape_sha256 = '28ee88ae41942bd54544d19d8a2fac02d265c4f5bedf130e8d1cb7ef83fe14ba'
+baseline_code_bytes = 268
+baseline_calls_sha256 = 'f60da5dce407730c796c188bf7ae0623c75c252e826578399377c46dfc1d7201'
+reference_shape_sha256 = '025c595492b94cffd8511b08b96105bd0dd17e7060146161ab5453fa7a4b5b85'
+reference_code_bytes = 311
+reference_calls_sha256 = 'f60da5dce407730c796c188bf7ae0623c75c252e826578399377c46dfc1d7201'
+evidence = ['The two classfiles retain the same semantic signature but use distinct clipping, layout, wrapping, or draw-region bytecode shapes.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'roomPaint'
+descriptor = '()V'
+presence = 'both'
+classification = 'rendering-policy'
+policy = 'device-rendering-and-layout'
+baseline_shape_sha256 = '6967aa50f5909d916826e77ecab31cd77956e0d34e709ca2136bafaf4a60592a'
+baseline_code_bytes = 336
+baseline_calls_sha256 = '44362c11d55fe6fdb3cee44007caecf1a66abfe063656da9b9ba645647521f3c'
+reference_shape_sha256 = '3dd9014b5da9519bf7573f6a59469771f531454dac7c05df0a56e65aa51f7fb8'
+reference_code_bytes = 350
+reference_calls_sha256 = '79efbb8a903d77d2d67304e056270c66430b05adea2960dc09eee3d4d3840196'
+evidence = ['The two classfiles retain the same semantic signature but use distinct clipping, layout, wrapping, or draw-region bytecode shapes.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'splashPaint'
+descriptor = '()V'
+presence = 'both'
+classification = 'rendering-policy'
+policy = 'device-rendering-and-layout'
+baseline_shape_sha256 = '1f1a75068fe94ac658bab6dbc632b3a1c2832808bc56f9e4dc044e18dbe2beeb'
+baseline_code_bytes = 97
+baseline_calls_sha256 = '2c27f4fb34956b2eacd5fd1e9f49393b57938cb6a2e4f40fdb03c7a6bf6a7af2'
+reference_shape_sha256 = '31806548e8cabecca7d890af2949bbc5970d2c12d8b520199f38aa1b0474f5c9'
+reference_code_bytes = 46
+reference_calls_sha256 = '2c27f4fb34956b2eacd5fd1e9f49393b57938cb6a2e4f40fdb03c7a6bf6a7af2'
+evidence = ['The two classfiles retain the same semantic signature but use distinct clipping, layout, wrapping, or draw-region bytecode shapes.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'wrapString'
+descriptor = '(Ljava/lang/String;ILjavax/microedition/lcdui/Font;)[Ljava/lang/String;'
+presence = 'both'
+classification = 'rendering-policy'
+policy = 'device-rendering-and-layout'
+baseline_shape_sha256 = '2f32b0566b63ba6c7098b873fc232edfdade05cbe7ffa43705a61dfc14540a2c'
+baseline_code_bytes = 576
+baseline_calls_sha256 = 'be91ba7624f1b3f842ef2e41fbb8fb07ce3c0044af9a95ebd6a484c37c50da9a'
+reference_shape_sha256 = '2dbe431cf5e8d65f422dcc6b5720bd62b68632d53bfdcf5f0fb9783b7f45dbeb'
+reference_code_bytes = 650
+reference_calls_sha256 = '5e276814e1e08fc8d9ab7f9e628333029bfbb60beb9c14d4122371b3898d585a'
+evidence = ['The two classfiles retain the same semantic signature but use distinct clipping, layout, wrapping, or draw-region bytecode shapes.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes]]
+owner = 'LoadRequest'
+canonical_owner = 'ResourceRequest'
+baseline_field_count = 9
+reference_field_count = 9
+baseline_method_count = 8
+reference_method_count = 8
+common_exact_methods = 8
+common_methods_sha256 = 'ff28d6b1e651f49cc397b3c903748b73e4dc138a4d27fb49733aabb9e42bc0e2'
+evidence = ["Author names and descriptors are identical across both source-named payloads; body differences are enumerated below."]
+
+[[classes]]
+owner = 'M'
+canonical_owner = 'Application'
+baseline_field_count = 209
+reference_field_count = 212
+reference_only_fields = [{ name = 'backFromAnotherRoom', descriptor = 'Z', access_flags = 9 }, { name = 'firstVisitRoom0', descriptor = 'Z', access_flags = 9 }, { name = 'hideCursorWhileLoading', descriptor = 'Z', access_flags = 8 }]
+baseline_method_count = 133
+reference_method_count = 136
+common_exact_methods = 129
+common_methods_sha256 = '495dedbfa63854637e1420226c2307152686f4f8f4355076da3fd273140c9a99'
+evidence = ["Author names and descriptors are identical across both source-named payloads; body differences are enumerated below."]
+
+[[classes.variants]]
+name = '<clinit>'
+descriptor = '()V'
+presence = 'both'
+classification = 'lifecycle-policy'
+policy = 'variant-state-initialization'
+baseline_shape_sha256 = '39841fbdbac6819f9646f07e26790ff159e8a60dcd7fd6c4ad1169bdf4c33f63'
+baseline_code_bytes = 314
+baseline_calls_sha256 = '38522cb6758a527ebb1e9e73cb4004dae73b7ac547980a672a5a04c5f71e0967'
+reference_shape_sha256 = '01891ba8a845a0cc4d7933cb5e0a38ad3207172f09f816278e36a5dcc7d37f74'
+reference_code_bytes = 326
+reference_calls_sha256 = '38522cb6758a527ebb1e9e73cb4004dae73b7ac547980a672a5a04c5f71e0967'
+evidence = ['The class initializer or shutdown path accounts for fields/state present only in one reviewed device policy.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'endGame'
+descriptor = '()V'
+presence = 'both'
+classification = 'lifecycle-policy'
+policy = 'variant-state-initialization'
+baseline_shape_sha256 = '8f108341135e1b08a156e4b6607f07b82824f3da491b1c8aa734bc1060b0e7fe'
+baseline_code_bytes = 29
+baseline_calls_sha256 = 'd1dfa519187efb0cb64c090d8564067bbc0fe373c2eb7ca5ca7062e2d66178bd'
+reference_shape_sha256 = 'aaf349e5f0831fec71cc38bc7b9df05bb0890a130c964effab909638d50d1064'
+reference_code_bytes = 37
+reference_calls_sha256 = 'd1dfa519187efb0cb64c090d8564067bbc0fe373c2eb7ca5ca7062e2d66178bd'
+evidence = ['The class initializer or shutdown path accounts for fields/state present only in one reviewed device policy.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'loadImageFromJAR'
+descriptor = '(Ljava/lang/String;)Ljavax/microedition/lcdui/Image;'
+presence = 'both'
+classification = 'diagnostic-policy'
+policy = 'diagnostic-output-policy'
+baseline_shape_sha256 = '5a72f2071ea4146eea4eb15eee58163e5ea0d818defaaf3346d560702bd91151'
+baseline_code_bytes = 65
+baseline_calls_sha256 = '765232969d17181a5f68c7ca9b0a679759c35698ae5c9703e7239da1e08ded0b'
+reference_shape_sha256 = '1e9e6e4cbb8cf8d12e211e81047529781eb0fd196a9ccad31bf8dc7a46845e4f'
+reference_code_bytes = 34
+reference_calls_sha256 = '2c566c5e3f571d909f0f7ed98cc9f86cc0c0c5c36624069a91f54bf00416867f'
+evidence = ['The variant call sets differ only in recovered printing/stack-trace diagnostics around the same operation.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'loadVibraMode'
+descriptor = '()V'
+presence = 'reference-only'
+classification = 'vibration-policy'
+policy = 'optional-vibration-and-persistence'
+reference_shape_sha256 = '480d97b6eca860ff6325f8120948afede8cac467b82b5b048b7d128714b4eade'
+reference_code_bytes = 43
+reference_calls_sha256 = '73190eb4ccc28f286c6f4ce5c3239249a6f356a17df3339fc1c20b3c88775644'
+evidence = ['The reference variant exposes vibration state, persistence, menu routing, or Display.vibrate calls that the baseline omits.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'repaintCanvasIfPossible'
+descriptor = '()V'
+presence = 'both'
+classification = 'rendering-policy'
+policy = 'device-rendering-and-layout'
+baseline_shape_sha256 = '910847bcc13f760fd135e5c74d58ebed50456965c0aee9fe8901a53a071f25af'
+baseline_code_bytes = 23
+baseline_calls_sha256 = 'e8db9e7c66f18f075de1f26601558ac8ce9aa9f735afaf932ed0beddf1566a49'
+reference_shape_sha256 = '38de7a6f14b9de374b99b3f50f411014fe6f4a6e6303377f2b05eeb561e6f6ba'
+reference_code_bytes = 27
+reference_calls_sha256 = 'd3aa47800a4768c8cfb789955031ef83d53671f618d6f83b1c94683ec3501ce9'
+evidence = ['The two classfiles retain the same semantic signature but use distinct clipping, layout, wrapping, or draw-region bytecode shapes.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'saveVibraMode'
+descriptor = '()V'
+presence = 'reference-only'
+classification = 'vibration-policy'
+policy = 'optional-vibration-and-persistence'
+reference_shape_sha256 = '7ec44f091ccbe3b20cb800c23f14f55a0aee3d0661af9589a5bce0bb906a87d1'
+reference_code_bytes = 46
+reference_calls_sha256 = '5a9763bd6e5919ef8438bbad22a296080f776892a6757607c2af72c083e217b0'
+evidence = ['The reference variant exposes vibration state, persistence, menu routing, or Display.vibrate calls that the baseline omits.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'vibraToggle'
+descriptor = '()V'
+presence = 'reference-only'
+classification = 'vibration-policy'
+policy = 'optional-vibration-and-persistence'
+reference_shape_sha256 = 'a8775f9e211cbc38cd037ab96b1cd29592c07c12b1b9c8d4053858188c08388b'
+reference_code_bytes = 30
+reference_calls_sha256 = '28a7e4a10fbb901670b2af18931a75675dacf3f0abcf1db02611b268ea40643d'
+evidence = ['The reference variant exposes vibration state, persistence, menu routing, or Display.vibrate calls that the baseline omits.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes]]
+owner = 'Menu'
+canonical_owner = 'MenuModel'
+baseline_field_count = 47
+reference_field_count = 47
+baseline_method_count = 20
+reference_method_count = 20
+common_exact_methods = 20
+common_methods_sha256 = '58c5f51e000b880a982637c99c83fb1056843f707870282775583d9f913a257a'
+evidence = ["Author names and descriptors are identical across both source-named payloads; body differences are enumerated below."]
+
+[[classes]]
+owner = 'MyCanvas'
+canonical_owner = 'GameCanvas'
+baseline_field_count = 28
+reference_field_count = 31
+reference_only_fields = [{ name = 'clearKeyFlag0', descriptor = 'Z', access_flags = 9 }, { name = 'clearKeyFlag1', descriptor = 'Z', access_flags = 9 }, { name = 'clearKeyFlag2', descriptor = 'Z', access_flags = 9 }]
+baseline_method_count = 13
+reference_method_count = 14
+common_exact_methods = 9
+common_methods_sha256 = '0354a03f66f3eff91b1ab0a7913abaf0c039d374821ee57ca431cde0dd9473fd'
+evidence = ["Author names and descriptors are identical across both source-named payloads; body differences are enumerated below."]
+
+[[classes.variants]]
+name = '<clinit>'
+descriptor = '()V'
+presence = 'both'
+classification = 'lifecycle-policy'
+policy = 'variant-state-initialization'
+baseline_shape_sha256 = 'f19da6179f66555279c2b37e2150bc48d0d46e04027b5bba9dfa284b8a55f2f4'
+baseline_code_bytes = 44
+baseline_calls_sha256 = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+reference_shape_sha256 = '0f2fdcd7842515a705c719a92696119add9aea7a595a5baee58b66d1d8fd46b5'
+reference_code_bytes = 56
+reference_calls_sha256 = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+evidence = ['The class initializer or shutdown path accounts for fields/state present only in one reviewed device policy.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'hideNotify'
+descriptor = '()V'
+presence = 'both'
+classification = 'input-timing-policy'
+policy = 'key-and-hide-timing'
+baseline_shape_sha256 = '0c1fc71138939076d9fcc210735db25a6a5dd0108b0c6fc18d98d34200772a7b'
+baseline_code_bytes = 44
+baseline_calls_sha256 = '40255dda62d74493508f3079beb91eb78401d4f66b0f334163420c8f19b6dd07'
+reference_shape_sha256 = 'c5381951fa4e8f4f34c132e499d8e73a0f9c79e5e7ae1b047bce74dd45d4da54'
+reference_code_bytes = 28
+reference_calls_sha256 = '40255dda62d74493508f3079beb91eb78401d4f66b0f334163420c8f19b6dd07'
+evidence = ['The reference variant adds or changes currentTimeMillis bookkeeping around the same key/hide state transition.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'keyPressed'
+descriptor = '(I)V'
+presence = 'both'
+classification = 'input-timing-policy'
+policy = 'key-and-hide-timing'
+baseline_shape_sha256 = '562dcd1c9deb1400f767a00ece74fbed65c313019bcea264d020ed2357fcdcbf'
+baseline_code_bytes = 30
+baseline_calls_sha256 = '680663939f0d569a31f4262939eebbf84946c902aa364293236ba6e75daa0c68'
+reference_shape_sha256 = '91dc7d3e519530f7b502ee93442bb244af86449de262e4b3e309665d1ff5b2b4'
+reference_code_bytes = 59
+reference_calls_sha256 = '1ea6764e5117f78d5d9f4b818b09cb04632755b7411e0329eca33bdfc0a87473'
+evidence = ['The reference variant adds or changes currentTimeMillis bookkeeping around the same key/hide state transition.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'keyReleased'
+descriptor = '(I)V'
+presence = 'both'
+classification = 'input-timing-policy'
+policy = 'key-and-hide-timing'
+baseline_shape_sha256 = 'd2df195256b921cfcf897d5f3721c635a279ff05402a212c4c13ba45417811c9'
+baseline_code_bytes = 30
+baseline_calls_sha256 = '680663939f0d569a31f4262939eebbf84946c902aa364293236ba6e75daa0c68'
+reference_shape_sha256 = 'fc1599740a41321158162fdfeb0a52044abfc3c2704a4ce1d9084ed90a681cad'
+reference_code_bytes = 52
+reference_calls_sha256 = '1ea6764e5117f78d5d9f4b818b09cb04632755b7411e0329eca33bdfc0a87473'
+evidence = ['The reference variant adds or changes currentTimeMillis bookkeeping around the same key/hide state transition.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'setVibration'
+descriptor = '(I)V'
+presence = 'reference-only'
+classification = 'vibration-policy'
+policy = 'optional-vibration-and-persistence'
+reference_shape_sha256 = '431bd6285b0927c04cb9e89ff538a406dc1161e1ae53bb45fff2ec5f949c0dbe'
+reference_code_bytes = 18
+reference_calls_sha256 = '0787cdffc7dbc6e7a366550f89370a4ff999e4056a42e38128ee0f16ee77bd6c'
+evidence = ['The reference variant exposes vibration state, persistence, menu routing, or Display.vibrate calls that the baseline omits.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes]]
+owner = 'Resource'
+canonical_owner = 'GameResource'
+baseline_field_count = 12
+reference_field_count = 12
+baseline_method_count = 8
+reference_method_count = 9
+common_exact_methods = 7
+common_methods_sha256 = '972166180c47a98bb1ce4abbd526b81490c9b51e3258f51f5cbfb11bad411f6f'
+evidence = ["Author names and descriptors are identical across both source-named payloads; body differences are enumerated below."]
+
+[[classes.variants]]
+name = 'myDrawRegion'
+descriptor = '(Ljavax/microedition/lcdui/Graphics;Ljavax/microedition/lcdui/Image;IIIIIIII)V'
+presence = 'reference-only'
+classification = 'rendering-policy'
+policy = 'device-rendering-and-layout'
+reference_shape_sha256 = '04c1a9af1bdf3150a3883e804fcf57c71d9d5ad533112840f14545a5113649f2'
+reference_code_bytes = 46
+reference_calls_sha256 = 'ec15e3794ecfc174437a000556b85687600f91734f1dadb154a58175cb39667e'
+evidence = ['The two classfiles retain the same semantic signature but use distinct clipping, layout, wrapping, or draw-region bytecode shapes.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes.variants]]
+name = 'paint'
+descriptor = '(Ljavax/microedition/lcdui/Graphics;III)V'
+presence = 'both'
+classification = 'rendering-policy'
+policy = 'device-rendering-and-layout'
+baseline_shape_sha256 = '475b808545968513be29f20083a20d738787db79f11c0836f282dfaf8b6ab3fe'
+baseline_code_bytes = 109
+baseline_calls_sha256 = '86f24073b00f5e5c7d636ca89fb1293c6c6c1f7feb11d4abd4616c1cead1f843'
+reference_shape_sha256 = '53fea8466ee33bc95cd500b90cce2340e14b47808cd589584ed9d2f8fefe46d1'
+reference_code_bytes = 160
+reference_calls_sha256 = 'f069e6216aaa4ef6ec23e4af6faffbed409cb93416b03b1a046691def634f470'
+evidence = ['The two classfiles retain the same semantic signature but use distinct clipping, layout, wrapping, or draw-region bytecode shapes.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes]]
+owner = 'RoomObject'
+canonical_owner = 'RoomObject'
+baseline_field_count = 67
+reference_field_count = 67
+baseline_method_count = 21
+reference_method_count = 21
+common_exact_methods = 20
+common_methods_sha256 = '85e05ea2b18822f4e1dacd946e7db307272015a2ee59c9b588bb6c9b5ee47624'
+evidence = ["Author names and descriptors are identical across both source-named payloads; body differences are enumerated below."]
+
+[[classes.variants]]
+name = 'animRoutine'
+descriptor = '(Ljavax/microedition/lcdui/Graphics;IIII)V'
+presence = 'both'
+classification = 'vibration-policy'
+policy = 'optional-vibration-and-persistence'
+baseline_shape_sha256 = 'df0a7f2ac3bb8275bd5b748d0302febf25889cd409a1903f60fbc53677cf1f27'
+baseline_code_bytes = 264
+baseline_calls_sha256 = '7223f556043a336bd531b3841964551a76839b0ca094740b1b7a67038777435f'
+reference_shape_sha256 = '764d0e07be0568d172d92bffa9f986baa378caf9591f46d36aefbc3d5f58a8d1'
+reference_code_bytes = 270
+reference_calls_sha256 = 'f7d8fb8dea2ffe741c52574388e83b5b6beb88cf40e0d09077126aaf4192adaf'
+evidence = ['The reference variant exposes vibration state, persistence, menu routing, or Display.vibrate calls that the baseline omits.', "Exact shape and call membership are hash-locked to both recovered classfiles."]
+
+[[classes]]
+owner = 'Script'
+canonical_owner = 'InkScript'
+baseline_field_count = 13
+reference_field_count = 13
+baseline_method_count = 19
+reference_method_count = 19
+common_exact_methods = 19
+common_methods_sha256 = 'c24da5d1d3176e4bf9eecd14b7db44d3d3215fcd2eab54f7ed8f4056d99f3a42'
+evidence = ["Author names and descriptors are identical across both source-named payloads; body differences are enumerated below."]
+
+[[classes]]
+owner = 'ScriptThread'
+canonical_owner = 'InkInterpreter'
+baseline_field_count = 12
+reference_field_count = 12
+baseline_method_count = 9
+reference_method_count = 9
+common_exact_methods = 9
+common_methods_sha256 = '672a17cc76ce37782a66752766465b2eb3b52250941cf55ffc23d9a22a78e679'
+evidence = ["Author names and descriptors are identical across both source-named payloads; body differences are enumerated below."]
+
+[[classes]]
+owner = 's'
+canonical_owner = 'InkCodes'
+baseline_field_count = 114
+reference_field_count = 114
+baseline_method_count = 1
+reference_method_count = 1
+common_exact_methods = 1
+common_methods_sha256 = '31dc349235a549d930ead3f8153a1ddcf7d1d834dc15f09ee018e8962d424e94'
+evidence = ["Author names and descriptors are identical across both source-named payloads; body differences are enumerated below."]
+
+[[classes]]
+owner = 'txt_consts'
+canonical_owner = 'TextId'
+baseline_field_count = 188
+reference_field_count = 188
+baseline_method_count = 2
+reference_method_count = 2
+common_exact_methods = 2
+common_methods_sha256 = '09794741308ae324f5adee85b8e3fa9762e383f9cd099db31b9f018adba76435'
+evidence = ["Author names and descriptors are identical across both source-named payloads; body differences are enumerated below."]
+
+[totals]
+common_exact_methods = 304
+varying_signatures = 51
+reference_only_methods = 5
+reference_only_fields = 8

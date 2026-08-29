@@ -1,0 +1,270 @@
+schema_version = 1
+project_root = "../.."
+state_file = "target/gates/affected-state.json"
+
+[[gate]]
+name = "originals"
+description = "Original payloads or their provenance ledger changed."
+inputs = ["_originals", "java/reconstruction/builds.toml", "tools/originals"]
+commands = [
+  ["just", "originals-verify"],
+  ["just", "originals-verify-canfail"],
+]
+
+[[gate]]
+name = "class-inventory"
+description = "Class bytes or classfile classification code changed."
+inputs = [
+  "_originals",
+  "java/reconstruction/builds.toml",
+  "tools/corpus/classfile.py",
+  "tools/corpus/corpus.py",
+  "tools/corpus/classify.py",
+]
+commands = [["just", "classify"], ["just", "classify-canfail"]]
+
+[[gate]]
+name = "resource-catalog"
+description = "Resource bytes or content catalog code changed."
+inputs = [
+  "_originals",
+  "java/reconstruction/builds.toml",
+  "tools/corpus/corpus.py",
+  "tools/corpus/catalog_resources.py",
+]
+commands = [["just", "catalog"], ["just", "catalog-canfail"]]
+
+[[gate]]
+name = "language-packs"
+description = "Locale payloads, selection evidence, or validation changed."
+inputs = [
+  "_originals",
+  "java/reconstruction/builds.toml",
+  "java/reconstruction/language-packs.toml",
+  "tools/corpus/corpus.py",
+  "tools/corpus/validate_language_packs.py",
+]
+commands = [["just", "language-packs"], ["just", "language-packs-canfail"]]
+
+[[gate]]
+name = "build-model"
+description = "All-build family, lineage, or content-profile evidence changed."
+inputs = [
+  "_originals",
+  "java/reconstruction/builds.toml",
+  "java/reconstruction/build-model.toml",
+  "tools/corpus/classfile.py",
+  "tools/corpus/corpus.py",
+  "tools/corpus/validate_build_model.py",
+]
+commands = [["just", "java-builds-check"], ["just", "java-builds-canfail"]]
+
+[[gate]]
+name = "codecs"
+description = "Only the serialization/content crates and their corpus contracts changed."
+inputs = [
+  "_originals",
+  "Cargo.toml",
+  "Cargo.lock",
+  "crates/orphan-formats",
+  "crates/orphan-content",
+  "java/reconstruction/language-packs.toml",
+]
+commands = [
+  ["just", "codec-no-std"],
+  ["cargo", "fmt", "--all", "--check"],
+  ["cargo", "clippy", "-p", "orphan-formats", "-p", "orphan-content", "--all-targets", "--", "-D", "warnings"],
+  ["cargo", "test", "-p", "orphan-formats", "-p", "orphan-content"],
+]
+
+[[gate]]
+name = "jvm-me-runtime"
+description = "The ordinary-std JVM/MIDP runtime surface changed."
+inputs = [
+  "Cargo.toml",
+  "Cargo.lock",
+  "transliteration/crates/orphan-jvm",
+  "transliteration/crates/orphan-me",
+]
+commands = [
+  ["cargo", "fmt", "--all", "--check"],
+  ["cargo", "clippy", "-p", "orphan-jvm", "-p", "orphan-me", "--all-targets", "--", "-D", "warnings"],
+  ["cargo", "test", "-p", "orphan-jvm", "-p", "orphan-me"],
+]
+
+[[gate]]
+name = "java-application"
+description = "The actual canonical Java app, stubs, or reproducible compiler changed."
+inputs = [
+  "java/src",
+  "java/api-stubs",
+  "tools/java/compile_named_java.py",
+]
+commands = [
+  ["just", "java-typecheck"],
+  ["just", "java-build-check"],
+  ["just", "java-build-canfail"],
+]
+
+[[gate]]
+name = "java-surface"
+description = "Canonical/original member identity or complete mapping changed."
+inputs = [
+  "_originals",
+  "java/src",
+  "java/api-stubs",
+  "java/reconstruction/builds.toml",
+  "java/reconstruction/mappings",
+  "tools/java/compile_named_java.py",
+  "tools/java/validate_named_java.py",
+  "tools/java/generate_canonical_mappings.py",
+  "tools/java/report_named_java_coverage.py",
+]
+commands = [
+  ["just", "java-named-check"],
+  ["just", "java-named-canfail"],
+  ["just", "java-mappings-check"],
+  ["just", "java-mappings-canfail"],
+  ["just", "java-coverage-check"],
+  ["just", "java-coverage-canfail"],
+]
+
+[[gate]]
+name = "java-source-backups"
+description = "Author-backup provenance or the surviving payload corpus changed."
+inputs = [
+  "_originals",
+  "java/reconstruction/builds.toml",
+  "java/reconstruction/source-backups.toml",
+  "tools/java/validate_source_backups.py",
+]
+commands = [
+  ["just", "java-source-backups-check"],
+  ["just", "java-source-backups-canfail"],
+]
+
+[[gate]]
+name = "java-variants"
+description = "Source-named build variants or their exact evidence changed."
+inputs = [
+  "_originals",
+  "java/reconstruction/builds.toml",
+  "java/reconstruction/mappings",
+  "java/reconstruction/variants",
+  "tools/java/validate_source_named_variants.py",
+]
+commands = [
+  ["just", "java-method-variants-check"],
+  ["just", "java-method-variants-canfail"],
+]
+
+[[gate]]
+name = "java-semantics"
+description = "Canonical identifiers, numeric shape, literals, or typed domains changed."
+inputs = [
+  "_originals",
+  "java/src",
+  "java/api-stubs",
+  "java/reconstruction/builds.toml",
+  "java/reconstruction/mappings",
+  "java/reconstruction/symbols.toml",
+  "tools/java/JavaIdentifierInventory.java",
+  "tools/java/java_literal_scan.py",
+  "tools/java/validate_java_identifiers.py",
+  "tools/java/validate_java_numeric_shape.py",
+  "tools/java/validate_java_literals.py",
+  "tools/java/validate_java_semantic_constants.py",
+]
+commands = [
+  ["just", "java-identifiers-check"],
+  ["just", "java-identifiers-canfail"],
+  ["just", "java-numeric-shape-check"],
+  ["just", "java-numeric-shape-canfail"],
+  ["just", "java-literals-check"],
+  ["just", "java-literals-canfail"],
+  ["just", "java-semantic-constants-check"],
+  ["just", "java-semantic-constants-canfail"],
+]
+
+[[gate]]
+name = "java-ast-authority"
+description = "Canonical Java, original bytecode, or the exhaustive javac authority changed."
+inputs = [
+  "_originals",
+  "java/src",
+  "java/api-stubs",
+  "java/reconstruction/builds.toml",
+  "java/reconstruction/mappings",
+  "java/reconstruction/ast-authority.toml",
+  "tools/transliteration/JavaAstAuditDump.java",
+  "tools/transliteration/validate_ast_authority.py",
+]
+commands = [["just", "java-ast-check"], ["just", "java-ast-canfail"]]
+
+[[gate]]
+name = "xlat-rust"
+description = "Strict Rust transliteration or its Rust oracle adapter changed."
+inputs = [
+  "Cargo.toml",
+  "Cargo.lock",
+  "transliteration/crates/orphan-game-xlat",
+  "transliteration/crates/orphan-jvm",
+  "transliteration/tools/orphan-pure-oracle",
+]
+commands = [
+  ["cargo", "fmt", "--all", "--check"],
+  ["cargo", "clippy", "-p", "orphan-game-xlat", "-p", "orphan-pure-oracle", "--all-targets", "--", "-D", "warnings"],
+  ["cargo", "test", "-p", "orphan-game-xlat", "-p", "orphan-pure-oracle"],
+]
+
+[[gate]]
+name = "differential-oracle"
+description = "Any recovered/canonical/Rust authority or oracle case changed."
+inputs = [
+  "_originals",
+  "java/src",
+  "java/api-stubs",
+  "java/reconstruction/builds.toml",
+  "java/reconstruction/mappings",
+  "java/reconstruction/variants",
+  "tools/transliteration/OrphanJavaPureOracle.java",
+  "tools/transliteration/OrphanOriginalPureOracle.java",
+  "tools/transliteration/compare_pure_oracle.py",
+  "transliteration/crates/orphan-game-xlat",
+  "transliteration/crates/orphan-jvm",
+  "transliteration/tools/orphan-pure-oracle",
+]
+commands = [["just", "pure-oracle"], ["just", "pure-oracle-canfail"]]
+
+[[gate]]
+name = "method-audit"
+description = "Bytecode, Java/Rust ASTs, ownership, or the semantic crosswalk changed."
+inputs = [
+  "_originals",
+  "Cargo.toml",
+  "Cargo.lock",
+  "java/src",
+  "java/api-stubs",
+  "java/reconstruction/builds.toml",
+  "java/reconstruction/mappings",
+  "java/reconstruction/ast-authority.toml",
+  "tools/transliteration/JavaAstAuditDump.java",
+  "tools/transliteration/validate_ast_authority.py",
+  "tools/transliteration/validate_method_audit.py",
+  "transliteration/audits/method-audit.toml",
+  "transliteration/crates/orphan-game-xlat",
+  "transliteration/tools/orphan-ast-audit",
+]
+commands = [
+  ["just", "method-audit-check"],
+  ["just", "method-audit-canfail"],
+  ["just", "method-crosswalk-canfail"],
+  ["just", "declaration-crosswalk-canfail"],
+  ["just", "method-ownership-canfail"],
+]
+
+[[gate]]
+name = "gate-router-tests"
+description = "The content-hash router or its failure/caching proofs changed."
+inputs = ["tools/gates", "tools/tests"]
+commands = [["python3", "-m", "unittest", "discover", "-s", "tools/tests"]]

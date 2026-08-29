@@ -1,0 +1,31 @@
+schema_version = 2
+baseline_sha256 = "ca9a874ce7c7fb11ed444701b65e967919d3d7c0bcf73f80a9fcf825fb6a4be7"
+semantic_reference_sha256 = "9f638bcd52b8d3314014ced473a1b510279b7453819ff9387647524e2152b7ea"
+mapping = "reviewed-tiny-v2"
+mapping_path = "mappings/canonical/mappings.tiny"
+class_evidence_path = "mappings/canonical/classes.toml"
+member_rename_evidence_path = "mappings/canonical/member-renames.toml"
+source_package = "defpackage"
+original_package = ""
+
+# The baseline is an unusually valuable unobfuscated build: all of its author
+# field/method names recur with the same descriptors in a second 13-class
+# payload. Therefore retained member names are reviewed identity mappings, not
+# invented decompiler labels. Tiny records every row; the small override ledger
+# explains semantic/spelling repairs. Constructors and class initializers are
+# validated directly by java-named-check and are not Tiny rows.
+
+[coverage]
+classes = 13
+fields = 1075
+methods = 350
+mapped_non_initializer_methods = 326
+mapped_members = 1401
+semantic_member_renames = 15
+cross_build_fields = 1075
+cross_build_methods = 350
+
+[source_backup_evidence]
+owners = ["Application", "GameCanvas", "InkEngine", "SilentHillGame"]
+ledger = "source-backups.toml"
+note = "Author .java~ editor backups preserve comments, parameter names, locals, and preprocessor branches; their bytes remain private/regenerable evidence."

@@ -1,0 +1,13 @@
+schema_version = 1
+baseline_sha256 = "ca9a874ce7c7fb11ed444701b65e967919d3d7c0bcf73f80a9fcf825fb6a4be7"
+bytecode_inventory_sha256 = "d58f552cff27073b72fbb1d789327626a00e42506b6e2145b88950623c847e1e"
+java_item_count = 1428
+java_field_count = 1075
+java_executable_count = 353
+java_node_count = 51823
+java_ast_inventory_sha256 = "f2f473478653c77fc8a6f7bc9448d03a81dc661fe19e76af478e90dc9d6221b9"
+
+# This begins at zero deliberately. A method is incremented only after its
+# original bytecode/opcode identity, complete javac nodes, complete syn nodes,
+# one-sided adaptations, and oracle evidence are all recorded and validated.
+reviewed_crosswalk_count = 148

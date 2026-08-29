@@ -1,0 +1,12 @@
+[package]
+name = "orphan-pure-oracle"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+description = "Test-only stdin oracle adapter for pure strict-transliteration methods"
+
+[dependencies]
+orphan-formats = { path = "../../../crates/orphan-formats" }
+orphan-game-xlat = { path = "../../crates/orphan-game-xlat" }
+orphan-jvm = { path = "../../crates/orphan-jvm" }

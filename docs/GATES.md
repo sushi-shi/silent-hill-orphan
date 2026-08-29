@@ -13,6 +13,42 @@ row when you add a gate.
 | Gate | Command | Can-fail proof |
 | --- | --- | --- |
 | Originals provenance | `just originals-verify` | `just originals-verify-canfail` (proven RED on a one-byte payload corruption) |
+| Class/method fingerprints | `just classify` | `just classify-canfail` (one-byte class perturbation is rejected or changes the deterministic inventory) |
+| Resource catalog | `just catalog` | `just catalog-canfail` (one-byte resource perturbation splits content-addressed dedup) |
+| Integrated language packs | `just language-packs` | `just language-packs-canfail` (one selected UI-table byte is changed and its content identity is rejected) |
+| Serialization codecs are `no_std` | `just codec-no-std` | Compiles formats and content with default features disabled; JVM/MIDP/runtime/transliteration code is intentionally ordinary Rust. |
+| Reviewed all-build Java model | `just java-builds-check` | `just java-builds-canfail` (one JAR is assigned to a false exact-code family and rejected) |
+| Canonical Java binary surface | `just java-named-check` | `just java-named-canfail` (an in-memory mutation of one original member signature is rejected) |
+| Complete semantic mapping | `just java-mappings-check` | `just java-mappings-canfail` (one generated Tiny mapping row is changed and rejected) |
+| Author Java backup provenance | `just java-source-backups-check` | `just java-source-backups-canfail` (one recorded backup digest is changed and rejected across the verified corpus) |
+| Complete source-named variants | `just java-method-variants-check` | `just java-method-variants-canfail` (one exact-common method digest is changed and rejected) |
+| Semantic Java identifiers | `just java-identifiers-check` | `just java-identifiers-canfail` (a synthetic `i2` local is injected into a copied canonical source and rejected by the javac AST inventory) |
+| Original/canonical numeric shape | `just java-numeric-shape-check` | `just java-numeric-shape-canfail` (one arithmetic opcode is injected into a copied method inventory and rejected) |
+| Reviewed Java literal domains | `just java-literals-check` | `just java-literals-canfail` (an unexplained `2147483646` local is injected into a copied source and rejected; unexplained budget is zero) |
+| Semantic text/command/event constants | `just java-semantic-constants-check` | `just java-semantic-constants-canfail` (a raw text-table index is injected and rejected; cross-domain same-value aliases are also forbidden) |
+| Exact semantic-member denominator | `just java-coverage-check` | `just java-coverage-canfail` (one explicit member mapping is removed and both per-class and fixed-total checks fail) |
+| Reproducible Java application | `just java-build-check` | `just java-build-canfail` (one built-JAR byte is changed and rejected) |
+| Canonical javac AST authority | `just java-ast-check` | `just java-ast-canfail` (one complete AST item is mutated and changes the inventory digest) |
+| Recovered-JAR/canonical Java behavior | `just java-original-oracle` | `just java-original-oracle-canfail` (one recovered-JAR result is changed; exactly one case diverges) |
+| Pure-method Java/Rust differential | `just pure-oracle` | `just pure-oracle-canfail` (both recovered JARs and canonical Java are independent authorities; one Rust result is changed and exactly one case diverges) |
+| Three-authority method/declaration audit | `just method-audit-check` | `just method-audit-canfail` changes one reviewed original opcode digest; `just method-crosswalk-canfail` and `just declaration-crosswalk-canfail` each leave one `javac` node without a semantic owner; all are rejected, and the AST-walker unit test requires statement-position boundary macros to be visible (finding O-1) |
+| Production Rust ownership scope | `just method-audit-check` | `just method-ownership-canfail` injects an unowned production constant; the reverse `syn` inventory rejects it and separately accounts for every function, value declaration, and owner container. The first 168/1075 Java fields map exhaustively to 135 Rust fields in fifteen hash-locked owner structs, thirty-three typed scalar constants, and one mutable-array initializer template. |
+
+## Content-addressed affected-gate loop
+
+`just check-affected` hashes every input declared for each group in
+`tools/gates/gates.toml`, including the group command definition. A fingerprint
+is cached only after all commands in that group pass, so a failure is retried on
+the next run. `just watch-affected` watches the same surface and reruns groups
+after a file create/write/remove. The router does not consult Git and therefore
+works during the large uncommitted reconstruction phase.
+
+For the normal method-admission edit set, changes to the strict Rust body select
+`xlat-rust`, `differential-oracle`, and `method-audit`; oracle-adapter changes
+select the differential; manifest changes select the audit. Corpus, language,
+codec, and unrelated Java-recovery gates remain clean by hash. This is an
+iteration accelerator only: milestone and final completion still use
+`just check`, whose last successful step synchronizes every group fingerprint.
 
 ## Rules (restated)
 

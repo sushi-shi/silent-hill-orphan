@@ -1,0 +1,124 @@
+schema_version = 1
+
+# Only departures from retained author member names belong here. Descriptors
+# use the original default-package binary names so overloaded members are exact.
+
+[[renames]]
+owner = "Ext"
+kind = "field"
+descriptor = "I"
+original_name = "SETUP_INDEX_HAIRCROSS"
+semantic_name = "SETUP_INDEX_CROSSHAIR"
+evidence = "Resource slot 29 is the crosshair sprite; fixes the author spelling."
+
+[[renames]]
+owner = "ExtBase"
+kind = "field"
+descriptor = "LRoomObject;"
+original_name = "hooverRoomObj"
+semantic_name = "hoveredRoomObject"
+evidence = "Tracks the room entity currently under the cursor; enter/exit events are 54/55."
+
+[[renames]]
+owner = "ExtBase"
+kind = "field"
+descriptor = "LResource;"
+original_name = "specialCursorHoover"
+semantic_name = "hoverCursor"
+evidence = "Cursor resource selected while an interactive room entity is hovered."
+
+[[renames]]
+owner = "M"
+kind = "field"
+descriptor = "I"
+original_name = "engineTextInput_previouseMenuChoice"
+semantic_name = "previousTextInputMenuChoice"
+evidence = "Saved selected menu choice restored after the text-input screen closes."
+
+[[renames]]
+owner = "M"
+kind = "field"
+descriptor = "[Ljava/lang/String;"
+original_name = "strTextLabels"
+semantic_name = "textLabels"
+evidence = "Decoded localization labels indexed by getString; removes the legacy Hungarian type prefix."
+
+[[renames]]
+owner = "M"
+kind = "field"
+descriptor = "Z"
+original_name = "addAdjecentRooms"
+semantic_name = "collectAdjacentRoomIds"
+evidence = "Enables collecting adjacent room ids during preload request discovery."
+
+[[renames]]
+owner = "M"
+kind = "field"
+descriptor = "Ljava/util/Vector;"
+original_name = "adjecentRooms"
+semantic_name = "adjacentRoomIds"
+evidence = "Queue of adjacent room identifiers awaiting preload assertion."
+
+[[renames]]
+owner = "M"
+kind = "field"
+descriptor = "I"
+original_name = "COLLUM_WIDTH"
+semantic_name = "CODED_STRING_COLUMN_WIDTH"
+evidence = "Width of the hexadecimal/ascii rows emitted by codedString; fixes the author spelling."
+
+[[renames]]
+owner = "M"
+kind = "method"
+descriptor = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V"
+original_name = "inkServerSetVariabel"
+semantic_name = "inkServerSetVariable"
+evidence = "Writes one named INK server variable and its serialized type hint."
+
+[[renames]]
+owner = "M"
+kind = "method"
+descriptor = "(Ljava/lang/String;)V"
+original_name = "inkServerUnsetVariabel"
+semantic_name = "inkServerUnsetVariable"
+evidence = "Removes one named INK server variable and its hint."
+
+[[renames]]
+owner = "M"
+kind = "method"
+descriptor = "(Ljava/lang/String;)Ljava/lang/String;"
+original_name = "inkServerGetVariabel"
+semantic_name = "inkServerGetVariable"
+evidence = "Returns the serialized value of one named INK server variable."
+
+[[renames]]
+owner = "M"
+kind = "method"
+descriptor = "(Ljava/io/InputStream;)Ljava/io/InputStream;"
+original_name = "peakStream"
+semantic_name = "peekStream"
+evidence = "Reads and logs a stream, then returns a replacement ByteArrayInputStream; fixes the spelling."
+
+[[renames]]
+owner = "RoomObject"
+kind = "method"
+descriptor = "()LRoomObject;"
+original_name = "hooverIn"
+semantic_name = "enterHover"
+evidence = "Dispatches the hover-enter event and returns the object when it remains interactive."
+
+[[renames]]
+owner = "s"
+kind = "field"
+descriptor = "I"
+original_name = "EVENT_HOOVERIN"
+semantic_name = "EVENT_HOVER_IN"
+evidence = "Serialized event 54 is dispatched when the cursor enters an entity."
+
+[[renames]]
+owner = "s"
+kind = "field"
+descriptor = "I"
+original_name = "EVENT_HOOVEROUT"
+semantic_name = "EVENT_HOVER_OUT"
+evidence = "Serialized event 55 is dispatched when the cursor leaves an entity."

@@ -1,0 +1,52 @@
+schema_version = 1
+baseline_sha256 = "ca9a874ce7c7fb11ed444701b65e967919d3d7c0bcf73f80a9fcf825fb6a4be7"
+ui_slot_count = 185
+narrative_slot_count = 714
+
+# These six pairs coexist in the selected full build, so their slot identity and
+# script/content generation are directly compatible. Bytes remain private and
+# are loaded by member path; hashes make each selected resource unambiguous.
+[[language]]
+code = "de"
+ui_member = "localization/de.properties"
+ui_sha256 = "153ba31b8fa926b9f0ffea5d82af950a0d36e35bfee7f896ba2ba4c3ad33ca7b"
+narrative_member = "sh/lan/de.lan"
+narrative_sha256 = "19b8555613d83a241c5015469e8d82eb82e027f6fb3417423f407f873e1b2405"
+
+[[language]]
+code = "en"
+ui_member = "localization/en.properties"
+ui_sha256 = "6683bc4ea035b50001c09936455d395f30ecbc3f192bdcb6e82a37ed38d3042e"
+narrative_member = "sh/lan/en.lan"
+narrative_sha256 = "969cc3c4693ad6be1b610b480a1bdcaa80ad3c35313ba51bde688af28a4d89ea"
+
+[[language]]
+code = "es"
+ui_member = "localization/es.properties"
+ui_sha256 = "a5ddcd86c1aed9081bc5ea9e8d59aacd7e4dd5997a963cefdaec7547511c5ac1"
+narrative_member = "sh/lan/es.lan"
+narrative_sha256 = "9ccf699efc1ab7285ff030201fd8be3b7a10f860582252f847c8c2b870385a7f"
+
+[[language]]
+code = "fr"
+ui_member = "localization/fr.properties"
+ui_sha256 = "17684c029b3ec8d80d58370913c60d0c3cc9e619ab2fceae208fb2276b1e609c"
+narrative_member = "sh/lan/fr.lan"
+narrative_sha256 = "f2c5ae4db0ec26927de64615d797b5bb1f379dec46d808cdc36767ea14e971f6"
+
+[[language]]
+code = "it"
+ui_member = "localization/it.properties"
+ui_sha256 = "48bd25811e134389c1af39bcd3073a447e99f380d7b3a50ab0fcc628e66da43d"
+narrative_member = "sh/lan/it.lan"
+narrative_sha256 = "38663514959cf4f538e1e0b7a326e49186a480ab883068941c136669aa43f600"
+
+[[language]]
+code = "pt"
+ui_member = "localization/pt.properties"
+ui_sha256 = "824776c7f4fcb8e9f9b8059e0279ff4842b4dc29d5e7e6fb8e9fabde388d7209"
+narrative_member = "sh/lan/pt.lan"
+narrative_sha256 = "c6e9a159dd0716fed7d18d24c29c451b25c6c434ca3094933f20692674fa9a22"
+
+[rejected_claims]
+zh = "The collected A1000 filename says ZH, but its payload contains English/French language resources and no Chinese table; do not expose it as Chinese."

@@ -1,0 +1,29 @@
+schema_version = 1
+
+# The same four author editor backups occur byte-identically in seven other
+# verified payloads. One occurrence is sufficient to bind the bytes; the gate
+# also verifies the occurrence count so corpus loss or a newly divergent copy
+# is visible.
+[[backups]]
+member = "daydream/ink/Ext.java~"
+semantic_owner = "SilentHillGame"
+sha256 = "c93022b26e73acb276e40801227a9f705062b0371564acc695ebf52048171862"
+expected_payload_occurrences = 8
+
+[[backups]]
+member = "daydream/ink/ExtBase.java~"
+semantic_owner = "InkEngine"
+sha256 = "7d7e999d87fd4b42a0b48f5fa384e738559d840d690bc81eff33431b5474c708"
+expected_payload_occurrences = 7
+
+[[backups]]
+member = "daydream/ink/M.java~"
+semantic_owner = "Application"
+sha256 = "f6c8b517af8e4d1fc55bbc81c400e2f533862a904bea906e4ea2e47098515b8e"
+expected_payload_occurrences = 7
+
+[[backups]]
+member = "daydream/ink/MyCanvas.java~"
+semantic_owner = "GameCanvas"
+sha256 = "fa2eb05b54a0db9495c5a7a5b40ada61cc366943dd322373ff7e13704144a063"
+expected_payload_occurrences = 7

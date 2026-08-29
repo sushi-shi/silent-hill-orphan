@@ -1,0 +1,59 @@
+# Hash-locked numeric differences that are compiler/decompiler representation,
+# not changed game arithmetic. Both opcode sequences and their exact multiset
+# delta must match; any source change invalidates the resolution for re-review.
+
+[[resolved]]
+method = "InkEngine.menuInvSetup()Z"
+original_sha256 = "edfd9a3694f9ba19635ef87cdf45b76af90b9f914baddf35995f2575e4da2df3"
+canonical_sha256 = "1862b4bb201e41141dd4742270b7b64cdc3181475c028f0034fa50f4738f797a"
+missing = ["iadd", "iadd"]
+extra = []
+evidence = "The author source keeps a runtime listSize/download loop, but its producer is commented out in this configuration. The decompiler proves listSize as zero and modern javac removes that unreachable loop, including its two increments."
+
+[[resolved]]
+method = "InkEngine.menuPaintCurrentEngine()V"
+original_sha256 = "086d80e63ea180a231d59dc7ec90094a2e315db48e56ff87095d6d5494fa020d"
+canonical_sha256 = "32f1955ce23f55196cb4059fa6e917932d9e891ce5a8e15c285c87b755b9e89e"
+missing = ["ior", "ior", "ior", "ior", "ior"]
+extra = []
+evidence = "Five LCDUI anchor expressions survive as runtime ORs in the 2007 bytecode; modern javac folds the same integer anchor constants."
+
+[[resolved]]
+method = "InkEngine.menuPaintEngine(LMenuModel;)V"
+original_sha256 = "557524f0c0fa4e7f80c9a417d69cf5c4d91b0fb31a0f8e918651132fda2d59a5"
+canonical_sha256 = "b98a82f20f774a7d8587221735cfe98b57100720985c8f8d32c716725ff38934"
+missing = ["iadd"]
+extra = []
+evidence = "One constant layout addition is folded by modern javac; every non-constant numeric operation remains present."
+
+[[resolved]]
+method = "InkEngine.splashPaint()V"
+original_sha256 = "9aef2022fc26389bcf6bf9fa6460330db51bcaf3a8b2ada1720b4394105498f5"
+canonical_sha256 = "1295b1ba819c25e4b4753456c0e54f240ff521d814bb3ef9ec6764f7104c8cc5"
+missing = ["ior"]
+extra = []
+evidence = "Graphics.TOP | Graphics.HCENTER is a runtime OR in the original and the same compile-time anchor value in the canonical build."
+
+[[resolved]]
+method = "RoomObject.battlePanelUpdate(Ljavax/microedition/lcdui/Graphics;II)V"
+original_sha256 = "9f3ec9596a1c9e0947fc506ac83233744633949fb6c5448e358dd4985f3a56d8"
+canonical_sha256 = "901f5ef4509f04aa83296fa37a3d3bf69887bb02570381b93bed9e82200e7963"
+missing = ["ior", "ior", "ior", "ior"]
+extra = []
+evidence = "Four Graphics anchor combinations are runtime ORs in the old compiler output and folded constants under modern javac; all bar-size and time interpolation arithmetic remains."
+
+[[resolved]]
+method = "SilentHillGame.appPaint()V"
+original_sha256 = "f29a0085936ea80e3a72dfdf990c0ad923890cc1b98c4c76c92d2936b9eaa743"
+canonical_sha256 = "591876b9db28da4461b93987a9b6ff9938dabb4c646d9c7542b3dd58cf651cca"
+missing = ["isub", "iadd", "iadd", "iadd", "iadd", "iadd", "iadd", "iadd", "iadd", "iadd", "iadd", "iadd", "iadd", "ineg", "ior", "ior", "ior", "ior", "ior", "ior", "ior", "ior", "ior", "ior", "ior", "ior", "ior", "ior", "ior", "ior", "ior", "ior"]
+extra = []
+evidence = "Author Ext.java~ identifies the missing operations as zero/constant coordinate arithmetic and 18 LCDUI anchor ORs. The one duplicated long subtraction found by this audit was a real decompiler defect and has been removed; the resolution now permits no extra numeric opcode."
+
+[[resolved]]
+method = "SilentHillGame.menuPaintEngine(LMenuModel;)V"
+original_sha256 = "5fae274b4101495a3148c153d6a0647bedc20de00a83d8609077a8f0f71919f6"
+canonical_sha256 = "a4dc3ad11123184a141fc8945ebddba592d383e0779014bc725ca3d96cb1fcb3"
+missing = ["iadd", "ior"]
+extra = []
+evidence = "Modern javac folds one constant layout addition and one LCDUI anchor OR; the remaining layout arithmetic multiset is exact."

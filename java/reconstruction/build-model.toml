@@ -1,0 +1,670 @@
+schema_version = 1
+expected_jar_payloads = 115
+expected_exact_code_families = 49
+expected_packaged_midlets = 25
+baseline = 'silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_106'
+semantic_reference = 'silent_hill_orphan_j2me_en_v010_9_zip_silent_hill_2007_konam_41'
+evidence = [
+  "Every identity and family is recomputed from verified class bytes, not a collection filename.",
+  "The baseline preserves thirteen author class names and the complete sixteen-chunk campaign.",
+  "The independent source-named build repeats every baseline member name and exposes reviewed device-policy variants.",
+]
+
+[review_status_counts]
+canonical-baseline = 1
+fingerprinted = 94
+semantic-reference = 1
+third-party-branded = 19
+
+[[source_lineages]]
+id = 'source-named'
+source_layers = ["common", 'source-named']
+expected_builds = 2
+build_ids_sha256 = '43cbf0c630d242e51d558a6176bfc45d7867bb39d65399f2cdcb8fb065474132'
+evidence = [
+  'Two payloads retain the same thirteen author class names.',
+  'The baseline/reference method ledger accounts for their 350/355 methods.',
+]
+
+[[source_lineages]]
+id = 'obfuscated-engine'
+source_layers = ["common", 'obfuscated-engine']
+expected_builds = 88
+build_ids_sha256 = '9d3002abe566bff320208a174ecf4fbd8ea0e141de96e77f8ebca07928195b6a'
+evidence = [
+  'The MIDlet remains default-package M and the engine spans ten to twelve game classes.',
+  'Constant/helper classes are folded or absent; short names are not imported into canonical Java.',
+]
+
+[[source_lineages]]
+id = 'split-runtime'
+source_layers = ["common", 'split-runtime']
+expected_builds = 25
+build_ids_sha256 = '24377abf712fed6ea84e4e410262ec10d3230ea3a5eb6d9e94b49f474d8a74b0'
+evidence = [
+  'The packaged sh/M class extends MIDlet and owns the runtime surface in all 25 members.',
+  'Default-package a and b remain game classes; bundled vendor compatibility packages are adapters.',
+]
+
+[[content_profiles]]
+id = 'embedded-or-monolingual'
+locale_codes = []
+expected_builds = 25
+build_ids_sha256 = '24377abf712fed6ea84e4e410262ec10d3230ea3a5eb6d9e94b49f474d8a74b0'
+evidence = ['No localization/*.properties or sh/lan/*.lan members; no language claim is inferred from the filename.']
+
+[[content_profiles]]
+id = 'english-french'
+locale_codes = ['en', 'fr']
+expected_builds = 4
+build_ids_sha256 = '28d7766ec2b6c99d8d5aa5653331804514ac3ce2dbff7074a8607a1c01064318'
+evidence = ['The JAR contains content-addressed English and French locale member sets.']
+
+[[content_profiles]]
+id = 'english-only'
+locale_codes = ['en']
+expected_builds = 6
+build_ids_sha256 = 'babfa380eb3c4b7b51664e5bfa59fc67f6168970a0de9f5eeb5cca2d34b5fb83'
+evidence = ['The JAR contains the content-addressed English locale member set only.']
+
+[[content_profiles]]
+id = 'english-spanish-portuguese'
+locale_codes = ['en', 'es', 'pt']
+expected_builds = 1
+build_ids_sha256 = '8fe12bdc74643dbb53859c53e1771407f2653612d6d7a948b7f2b4da8382bbc0'
+evidence = ['The JAR contains content-addressed English, Spanish, and Portuguese locale member sets.']
+
+[[content_profiles]]
+id = 'six-language'
+locale_codes = ['de', 'en', 'es', 'fr', 'it', 'pt']
+expected_builds = 79
+build_ids_sha256 = '3c83f533a6ce33927cf5f229f9da47be8776dcc7f826a4bd650f87fe27279b15'
+evidence = ['The JAR contains all six slot-compatible German, English, Spanish, French, Italian, and Portuguese member sets.']
+
+[[code_families]]
+id = 'f01'
+representative = 'silent_hill_orphan_j2me_en_v010_114'
+representative_sha256 = '264f1daeb0bd87b1d8c229a9cf52f987e4bed4129460466bcd7eb5a754e83131'
+source_lineage = 'obfuscated-engine'
+member_count = 6
+members_sha256 = '620f21cbe965b5d6b7b5cc4b887230df1d20ab39a62aea84ee75ed262ae59a1d'
+game_class_count = 10
+game_method_count = 307
+game_code_bytes = 53799
+class_shape_set_sha256 = '69828cae54f1373c8ba02e28701a69afbd49016f4a153896180604acf6e68c58'
+
+[[code_families]]
+id = 'f02'
+representative = 'silent_hill_orphan_j2me_en_v010_1_80'
+representative_sha256 = 'b85f8d688fd062135b95c6984c5daacc6a9cf02e2b12a830b9b499e021806281'
+source_lineage = 'obfuscated-engine'
+member_count = 8
+members_sha256 = 'fccc5499ccc9292a864009f384d29be4c7d510c4df4f19bd351bd4622bc5a89e'
+game_class_count = 11
+game_method_count = 312
+game_code_bytes = 53479
+class_shape_set_sha256 = 'f5f3667ecc0faedf79e6e0ff1213a01b4ae830e755c3299edfb1c5d8239a5609'
+
+[[code_families]]
+id = 'f03'
+representative = 'silent_hill_orphan_j2me_en_v010_2_78'
+representative_sha256 = '0e09f192d8a23e9b7181f323ef1e46526a677b49011b8c29ea25c79bf0d56876'
+source_lineage = 'obfuscated-engine'
+member_count = 8
+members_sha256 = 'e2b2384b9bd71a4209782b52e11c7d097ca55c560c76ed068d119d5f78fcc6e3'
+game_class_count = 10
+game_method_count = 307
+game_code_bytes = 53521
+class_shape_set_sha256 = 'f2764745e96dd95a9989899f1cfde6a73421698b559fa460a5a7f2bb7eede9e4'
+
+[[code_families]]
+id = 'f04'
+representative = 'silent_hill_orphan_j2me_en_v010_3_05'
+representative_sha256 = 'c655955e38a978db1425bf66212ac945104306256b53856e38a294aa14923084'
+source_lineage = 'split-runtime'
+member_count = 1
+members_sha256 = '688cff3a3a96dc328f089d7680f6c225c23f5c8bd6193e68e4da70ba64734b15'
+game_class_count = 3
+game_method_count = 128
+game_code_bytes = 50754
+class_shape_set_sha256 = '36292cb14ac79293709c118c5643d182592f634815df3bbf10f344ff22c53917'
+
+[[code_families]]
+id = 'f05'
+representative = 'silent_hill_orphan_j2me_en_v010_3_zip_silent_hill_2010_konam_104'
+representative_sha256 = '2a88e26b027317980240f468df7123b41ba2f08730a0f7242a216dc2128c11b9'
+source_lineage = 'obfuscated-engine'
+member_count = 4
+members_sha256 = 'ba608fd303908b75b9538fafb8c9e1b5fe37fa332426e6725cc058502c6969b1'
+game_class_count = 10
+game_method_count = 307
+game_code_bytes = 53684
+class_shape_set_sha256 = '84dbc69ee17e67567ad122783ac10b03744707079331bc82ce73f3b2a71d5376'
+
+[[code_families]]
+id = 'f06'
+representative = 'silent_hill_orphan_j2me_en_v010_3_zip_silent_hill_2010_konam_30'
+representative_sha256 = 'bd6a6005a04dcff7ddd3ae9d3ea5137dc42ee45017018352d91dc4f41a232a2d'
+source_lineage = 'obfuscated-engine'
+member_count = 5
+members_sha256 = '35b929adf01a9b7d052604f7471a089dac00db453eddb66bdd97e5b7782e898a'
+game_class_count = 10
+game_method_count = 307
+game_code_bytes = 54971
+class_shape_set_sha256 = 'e252fc67b2c219e52f0a4a7725f5c4ddd87de619a0a50585de500e0bd36234c6'
+
+[[code_families]]
+id = 'f07'
+representative = 'silent_hill_orphan_j2me_en_v010_3_zip_silent_hill_2010_konam_35'
+representative_sha256 = 'bea870fdbe00583ac92469843324987f0b4cfdb422d7cc6c14f9b27850454fe3'
+source_lineage = 'obfuscated-engine'
+member_count = 3
+members_sha256 = 'bd0e7db5e3d5e28336175ab2e5b9ec41dfb963008eca342dd8f56faa4545aade'
+game_class_count = 10
+game_method_count = 307
+game_code_bytes = 53275
+class_shape_set_sha256 = 'e44bdde509276ff18b315e9d8ce172834867cc808ec5d7c9de5e5c492e7fab20'
+
+[[code_families]]
+id = 'f08'
+representative = 'silent_hill_orphan_j2me_en_v010_3_zip_silent_hill_2010_konam_36'
+representative_sha256 = '383a7370f4faaca5c5f0a170196db628fc62321739ab73d7e081c74f675a6be2'
+source_lineage = 'obfuscated-engine'
+member_count = 4
+members_sha256 = '61cb03cc14f73a7464b1626a9c504edcf32163a0addd7f52f2413c2ba8fef7a1'
+game_class_count = 10
+game_method_count = 307
+game_code_bytes = 53306
+class_shape_set_sha256 = '9f5abc29797a4d5eb76d43a9e638989672021ee98dca935aefbf886238f1da00'
+
+[[code_families]]
+id = 'f09'
+representative = 'silent_hill_orphan_j2me_en_v010_3_zip_silent_hill_2010_konam_40'
+representative_sha256 = '229a4ebe3ceccf56f15626232f619984b7f16ca1b9904665b7f297969c7bc06c'
+source_lineage = 'obfuscated-engine'
+member_count = 3
+members_sha256 = 'b71583a98f877cd4b5f2197451d52c7f0519b6c54d7d08364cfd7d0222cc1feb'
+game_class_count = 10
+game_method_count = 305
+game_code_bytes = 53059
+class_shape_set_sha256 = 'ca568dc260607819e001cfef357e10c5685966a2e31a23047b9c226f9cb4bf70'
+
+[[code_families]]
+id = 'f10'
+representative = 'silent_hill_orphan_j2me_en_v010_3_zip_silent_hill_2010_konam_61'
+representative_sha256 = 'ca30cac6c3417918910a2331d40a79cb4231e6b36f81f869698dba5fd365b76d'
+source_lineage = 'obfuscated-engine'
+member_count = 4
+members_sha256 = '21a33aa5ef07341f8550318a25b719a9191bea9608655f6b50d3291157f8c7e9'
+game_class_count = 11
+game_method_count = 309
+game_code_bytes = 53412
+class_shape_set_sha256 = '05f4f46c90f9af9f08a8bc92a140675c88c34d741abcd24873e06d5c4380bc08'
+
+[[code_families]]
+id = 'f11'
+representative = 'silent_hill_orphan_j2me_en_v010_3_zip_silent_hill_2010_konam_69'
+representative_sha256 = '864ea405ae1e76ee1b2c957778abe38daccafca531249f80055a83ee2ee81b80'
+source_lineage = 'obfuscated-engine'
+member_count = 2
+members_sha256 = 'd3efc12fc1e4d31522bcba50528b205555e13dd24231f9f618daa168ee352f32'
+game_class_count = 10
+game_method_count = 307
+game_code_bytes = 53537
+class_shape_set_sha256 = '4e64f3073a3606fb5a1b2cb69c230eb9bc2f17b48d32603d01b38a98c35d1245'
+
+[[code_families]]
+id = 'f12'
+representative = 'silent_hill_orphan_j2me_en_v010_3_zip_silent_hill_2010_konam_96'
+representative_sha256 = '615655c755ab3caf911dd7b6860c5c68dbb6877f5da30fb2d463a5890e060e9a'
+source_lineage = 'obfuscated-engine'
+member_count = 4
+members_sha256 = 'c3dff58e1febc24fff43aca1ccd4be3f84764e85e53391dc9659e01931756dc1'
+game_class_count = 10
+game_method_count = 307
+game_code_bytes = 53286
+class_shape_set_sha256 = 'cabedf4f2e9b21ceec98c532affe0d1a0aa66990256bbd106bc4cd945bdd561f'
+
+[[code_families]]
+id = 'f13'
+representative = 'silent_hill_orphan_j2me_en_v010_4_95'
+representative_sha256 = 'fd76995820e39e317e63896a5f94b230b092e4b3c30db895c4d9e78b1581d154'
+source_lineage = 'obfuscated-engine'
+member_count = 1
+members_sha256 = '30c3fedeb1a3748916a8cb6c2f75f2306ee13f6c142ea5549fb1da49c92946a0'
+game_class_count = 11
+game_method_count = 312
+game_code_bytes = 53479
+class_shape_set_sha256 = '883b1dce7c4bee054cf421c23f5495d279ed0b6661aa075f3fb880d8e5085431'
+
+[[code_families]]
+id = 'f14'
+representative = 'silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_07'
+representative_sha256 = '9bfd8f89314ebdd493124a96e1864c0fcc5990b7e0dde8bf92d3d5c5ead7b199'
+source_lineage = 'split-runtime'
+member_count = 3
+members_sha256 = '35d4bde823d354b9f8a96ce2ba80c3021b87d5bdc2fcfedc2aced381c4c64b27'
+game_class_count = 3
+game_method_count = 137
+game_code_bytes = 54195
+class_shape_set_sha256 = 'ff4b325658aeb2bbc01229e704941b766675b1b947e1d4df438b7273e4bd009c'
+
+[[code_families]]
+id = 'f15'
+representative = 'silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_08'
+representative_sha256 = '848684b159e2af64fe31299826c7eaf976748acac9f8ad3820ebbd6c14f54b67'
+source_lineage = 'split-runtime'
+member_count = 1
+members_sha256 = 'e987c02819fae6ee6cee489775227e0ed80cfa68e3448c73563e63b7a996077d'
+game_class_count = 3
+game_method_count = 135
+game_code_bytes = 52585
+class_shape_set_sha256 = '11131a119b5229a1b5e5830bfac96ed02c33fb7aae1c34b8a8c97b22f21f5f4e'
+
+[[code_families]]
+id = 'f16'
+representative = 'silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_106'
+representative_sha256 = 'ca9a874ce7c7fb11ed444701b65e967919d3d7c0bcf73f80a9fcf825fb6a4be7'
+source_lineage = 'source-named'
+member_count = 1
+members_sha256 = '6312b1224aace67b29a17a4ab0f604bf06a82b7e5538b99e8def586695f4a881'
+game_class_count = 13
+game_method_count = 350
+game_code_bytes = 62197
+class_shape_set_sha256 = '638b8e1585dedd90606b2f322597dd2a42c4aa6fb10c91e844ec8cc2e5dbf372'
+
+[[code_families]]
+id = 'f17'
+representative = 'silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_11'
+representative_sha256 = '26512534846436a50646c2642245386dd8c2285a7b2239a7c5da570cf577078c'
+source_lineage = 'split-runtime'
+member_count = 3
+members_sha256 = '40888529801db969848876295a2ce5f330dd5fabf9ab6f0231a74eda751b18e0'
+game_class_count = 3
+game_method_count = 133
+game_code_bytes = 52657
+class_shape_set_sha256 = '5f86b7fe75d7df46d542316d93f19a582315bd4b7da8140ea02c2efa3d7b51a1'
+
+[[code_families]]
+id = 'f18'
+representative = 'silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_15'
+representative_sha256 = 'c698d9865ab63a063ac1703709276cb7e9da3622353dafa69dbabbd5953c791b'
+source_lineage = 'split-runtime'
+member_count = 4
+members_sha256 = '0f5f15038aa1fcf44b2e961ef7012b0bc53daa0a0f9d3652161abaa6e9411940'
+game_class_count = 3
+game_method_count = 134
+game_code_bytes = 53543
+class_shape_set_sha256 = '208095c714e5989bf86f667ee4002f4beaee0ddfe6ea5ea4c2fb3eb2c1818af3'
+
+[[code_families]]
+id = 'f19'
+representative = 'silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_19'
+representative_sha256 = '409ed4cf6de6199d5e683975eb0de57e87dcfdfcae4ae81925cf07954353b3cc'
+source_lineage = 'split-runtime'
+member_count = 1
+members_sha256 = '4b969ec5179d7c2f7c80080aa7526f4cc6da24c48bdb8ee7eb25ab6c7fc10fe7'
+game_class_count = 3
+game_method_count = 132
+game_code_bytes = 55461
+class_shape_set_sha256 = '211453bc11c5a39f71f8d67ba94d65eb7391c4c656b633612a7d5de004e9e7f7'
+
+[[code_families]]
+id = 'f20'
+representative = 'silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_20'
+representative_sha256 = '83acf327022874edf7b280ee292f12d0d5e7e2457891c8f34e320f45d9ffcc48'
+source_lineage = 'split-runtime'
+member_count = 1
+members_sha256 = '1d35808802c0dbfa4c09b98eaa71531488670ee5419ddda2fa835356a200614a'
+game_class_count = 3
+game_method_count = 132
+game_code_bytes = 55633
+class_shape_set_sha256 = 'e9a0dc33bed11e64f3e85d328b462853ac541fc3373501cde21444438a6c0c43'
+
+[[code_families]]
+id = 'f21'
+representative = 'silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_21'
+representative_sha256 = 'aa37b39968d98f896e24de617c1a656bf0316ac2f2c8e16f502aabc60fa7fb1a'
+source_lineage = 'split-runtime'
+member_count = 2
+members_sha256 = 'cc0f2ee04318e819804fa602d06070d841ac369d11af0386d399d8d59e53c3bc'
+game_class_count = 3
+game_method_count = 131
+game_code_bytes = 55432
+class_shape_set_sha256 = 'b3f08b2e93b7a45eb28fb005bcf2cb2d318b244b75157e8ea78bbdc78daf27f3'
+
+[[code_families]]
+id = 'f22'
+representative = 'silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_24'
+representative_sha256 = '0f23a7a5ea2c532d2730e2714fe8c221bb2f47d37cc5acc8a6326a9f68b5740b'
+source_lineage = 'obfuscated-engine'
+member_count = 1
+members_sha256 = '6a7e339eb62a1d7a0f400ce16f43aa3ee5318a52aecade2b85dc09a5952c67a6'
+game_class_count = 10
+game_method_count = 303
+game_code_bytes = 53260
+class_shape_set_sha256 = '771fa5813397ec35cc1989b08e19df2dc81c034b43fb2e6a67d4973d93efe6d5'
+
+[[code_families]]
+id = 'f23'
+representative = 'silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_25'
+representative_sha256 = 'ff2b1eb4cbd7e712c945b08b92633883f6c7c4da229cb7f61d491424d1192fc8'
+source_lineage = 'split-runtime'
+member_count = 1
+members_sha256 = '0f86d634d9154ed5d5fd750311c051de3fdadd34579edffa66b68134031cf4ca'
+game_class_count = 3
+game_method_count = 132
+game_code_bytes = 55688
+class_shape_set_sha256 = 'ebbaf7e5ba392e403866823d930b92d49f44ca476fb40b1cac76ad56a5dfe310'
+
+[[code_families]]
+id = 'f24'
+representative = 'silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_48'
+representative_sha256 = '67871390e51b6ee52779a038425254ee9bfd08a011210f1f892b8e1392ec8eae'
+source_lineage = 'obfuscated-engine'
+member_count = 2
+members_sha256 = 'ac2f10f93cf2cd9e38e2b4912e1a1bf61d9490b22cfbdfeba16bbdb306105aab'
+game_class_count = 11
+game_method_count = 309
+game_code_bytes = 53923
+class_shape_set_sha256 = '686cd03e0ff512f4b9db79f5184b19f78b250fb3b2e9332129e17f3ccb45011a'
+
+[[code_families]]
+id = 'f25'
+representative = 'silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_49'
+representative_sha256 = '18cf1026abf3e9ce3d5653efb1fe31302d2e440118783807d694f9b08bdb66f8'
+source_lineage = 'obfuscated-engine'
+member_count = 9
+members_sha256 = 'e9c320b7af6f1710b03c83803dde00cffe430e3babfba63b8afaf1ff48c519ba'
+game_class_count = 10
+game_method_count = 307
+game_code_bytes = 53537
+class_shape_set_sha256 = 'bc059518fa3134f2580434f16d7a027a3cafc1d17431deb0aaab06d90ee25b23'
+
+[[code_families]]
+id = 'f26'
+representative = 'silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_62'
+representative_sha256 = '3f931ac7405ec974b76b1990e58374d2cd0d20deecfec95a3ccbdc69976ba351'
+source_lineage = 'obfuscated-engine'
+member_count = 2
+members_sha256 = 'f66303061f718a434ef67c18c563bbf4432f9e8ecd0ac6d4efa0fb6bdc3a675b'
+game_class_count = 10
+game_method_count = 307
+game_code_bytes = 53110
+class_shape_set_sha256 = '60126d20b80d667741c02eb5d94a467ab6b100cbb849417ca88e5564d7bb8c02'
+
+[[code_families]]
+id = 'f27'
+representative = 'silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_63'
+representative_sha256 = '947fdcf69e661ac6bfa94a5358abeb4a71543dc972c50b20719550be4cdb79b1'
+source_lineage = 'obfuscated-engine'
+member_count = 1
+members_sha256 = '06aada92c8fe536eff932beeec50100355174bf24a0c3c9cb4b48cb9fd807734'
+game_class_count = 10
+game_method_count = 307
+game_code_bytes = 53610
+class_shape_set_sha256 = '1983470b76a7e1545cc595a2f937a41287aebf5c603ed6cd5af0a8efe2dbbd23'
+
+[[code_families]]
+id = 'f28'
+representative = 'silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_67'
+representative_sha256 = '98243d1a1b15af2a9f12c16a7c81d840988503fe49aaa43e02c8efa1b7005196'
+source_lineage = 'obfuscated-engine'
+member_count = 4
+members_sha256 = 'a3b5a0a5154d6bd86703e6458eca7b8a971c94250794cc0b83b913688b5afe61'
+game_class_count = 10
+game_method_count = 307
+game_code_bytes = 53637
+class_shape_set_sha256 = 'c866190e31af1bfa2173dfeef2ca2943e012c23cde27a1a71e9137ee5ae29823'
+
+[[code_families]]
+id = 'f29'
+representative = 'silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_79'
+representative_sha256 = 'a1f8a01a28482251608d376fc6b7879eedeb0d00b259d0fc787aa289b8a635b4'
+source_lineage = 'obfuscated-engine'
+member_count = 1
+members_sha256 = '4a3a51571076a7af5cf928bff7fc13dd0f582ef2af58223158d2bfff094703b3'
+game_class_count = 10
+game_method_count = 307
+game_code_bytes = 54459
+class_shape_set_sha256 = 'f5a5ff08b82561170d9b01b004bdf0aefcda9552c21e6165b1fc947d4319c450'
+
+[[code_families]]
+id = 'f30'
+representative = 'silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_85'
+representative_sha256 = '478c7af12f2b401db1ba8502ccce0ef9ef9196979c9d11704094de31d8ffb6e2'
+source_lineage = 'obfuscated-engine'
+member_count = 2
+members_sha256 = '5cb35fc49c0513826800e7acdb0e4b15f3ac2cd0156519e49480316bc8311fa1'
+game_class_count = 10
+game_method_count = 307
+game_code_bytes = 53287
+class_shape_set_sha256 = 'ead974cc5134ae6a143ac17e14d79e8491ada13850e0fc381f0b8558d6218d34'
+
+[[code_families]]
+id = 'f31'
+representative = 'silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_90'
+representative_sha256 = '8a52f7d31a676f5a935b3ca2eead78decb754e0f3ca9275fae9dbae17f28bf04'
+source_lineage = 'obfuscated-engine'
+member_count = 4
+members_sha256 = '04602fefb69c0a157d406668c856bccdfa5f8ecbc380706080758b07d6dc8c5b'
+game_class_count = 10
+game_method_count = 308
+game_code_bytes = 53723
+class_shape_set_sha256 = '0d6a557a92e9496065305639bea8706160f4389e882b5dd47234c3e9586d89a3'
+
+[[code_families]]
+id = 'f32'
+representative = 'silent_hill_orphan_j2me_en_v010_8_zip_silent_hill_2008_konam_06'
+representative_sha256 = '3e7a53b3d8b78a130f1218f72769a2d36c9eab52d225f0b480072ed9e261b022'
+source_lineage = 'split-runtime'
+member_count = 1
+members_sha256 = 'd379f5a219038f90f61a74527c071cecb70daed82bd848f80cc506b723faf521'
+game_class_count = 3
+game_method_count = 129
+game_code_bytes = 51010
+class_shape_set_sha256 = '8c22fe4a0ee7d92b4d679b42a65764a70a1f1c61ed11b5bc5c0958581bac6085'
+
+[[code_families]]
+id = 'f33'
+representative = 'silent_hill_orphan_j2me_en_v010_8_zip_silent_hill_2008_konam_101'
+representative_sha256 = '311c3249d0baa71696555c6779a3fc1439bdf751485fd8e9861e8df41c32af18'
+source_lineage = 'obfuscated-engine'
+member_count = 1
+members_sha256 = '6cdee28734e99a4173848161f2508154f1be9d07671523e05fbcf1a9b5d27650'
+game_class_count = 11
+game_method_count = 312
+game_code_bytes = 53485
+class_shape_set_sha256 = '925f0cd9b6422d95ff9e6674a8ba62ba012ca7a0da1276dacfb6245d79076b82'
+
+[[code_families]]
+id = 'f34'
+representative = 'silent_hill_orphan_j2me_en_v010_9_zip_silent_hill_2007_konam_01'
+representative_sha256 = '1db947b7263f364e19ceebdb259045bd3d65c3e57075324090f019e56d56e2df'
+source_lineage = 'split-runtime'
+member_count = 1
+members_sha256 = 'ffa94b27fbdeaece032412e28bbe51d2c163c0ace8a6aeb774a90b97d5cc63ed'
+game_class_count = 3
+game_method_count = 115
+game_code_bytes = 38800
+class_shape_set_sha256 = 'e2ef9a25fe681c33a3481b3652f819e6db120650ae379186519ea16de1f9654d'
+
+[[code_families]]
+id = 'f35'
+representative = 'silent_hill_orphan_j2me_en_v010_9_zip_silent_hill_2007_konam_02'
+representative_sha256 = '6728d6fe7ec3e98b8873385044d609a023627e0171e427bc2af4468b2110c2b6'
+source_lineage = 'split-runtime'
+member_count = 1
+members_sha256 = '1fed9c7b89fe50959811696a326775216f14f7c82298f854caef5a45478d7906'
+game_class_count = 3
+game_method_count = 115
+game_code_bytes = 38800
+class_shape_set_sha256 = 'c2690158f6e2b29dd5034e054fabf4b1f05bbf3a7487ffa664efca97774111fd'
+
+[[code_families]]
+id = 'f36'
+representative = 'silent_hill_orphan_j2me_en_v010_9_zip_silent_hill_2007_konam_04'
+representative_sha256 = '20b72ff2a5c6f9421ec9cdc986e788209431ba8a8de716075d3b86d5456a7523'
+source_lineage = 'split-runtime'
+member_count = 1
+members_sha256 = '4361dc9b448a1df625cca6f4482f1ae01fcdf9d7c7acaf2fcf1b83bf05d1a2f1'
+game_class_count = 3
+game_method_count = 129
+game_code_bytes = 51010
+class_shape_set_sha256 = '35aace51a860708f53567f36ea46c2e80bd0308ae0c8ca2bddc67b227f94c145'
+
+[[code_families]]
+id = 'f37'
+representative = 'silent_hill_orphan_j2me_en_v010_9_zip_silent_hill_2007_konam_107'
+representative_sha256 = '5f00012ac1dc3ba4eea59832b0774a1aabe22e20b52b900ccd85295ecaf3322d'
+source_lineage = 'obfuscated-engine'
+member_count = 1
+members_sha256 = 'bc56c42cf3e55d7e4aa63721eb07630fb5539616f21c837a73d2437d4540b9ba'
+game_class_count = 10
+game_method_count = 312
+game_code_bytes = 55869
+class_shape_set_sha256 = 'e52d3dc7b43e87ba37a3c12c4d6b3b98b07a2ed7291ba5c7bbb04e4b56b19022'
+
+[[code_families]]
+id = 'f38'
+representative = 'silent_hill_orphan_j2me_en_v010_9_zip_silent_hill_2007_konam_14'
+representative_sha256 = 'f4d392f77556975036bc78498b07e58744a8e19d48a54deb844ac1ac9669e8a7'
+source_lineage = 'split-runtime'
+member_count = 1
+members_sha256 = 'd0a5f7d8209d75b09cbcd570b0968a73fd740df83f82bfe3c1234cbf1ce100c8'
+game_class_count = 3
+game_method_count = 133
+game_code_bytes = 52657
+class_shape_set_sha256 = 'aee97a249cc930bb242bb1614632dcd853929e7e49c8130057ba6eb81f07278d'
+
+[[code_families]]
+id = 'f39'
+representative = 'silent_hill_orphan_j2me_en_v010_9_zip_silent_hill_2007_konam_23'
+representative_sha256 = 'a33367bb4da166bc29a9590c3f0a74adb418dd6f8a91ab8940369d76d176000f'
+source_lineage = 'split-runtime'
+member_count = 1
+members_sha256 = 'c968e056ad3b225f46dd75183b99795feffb8cfa76ebe5532c13f0bb50251412'
+game_class_count = 3
+game_method_count = 132
+game_code_bytes = 55548
+class_shape_set_sha256 = '9c1320d58d39ae6d9626f7d7e76bc43dd26b0a4185af755dd9f360503a6e6a80'
+
+[[code_families]]
+id = 'f40'
+representative = 'silent_hill_orphan_j2me_en_v010_9_zip_silent_hill_2007_konam_26'
+representative_sha256 = 'b5159d5e490c98a3f39d73c39fc77347a590a40058f6cd9ddd2bc20f4c62eeeb'
+source_lineage = 'split-runtime'
+member_count = 1
+members_sha256 = 'f017e3d79514d7e2ad982f2af75b1af04d571897011787939ca9b6447403352b'
+game_class_count = 3
+game_method_count = 133
+game_code_bytes = 55558
+class_shape_set_sha256 = '375af6a595efbc431947cecb2a03a738f6448999bdeb60381e62977704b9248d'
+
+[[code_families]]
+id = 'f41'
+representative = 'silent_hill_orphan_j2me_en_v010_9_zip_silent_hill_2007_konam_41'
+representative_sha256 = '9f638bcd52b8d3314014ced473a1b510279b7453819ff9387647524e2152b7ea'
+source_lineage = 'source-named'
+member_count = 1
+members_sha256 = '6debb0a921864f39ddfb981b378cdff5ad1339c3656bdff0591736b56e1a2e95'
+game_class_count = 13
+game_method_count = 355
+game_code_bytes = 62833
+class_shape_set_sha256 = 'ada0761c5a894d607f58234782a86f12163fc586c33d23a05c96cfae26b14b83'
+
+[[code_families]]
+id = 'f42'
+representative = 'silent_hill_orphan_j2me_en_v010_9_zip_silent_hill_2007_konam_58'
+representative_sha256 = 'dc8a328a49accb9f2c04adc0c758f3106f82c378031834f469bc2f5b653e62ff'
+source_lineage = 'obfuscated-engine'
+member_count = 1
+members_sha256 = '5bcd6adb6aca5f9bf5fb1c1bbb229ca5c1122af2525793faf59f787deef8f48e'
+game_class_count = 11
+game_method_count = 309
+game_code_bytes = 53429
+class_shape_set_sha256 = '534cdc450af45a58345311108cd52b256c1c7bcb912ed15cfffcf3dcdf75fe7b'
+
+[[code_families]]
+id = 'f43'
+representative = 'silent_hill_orphan_j2me_en_v010_9_zip_silent_hill_2007_konam_66'
+representative_sha256 = '26197d288cac70a98452abea08f9e7602547234721463af910bb377f9065e556'
+source_lineage = 'obfuscated-engine'
+member_count = 1
+members_sha256 = '302a947b55bbada0ca524c5dc4272cece74fe4512c645ba781e473743fe57ef0'
+game_class_count = 10
+game_method_count = 307
+game_code_bytes = 53731
+class_shape_set_sha256 = '68430c8c6f1c81fd35782c47daddb2ea0f90118d47aee61407e8ccf1d422acb8'
+
+[[code_families]]
+id = 'f44'
+representative = 'silent_hill_orphan_j2me_en_v010_9_zip_silent_hill_2007_konam_77'
+representative_sha256 = 'c5a7e26e92573441c4dc864597994de3b6bb7c6e19afc2338a03340be147fc7c'
+source_lineage = 'obfuscated-engine'
+member_count = 2
+members_sha256 = '4e21c1433ae15d7a222151bf4b3a979abcf9696a1ea5a58d9e923956a37fcb56'
+game_class_count = 10
+game_method_count = 306
+game_code_bytes = 53656
+class_shape_set_sha256 = 'c68c60886b744a728c89b8e2db632ddf36161df2612e5cc679b0f93a83db6bd3'
+
+[[code_families]]
+id = 'f45'
+representative = 'silent_hill_orphan_j2me_en_v010_zip_silent_hill_2007_konami__46'
+representative_sha256 = '9c1349c663fc7d0d82bfc9309188217cebcc27f13b3e8dbd25490456bc1d2219'
+source_lineage = 'obfuscated-engine'
+member_count = 1
+members_sha256 = '1252be2bac46653d77a9c3c6ecd7554e14d3f2fdf027249dbb9505aef0e0d536'
+game_class_count = 11
+game_method_count = 313
+game_code_bytes = 53752
+class_shape_set_sha256 = '3354c537d459c0cc4fbfd5c7ba038f6367ed9d56e5b0f6bcff298f2ef05c34b1'
+
+[[code_families]]
+id = 'f46'
+representative = 'silent_hill_orphan_j2me_en_v10_110'
+representative_sha256 = 'a57a6ec5a7f97f46c8b45a2c12877515c2bb6badbaf0a2176379dc74e5436fd9'
+source_lineage = 'obfuscated-engine'
+member_count = 1
+members_sha256 = 'a8199ffcdaae0435a9461e7e327e7c0d6095522ecdd4642898a3a61f013e94bf'
+game_class_count = 10
+game_method_count = 307
+game_code_bytes = 53799
+class_shape_set_sha256 = '8760031bba9b1b11bc16ed4e411fa70fb7908c0a7a7e239effd0091d2016804a'
+
+[[code_families]]
+id = 'f47'
+representative = 'silent_hill_orphan_j2me_en_v10_1_03'
+representative_sha256 = 'b7a281ca02640aee91cde21fe3435fc92af50f47f380c1366830548ce0bef251'
+source_lineage = 'split-runtime'
+member_count = 1
+members_sha256 = '1b933590d9266574f02ec8123fffb90803c927fcfde513f3dbad78be100b33dd'
+game_class_count = 3
+game_method_count = 129
+game_code_bytes = 51010
+class_shape_set_sha256 = 'f71259fdc7c6476402c53d528cc8b6718dd52b5c911d29fe6d256c334d6188e3'
+
+[[code_families]]
+id = 'f48'
+representative = 'silent_hill_orphan_j2me_en_v153_76'
+representative_sha256 = '324cb61aa1cf8f758d6060c29b94ad877fddeec3f7f7d12b5fd8c6d9276a1d17'
+source_lineage = 'obfuscated-engine'
+member_count = 1
+members_sha256 = '8fe12bdc74643dbb53859c53e1771407f2653612d6d7a948b7f2b4da8382bbc0'
+game_class_count = 12
+game_method_count = 318
+game_code_bytes = 55481
+class_shape_set_sha256 = '2aef1c1530f4164d4cb43e11251556f4466b9e3496680e42bfe3330b57487c40'
+
+[[code_families]]
+id = 'f49'
+representative = 'silent_hill_orphan_j2me_zh_v10_motorola_a1000_115'
+representative_sha256 = 'fb07180ccfc0363e63af77517b14a81a9d42d00f9ffc00c9da7cb0b1a95fbaf1'
+source_lineage = 'obfuscated-engine'
+member_count = 1
+members_sha256 = '2f273f49db7e134513288c3f918010cfa13d4c9ece715cee2ad25d137dd536a2'
+game_class_count = 11
+game_method_count = 312
+game_code_bytes = 53479
+class_shape_set_sha256 = '089e0871b11e2da25e453120b46a78e9801e8e7db6c8662001a9585e0df46eee'

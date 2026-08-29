@@ -1,0 +1,21 @@
+# Methods whose numeric opcode multiset is exact but whose order differs after
+# modern javac. Every entry must be reviewed against the original control flow.
+reordered = [
+    "Application.createGradientImage(IIIIZ)Ljavax/microedition/lcdui/Image;",
+    "Application.resourceGetFromBytes(Ljava/lang/String;[BI)Ljava/io/InputStream;",
+    "Application.resourceInit()V",
+    "Application.resourceLookup(Ljava/lang/String;)I",
+    "InkEngine.engineMenuKeyHandling()V",
+    "InkEngine.executeCommand(LInkInterpreter;I[Ljava/lang/Object;)Ljava/lang/Object;",
+    "InkEngine.ingameMoveKeyHandling()V",
+    "InkEngine.inventoryUseItemMenuKeyHandling()V",
+    "InkEngine.menuPaintIngame(LMenuModel;)V",
+    "InkEngine.menuPaintIngameImageBorders(IIIIIZIZII)V",
+    "InkEngine.paintAnimCursorMask()V",
+    "InkEngine.say(Ljava/lang/String;Ljava/lang/String;Z)V",
+    "InkInterpreter.executeCommand()Ljava/lang/Object;",
+    "RoomObject.runAnimation(Ljavax/microedition/lcdui/Graphics;II)V",
+    "RoomObject.update()Z",
+    "SilentHillGame.HUD_paint()V",
+    "SilentHillGame.menuPaintOMS(LMenuModel;)V",
+]

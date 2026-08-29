@@ -26,11 +26,35 @@ With `nix` + `just`:
 ```sh
 nix develop
 just bootstrap <resources>
+just check-affected       # only content-hash-invalidated gate groups
+just watch-affected       # rerun affected groups while editing
 just check
 ```
 
+The affected-gate runner is Git-independent: `tools/gates/gates.toml` declares
+each group’s real inputs, and only a successfully checked content fingerprint is
+cached. A failed or newly changed hash reruns immediately. `just check` remains
+the milestone/final umbrella and refreshes every cached fingerprint only after
+all gates and can-fail proofs pass.
+
+Reusable discoveries are maintained in the local J2ME Preservation Kit at
+`../_template` and copied into this standalone game repository deliberately.
+Only Silent Hill build evidence, canonical source, variants, oracle vectors, and
+node crosswalks remain game-specific.
+
 ## Status
 
-Phase 0 (resource-free foundation) scaffolded. See `docs/STATUS.md` and the
-provenance authority `java/reconstruction/builds.toml`. Phase 1 onward follows
-`../PLAYBOOK.md`.
+Phases 1–2 are operational and Phase 3 has started: the complete canonical Java
+application, content-proven six-language integration, bounded `no_std` codecs,
+reviewed 115-build family/lineage/content model, exact `javac`/`syn` audit
+pipeline, and the first 148 oracle-verified Rust methods are in-tree.
+The first 168 Java fields also have exhaustive declaration crosswalks: 135 mutable
+state fields in fifteen explicit instance/static owners, thirty-three scalar Rust
+constants, and one separately inventoried mutable-array initializer template.
+The real MIDP JAR exists as an AST/oracle
+authority but is not the production runtime. The game is not playable yet;
+the strict boundary also has hash-locked typed Java `Object` and variable-error
+representations.
+Coverage is deliberately reported as 148/350 bodies and 168/1,075 fields. See
+`docs/STATUS.md`, `docs/GATES.md`, `docs/CROSSWALK_FINDINGS.md`, and the provenance authority
+`java/reconstruction/builds.toml`.

@@ -6,8 +6,11 @@ location and are materialized into git-ignored `_originals/` by `fetch.py`.
 `verify.py` reconciles every materialized payload against the `sha256` + `bytes`
 table here.
 
-`gen_builds.py` fills in the **mechanical** fields automatically; a human
-reconciles the **judgment** fields in Phase 1 (marked *TODO* / *HINT* below).
+`gen_builds.py` fills in the **mechanical** fields automatically. The checked-in
+Silent Hill ledger has completed its first review: `build-model.toml` and
+`validate_build_model.py` now recompute every judgment field from the verified
+corpus. Regenerating this file produces a candidate and must not silently erase
+those reviewed annotations.
 
 ## Top-level keys
 
@@ -16,8 +19,8 @@ reconciles the **judgment** fields in Phase 1 (marked *TODO* / *HINT* below).
 | `title` | human title of the game |
 | `slug` | repo slug |
 | `fork` | `"2d"` (Graphics2D) or `"3d"` (M3G) — from the M3G probe |
-| `baseline` | *TODO Phase 1* — id of the quality/completeness baseline build |
-| `naming_reference` | *TODO Phase 1* — id of the build whose text justifies semantic names |
+| `baseline` | reviewed id of the quality/completeness baseline build |
+| `naming_reference` | reviewed id of the independent source-named semantic reference |
 
 ## `[[payload]]` — one row per UNIQUE payload (deduped by sha256)
 
@@ -36,19 +39,22 @@ multiple `collected_as` + `containers` entries (meaningful aliases, kept).
 | `midlet_name` / `midlet_version` / `vendor` / `cldc` | mechanical | from `MANIFEST.MF` (strings, may lie about language) |
 | `resolution` / `device` | mechanical | derived from the filename (a hint; confirm from canvas dims) |
 | `declared_language` | **HINT** | from the filename/manifest — **verify from decoded content, never trust it** (R10) |
-| `official` | **TODO** | `true` = official recovery target; set `false` and move to `[[archived]]` if a fan repack |
+| `review_status` | reviewed | `canonical-baseline`, `semantic-reference`, `fingerprinted`, or evidence-scoped `third-party-branded`; this deliberately does not claim an unverifiable official release |
 | `repack_tag` | mechanical | a detected fan-repack signature (`by X`, a modder domain) — a hint to archive |
-| `lineage` | **TODO Phase 1** | code family (device/vendor port, version family, language fork) from fingerprints |
+| `code_family` | reviewed/mechanical | one of the 49 exact game-class shape families, locked by `build-model.toml` |
+| `source_lineage` | reviewed | `source-named`, `obfuscated-engine`, or `split-runtime`, derived from class ownership/layout |
+| `content_profile` | reviewed | actual locale-member profile derived from the JAR, never its filename |
 | `collected_as` | mechanical | every original distribution name this payload was seen under |
 | `containers` | mechanical | `_originals/<file>` (top-level) and/or `inside _originals/<zip>` (nested) |
 | `companion_jad` / `companion_of` | mechanical | link a JAR to its JAD and vice-versa |
 | `notes` | curatorial | aliases, evidence, anything a reviewer must know |
 
-## `[[archived]]` — same schema, for fan repacks/mods
+## `[[archived]]` — same schema, for proven altered payloads
 
 Preserved and verified (evidence is never discarded), but **not** recovery
-targets. Move a `[[payload]]` here once Phase 1 confirms it is unofficial. `verify.py`
-checks these too.
+targets. Third-party branding alone does not prove altered code, so those JARs
+remain in `[[payload]]` with `review_status = "third-party-branded"`. Move one
+to `[[archived]]` only when byte/content evidence establishes that policy.
 
 ## `[[container]]` — immutable zip wrappers
 
@@ -64,5 +70,5 @@ checks these too.
   contents are immutable. **Identity is the `sha256`**, never the id or filename.
 - Delete only a cryptographically proven accidental duplicate; **keep meaningful
   aliases** (same payload under two names) and document them.
-- Assign a semantic field (`official`, `lineage`, true language, `baseline`) only
+- Assign a semantic field (review status, lineage, true language, baseline) only
   when bytecode / decoded content / cross-build evidence supports it.

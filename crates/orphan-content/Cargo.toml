@@ -1,0 +1,17 @@
+[package]
+name = "orphan-content"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Content identities and borrowed language packs for Silent Hill: Orphan"
+
+[features]
+default = []
+std = ["orphan-formats/std"]
+
+[dependencies]
+orphan-formats = { path = "../orphan-formats" }
+
+[dev-dependencies]
+sha2 = "0.10"
+zip = { version = "2.4", default-features = false, features = ["deflate"] }

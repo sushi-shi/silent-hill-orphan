@@ -1,0 +1,6 @@
+[package]
+name = "orphan-me"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "MIDP/Graphics2D compatibility layer for the strict transliteration"

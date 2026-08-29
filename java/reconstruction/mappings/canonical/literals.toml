@@ -1,0 +1,498 @@
+schema_version = 1
+
+# Every rule is a reviewed semantic domain. Structural 0/1/2/-1 values and the
+# InkCodes/TextId definition classes and descriptive static-final declarations
+# are excluded by the validator. There is no unexplained-literal budget: a new
+# unmatched use is a hard failure.
+
+# --- application shell and resource protocol -----------------------------
+
+[[rules]]
+id = "application_clock_policy"
+domain = "duration_and_tick_policy"
+sources = ["Application.java"]
+members = ["run", "startSavedGame", "tickBasedTimeUpdate"]
+meaning = "Ticker sleep bounds, sound-resume delay, and the recovered saved-game clock epoch."
+evidence = [
+    "Application.run owns the MIDlet ticker and compares System.currentTimeMillis values",
+    "MILLIS_PER_TICK names the 50 ms cadence used at the same sites",
+    "The author-source backup uses the same tickBasedTime variables and values",
+]
+
+[[rules]]
+id = "application_room_and_dissolve_geometry"
+domain = "rendering_and_room_policy"
+sources = ["Application.java"]
+members = [
+    "drawDissolve", "roomRepaint", "getLeft", "getTop", "createGradientImage",
+    "realize", "random", "gotoDissolveFXCounter", "roomWidth", "roomHeight",
+]
+meaning = "Room fallback dimensions, LCDUI anchors, dissolve particle counts, blur limits, and packed gradient color arithmetic."
+evidence = [
+    "Every drawDissolve value controls a named bloodEffect field or a five-sample particle array",
+    "getLeft/getTop decode the eight LCDUI anchor combinations",
+    "createGradientImage splits and interpolates 24-bit RGB channels before Graphics.setColor",
+    "The author-source backup provides the same rendering structure and room defaults",
+]
+
+[[rules]]
+id = "application_text_and_ini_formats"
+domain = "text_and_configuration_format"
+sources = ["Application.java"]
+members = [
+    "codedString", "readIni", "getIndexIni", "loadLanguage", "readReferences",
+    "readReferences2", "resourceURLEncode",
+]
+meaning = "Encoded-string column widths, INI delimiters, character escapes, and localization/reference table record widths."
+evidence = [
+    "readIni recognizes semicolon, equals, LF, and CR byte values",
+    "codedString indexes the recovered fixed-width substitution alphabet",
+    "loadLanguage and readReferences consume length-prefixed original binary tables",
+]
+
+[[rules]]
+id = "application_loader_resource_types"
+domain = "loader_request_code"
+sources = ["Application.java"]
+members = [
+    "loadRequest_getResourcePath", "loadRun2", "loadChunk", "loadStream",
+    "loadRoom", "loadScript", "assertLoaded", "assertRoom", "assertScript",
+    "resourceLoadStream",
+]
+meaning = "Recovered loader modes and resource-kind codes selecting room, script, image, and sound paths."
+evidence = [
+    "ResourceRequest serializes the same request-kind and transform fields",
+    "Application.loadRun2 switches on the named LOAD_REQUEST_* constants",
+    "The Java oracle surface locks the request methods and descriptors to the original classfiles",
+]
+
+[[rules]]
+id = "application_resource_container_format"
+domain = "resource_container_format"
+sources = ["Application.java"]
+members = [
+    "resourceLookup", "resourceGetDirectAccess", "resourceGetNamesAndData",
+    "resourceRollback", "resourceGetFromBytes", "resourceInit",
+    "resourceUpdateFilelists", "resourceAddToRms", "resourceGetFromJar",
+    "resourceGetFromRMS", "resourceMergeSortCmp",
+]
+meaning = "Byte widths, masks, sentinels, source tags, and size limits of the JAR/RMS chunk index and rollback records."
+evidence = [
+    "The methods read and write the same DataInput/DataOutput record fields",
+    "Source tags select the named JAR, RMS, and current-subchunk stores",
+    "The no_std orphan-formats crate independently parses the recovered container records",
+]
+
+[[rules]]
+id = "application_resource_transport"
+domain = "http_and_streaming_protocol"
+sources = ["Application.java"]
+members = [
+    "httpIniReader", "resourceGetChunkFromServer", "resourceGetStreamFromServer",
+    "resourceGetFromServer", "inkServerGetBytes",
+]
+meaning = "HTTP success/redirect status codes, retry counts, transport buffer sizes, and streaming response fields."
+evidence = [
+    "httpIniReader switches on standard 200/301/302/307 response codes",
+    "The transport methods feed recovered server bytes into the same resource-container parser",
+    "The author-source backup names the same INK server and retry flow",
+]
+
+[[rules]]
+id = "application_save_record"
+domain = "save_record_format"
+sources = ["Application.java"]
+members = ["saveGame"]
+meaning = "Version and collection widths in the recovered RMS saved-game record."
+evidence = [
+    "saveGame writes named server-variable, inventory, and room-history collections",
+    "startSavedGame and the Java original are retained as the executable format oracle",
+]
+
+# --- device input ---------------------------------------------------------
+
+[[rules]]
+id = "canvas_sprite_transform_table"
+domain = "lcd_ui_sprite_transform"
+sources = ["GameCanvas.java"]
+members = ["transformTable"]
+meaning = "Permutation between the game's transform ordinal and LCDUI Sprite transform constants."
+evidence = [
+    "GameCanvas.transform applies this table before Image.createImage",
+    "The eight entries are the complete MIDP Sprite transform domain",
+]
+
+[[rules]]
+id = "canvas_vendor_key_aliases"
+domain = "device_key_code"
+sources = ["GameCanvas.java"]
+members = ["keyConvertToKeyId"]
+meaning = "ASCII keypad values and vendor-specific aliases normalized to the game's semantic key IDs."
+evidence = [
+    "Each comparison ends by returning a named KEY_* constant",
+    "The aliases cover numeric keypad digits, star, pound, and letter-based emulator mappings",
+    "Recovered builds carry device-specific key settings alongside this fallback mapping",
+]
+
+[[rules]]
+id = "cheat_key_sequence"
+domain = "cheat_input_and_menu"
+sources = ["CheatController.java"]
+members = ["cheatNoMenuKeyHandling", "cheatMenuKeyHandling"]
+meaning = "Recovered 0-7-9 cheat chord, cheat menu ID, choice text IDs, and normalized navigation key IDs."
+evidence = [
+    "cheatNoMenuKeyHandling is a state machine over the named lastKey field",
+    "The 154-156 values resolve through the recovered localization table",
+    "cheatMenuKeyHandling dispatches the resulting menu choices",
+]
+
+# --- script and request formats ------------------------------------------
+
+[[rules]]
+id = "resource_request_record"
+domain = "resource_request_format"
+sources = ["ResourceRequest.java"]
+members = ["createFromInputStream", "getID", "getResourcePath", "imageTransform"]
+meaning = "Serialized resource-kind ordinals, image transforms, and path selector codes in a load request."
+evidence = [
+    "createFromInputStream reads the original request record",
+    "getResourcePath and imageTransform interpret the same fields",
+    "Application.loadRun2 dispatches the corresponding named request constants",
+]
+
+[[rules]]
+id = "game_resource_paint_anchor"
+domain = "lcd_ui_anchor"
+sources = ["GameResource.java"]
+members = ["paint"]
+meaning = "LCDUI TOP|LEFT anchor used for room-resource image painting."
+evidence = [
+    "The value is passed directly to Graphics.drawImage",
+    "Application.TOPLEFT names the same combined anchor value",
+]
+
+[[rules]]
+id = "ink_script_event_table"
+domain = "ink_event_format"
+sources = ["InkScript.java"]
+members = ["GFX_TYPE_INTEGER", "hasCommand", "getInventoryImage"]
+meaning = "The 56-event offset-table bound and the inventory-image event ordinal."
+evidence = [
+    "InkScript.read fills one offset per Ink event",
+    "InkInterpreter consumes event codes through the same executeEvent path",
+    "InkCodes is the named command-code holder retained beside this table",
+]
+
+[[rules]]
+id = "ink_bytecode_decoder"
+domain = "ink_bytecode_format"
+sources = ["InkInterpreter.java"]
+members = ["read", "readSigned", "hasCommand", "execute", "executeCommand"]
+meaning = "Ink command opcodes, argument tags, six-bit command mask, and unsigned-byte mask decoded by the interpreter."
+evidence = [
+    "executeCommand switches over the recovered opcode stream",
+    "read and readSigned decode operands from the original script bytes",
+    "InkCodes provides semantic names for this same opcode domain",
+    "The no_std orphan-game-xlat crate differentially checks pure command behavior against Java",
+]
+
+# --- room objects ---------------------------------------------------------
+
+[[rules]]
+id = "room_object_panel_definitions"
+domain = "battle_panel_schema"
+sources = ["RoomObject.java"]
+members = [
+    "BATTLE_PANEL_ID_TIMEBAR", "BATTLE_PANEL_ID_HARD_ATTACK",
+    "BATTLE_PANEL_ID_FAST_ATTACK", "BATTLE_PANEL_ID_INVENTORY",
+    "BATTLE_PANEL_ID_ESCAPE", "BATTLE_PANEL_TIME", "BATTLE_PANEL_SIZE",
+]
+meaning = "Mutable legacy definitions of battle-panel row IDs and record slots; their recovered names are the schema."
+evidence = [
+    "battlePanelUpdate indexes the record only through the named BATTLE_PANEL_* fields",
+    "The values and field mutability match the original class surface",
+]
+
+[[rules]]
+id = "room_object_script_events"
+domain = "ink_event_and_object_type"
+sources = ["RoomObject.java"]
+members = ["update", "enterHover"]
+meaning = "Room-object type ordinals, Ink event IDs, animation event table, and four-cell animation record stride."
+evidence = [
+    "Each event value is an executeEvent/hasEvent operand",
+    "update decodes seven animation channels from four-cell frame records",
+    "The author-source backup uses the same object types and event ordering",
+]
+
+[[rules]]
+id = "room_object_animation"
+domain = "animation_format_and_timing"
+sources = ["RoomObject.java"]
+members = ["runAnimPausedTime", "runAnimation", "animRoutine"]
+meaning = "Animation channel ordinals, four-cell frame stride, coordinate slots, and the 400 ms draw-ahead bound."
+evidence = [
+    "update constructs animationData, duration, and image-point arrays consumed here",
+    "animRoutine reads image, duration, X, and Y from each four-cell frame",
+]
+
+[[rules]]
+id = "room_object_rendering"
+domain = "object_rendering_policy"
+sources = ["RoomObject.java"]
+members = ["getBounds", "paint"]
+meaning = "Object-type rendering branches, script property events, LCDUI anchors, room bounds, and image-border layout."
+evidence = [
+    "Script event results feed named image, transform, visibility, coordinate, and border variables",
+    "Anchor values are passed directly to Graphics draw calls",
+    "255 is the recovered full-room fallback bound",
+]
+
+[[rules]]
+id = "room_object_battle_panel"
+domain = "battle_panel_rendering"
+sources = ["RoomObject.java"]
+members = ["battlePanelUpdate", "bpPaint"]
+meaning = "Seven-bit fixed-point health bars, panel colors, LCDUI anchors, compact-device threshold, and battle-panel mode IDs."
+evidence = [
+    "Health widths are explicitly shifted left and right by seven bits",
+    "Packed RGB values are passed to Graphics.setColor",
+    "Named BATTLE_PANEL_ID_* values select each rendering branch",
+]
+
+# --- Silent Hill game policy ---------------------------------------------
+
+[[rules]]
+id = "silent_hill_initial_content"
+domain = "game_content_and_initial_state"
+sources = ["SilentHillGame.java"]
+members = ["appInit", "battleStartInit"]
+meaning = "Recovered resource slots, inventory rows, room-state defaults, character stats, and battle initialization values."
+evidence = [
+    "appInit binds original setup resources and initializes named game-state fields",
+    "battleStartInit copies named health and timing variables into the room battle panels",
+    "The retained original Java and JAR are independent content oracles",
+]
+
+[[rules]]
+id = "silent_hill_input_routes"
+domain = "input_and_menu_route"
+sources = ["SilentHillGame.java"]
+members = [
+    "mainMenuKeyHandling", "ingameMenuKeyHandling", "ingameNoMenuKeyHandling",
+    "battleKeyHandling", "scrGoBack",
+]
+meaning = "Normalized game-key IDs, menu choice routes, room transitions, and battle input modes."
+evidence = [
+    "GameCanvas normalizes device key codes before these methods run",
+    "Each branch updates named menu, room, or battle state",
+    "The numeric-shape gate locks all switch labels to original bytecode",
+]
+
+[[rules]]
+id = "silent_hill_menu_content"
+domain = "menu_and_localization_content"
+sources = ["SilentHillGame.java"]
+members = [
+    "addItemChoices", "createEscapeMenu", "menuCreate", "menuUpdateOMS",
+    "executeCommand_inventoryAdd", "say",
+]
+meaning = "Game-specific menu IDs, item command choices, and string-table indices."
+evidence = [
+    "Text values are resolved through Application.getString from the recovered language pack",
+    "Choices are installed into MenuModel with their recovered command values",
+    "Other corpus builds are retained as localization/content variant sources",
+]
+
+[[rules]]
+id = "silent_hill_combat_rules"
+domain = "combat_balance_and_timing"
+sources = ["SilentHillGame.java"]
+members = ["battleUpdate"]
+meaning = "Attack phase thresholds, damage rolls, hit points, animation states, and battle-completion routes."
+evidence = [
+    "Every value controls a named battle, health, damage, or enemy animation field",
+    "RoomObject battle panels consume the resulting health and timing records",
+    "The numeric-shape gate compares this method with original bytecode",
+]
+
+[[rules]]
+id = "silent_hill_hud"
+domain = "hud_layout_and_rendering"
+sources = ["SilentHillGame.java"]
+members = ["HUD_paint", "HUD_update", "showMap"]
+meaning = "HUD resource indices, frame states, map scale, packed colors, coordinates, and LCDUI anchors."
+evidence = [
+    "The values select original systemResources and draw them at canvas-relative positions",
+    "Packed RGB values flow to Graphics.setColor",
+    "The retained device builds provide layout-policy comparisons",
+]
+
+[[rules]]
+id = "silent_hill_rendering"
+domain = "game_screen_rendering"
+sources = ["SilentHillGame.java"]
+members = [
+    "appPaint", "popupPaint", "menuPaintEngine", "menuPaintOMS",
+    "menuPaintIngame",
+]
+meaning = "Game-specific screen states, original resource indices, packed colors, text IDs, pixel geometry, and LCDUI anchors."
+evidence = [
+    "Each site is a Graphics operation or selects a named paint state/resource",
+    "Application canvas dimensions bound the coordinate policy",
+    "The author-source backup preserves the same game-specific paint routines",
+]
+
+# --- reusable Ink engine --------------------------------------------------
+
+[[rules]]
+id = "engine_legacy_runtime_definitions"
+domain = "engine_runtime_default"
+sources = ["InkEngine.java"]
+members = [
+    "EVENT_TICK_UPDATE_TIME", "INGAME_MENU_TEXT_WIDTH_MIN",
+    "INGAME_SHOW_ROW_BY_ROW_SHIFT", "LETTERS_FOR_NEW_ROW",
+    "TEXT_COLOR_BEN", "TEXT_COLOR_KAREN", "TEXT_COLOR_MOON",
+    "cursorAnimFramesBetweenUpdates", "popupMaxTime", "popupRecoveryCode",
+    "popupSetNext", "popupText", "textFadeCenter", "textFadeCenterStart",
+]
+meaning = "Mutable legacy engine defaults for timing, text layout, character colors, popup recovery, and fade state."
+evidence = [
+    "The recovered field names state the units or owning subsystem",
+    "Their field mutability and initial values match the original class surface",
+]
+
+[[rules]]
+id = "engine_input_routes"
+domain = "engine_input_and_menu_route"
+sources = ["InkEngine.java"]
+members = [
+    "engineMenuKeyHandling", "ingameMenuKeyHandling", "mainMenuKeyHandling",
+    "inventoryUseItemMenuKeyHandling", "ingameMoveKeyHandling",
+    "ingameNoMenuKeyHandling", "appKeyHandling",
+]
+meaning = "Normalized key IDs and choice/menu route codes handled by the reusable Ink menu engine."
+evidence = [
+    "GameCanvas converts physical key codes before dispatch",
+    "Each case updates named cursor, choice, menu, or room movement state",
+    "The numeric-shape gate locks switch labels and integer expressions",
+]
+
+[[rules]]
+id = "engine_menu_models"
+domain = "menu_content_and_route"
+sources = ["InkEngine.java"]
+members = [
+    "addChoices", "addItemChoices", "createMainMenu", "createSettingsMenu",
+    "createEscapeMenu", "createIngameSettingsMenu", "createInventory",
+    "createVibraSoundMenu", "createEngineFullscreenEngineMenu",
+    "createEngineFullscreenEngineMenu2", "menuCreate", "menuInvSetup",
+    "menuResetIngameValues",
+]
+meaning = "Reusable menu IDs, choice route codes, text-table indices, resource slots, and initial cursor/layout values."
+evidence = [
+    "Each number is stored beside a named MenuModel ID, choice command, or setup resource",
+    "Text IDs resolve through the recovered language pack",
+    "The source-backup oracle contains the same engine menu construction methods",
+]
+
+[[rules]]
+id = "engine_menu_update"
+domain = "menu_state_and_animation"
+sources = ["InkEngine.java"]
+members = ["menuUpdateIngame", "logoHandling"]
+meaning = "Menu row animation phases, cursor timing, menu close states, and logo/splash progression thresholds."
+evidence = [
+    "Values modify named show-row, cursor, logo, and menu timing fields",
+    "Application tickBasedTimeValue is the clock used by the animation comparisons",
+]
+
+[[rules]]
+id = "engine_rendering_layout"
+domain = "engine_layout_and_rendering"
+sources = ["InkEngine.java"]
+members = [
+    "menuPaintIngame", "menuPaintIngameImageBorders", "inventoryMenuPaint",
+    "menuPaintEngine", "menuPaintLoadingBar", "menuPaintCurrentEngine",
+    "menuCreateHeaderFooterImages", "menuEngineDrawScrollBar", "appPaint",
+    "logoPaint", "roomPaint", "splashPaint", "paint", "drawBigScreenAddOn",
+]
+meaning = "Device-profile pixels, original image slots, packed colors, LCDUI anchors, delimiter modes, and scroll geometry."
+evidence = [
+    "Every site selects a Graphics operation, systemResources entry, or named layout state",
+    "Coordinates derive from Application canvas dimensions and recovered font metrics",
+    "Other device builds are retained to separate layout policy from game rules",
+]
+
+[[rules]]
+id = "engine_popup_system"
+domain = "popup_state_and_rendering"
+sources = ["InkEngine.java"]
+members = ["popupPaint", "popupKeyHandling", "popupCreate"]
+meaning = "Popup action codes, minimum display time, text layout, colors, anchors, and yes/no choice routing."
+evidence = [
+    "Named popup action fields determine every input route",
+    "Rendering values are passed to Graphics or derived from the popup text/font metrics",
+]
+
+[[rules]]
+id = "engine_battle_rules"
+domain = "battle_balance_and_input"
+sources = ["InkEngine.java"]
+members = ["battleUpdate", "battleKeyHandling"]
+meaning = "Battle modes, attack-state thresholds, panel slots, animation timing, and normalized battle keys."
+evidence = [
+    "Named battle fields and RoomObject panel records consume the values",
+    "SilentHillGame overrides these methods with game-specific balance while preserving the engine contract",
+]
+
+[[rules]]
+id = "engine_command_protocol"
+domain = "ink_command_semantics"
+sources = ["InkEngine.java"]
+members = [
+    "executeCommand", "executeCommand_setSystemVar", "executeCommand_inventoryAdd",
+    "inventoryAdd", "setTransparency", "roomInit",
+]
+meaning = "Ink command IDs, system-variable selectors, inventory flags, transform values, and room initialization sentinels."
+evidence = [
+    "InkInterpreter dispatches recovered bytecode into executeCommand",
+    "InkCodes is the semantic command holder for the same protocol",
+    "Pure translated command helpers are differentially checked against the Java oracle",
+]
+
+[[rules]]
+id = "engine_action_keys"
+domain = "action_key_mapping"
+sources = ["InkEngine.java"]
+members = [
+    "actionKeyInitSystem", "actionKeyIdConvert", "actionKeyKeyHandling",
+    "actionKeyUnsetAllKeys",
+]
+meaning = "The twelve logical action-key slots, keypad ASCII range, star/pound values, and unset sentinel."
+evidence = [
+    "ACTION_KEY_ID_* constants name every logical slot",
+    "GameCanvas supplies normalized keypad key values",
+]
+
+[[rules]]
+id = "engine_system_resources"
+domain = "engine_setup_resource_schema"
+sources = ["InkEngine.java"]
+members = ["appInit", "menuSystemInit", "updateSystemResourceValues"]
+meaning = "Setup table sizes, system-resource slot ordinals, canvas policy thresholds, and engine initialization defaults."
+evidence = [
+    "SETUP_INDEX_* constants name the slots consumed by updateSystemResourceValues",
+    "appInit reads the original setup table before menus or room rendering begin",
+]
+
+[[rules]]
+id = "engine_text_wrapping"
+domain = "text_layout_policy"
+sources = ["InkEngine.java"]
+members = ["wrapString", "say", "engineChoiceSelectionColors"]
+meaning = "Line-break character values, width guards, text fade interpolation, and packed choice colors."
+evidence = [
+    "wrapString measures recovered bitmap/font text against named width limits",
+    "engineChoiceSelectionColors interpolates packed RGB channels",
+]

@@ -1,0 +1,26 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/orphan-content",
+    "crates/orphan-formats",
+    "transliteration/crates/orphan-game-xlat",
+    "transliteration/crates/orphan-jvm",
+    "transliteration/crates/orphan-me",
+    "transliteration/tools/orphan-ast-audit",
+    "transliteration/tools/orphan-pure-oracle",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "CC0-1.0"
+
+[workspace.dependencies]
+quote = "1"
+syn = { version = "3", features = ["full", "visit"] }
+
+[profile.dev]
+overflow-checks = true
+
+[profile.release]
+opt-level = 3

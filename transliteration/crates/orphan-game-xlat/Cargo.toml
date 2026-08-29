@@ -1,0 +1,12 @@
+[package]
+name = "orphan-game-xlat"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Strict Java-to-Rust transliteration of Silent Hill: Orphan"
+
+[dependencies]
+orphan-content = { path = "../../../crates/orphan-content" }
+orphan-formats = { path = "../../../crates/orphan-formats" }
+orphan-jvm = { path = "../orphan-jvm" }
+orphan-me = { path = "../orphan-me" }

@@ -1,0 +1,102 @@
+schema_version = 1
+baseline_build = "silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_106"
+baseline_sha256 = "ca9a874ce7c7fb11ed444701b65e967919d3d7c0bcf73f80a9fcf825fb6a4be7"
+semantic_reference_build = "silent_hill_orphan_j2me_en_v010_9_zip_silent_hill_2007_konam_41"
+semantic_reference_sha256 = "9f638bcd52b8d3314014ced473a1b510279b7453819ff9387647524e2152b7ea"
+source_package = "defpackage"
+
+# Every baseline class has the same original class name in the independent
+# semantic-reference build. The four large engine classes additionally survive
+# as author source backups in nine verified payloads; source-backups.toml binds
+# those bytes. Confidence concerns the identity/role, not behavioral parity.
+
+[[classes]]
+original_name = "M"
+semantic_name = "Application"
+confidence = "high"
+role = "application-and-runtime"
+evidence = ["Extends MIDlet and owns lifecycle, canvas, ticker, rooms, resources, persistence, and localization.", "Author backup M.java~ documents the class and its fields."]
+
+[[classes]]
+original_name = "MyCanvas"
+semantic_name = "GameCanvas"
+confidence = "high"
+role = "platform-canvas"
+evidence = ["Extends LCDUI GameCanvas and forwards paint/key lifecycle to Application.", "Author backup MyCanvas.java~ documents the adapter."]
+
+[[classes]]
+original_name = "Ext"
+semantic_name = "SilentHillGame"
+confidence = "high"
+role = "game-specific-rules-and-ui"
+evidence = ["Owns Silent Hill combat, object-action menu, HUD, inventory behavior, and game-specific resources.", "Author backup Ext.java~ preserves descriptive locals and feature guards."]
+
+[[classes]]
+original_name = "ExtBase"
+semantic_name = "InkEngine"
+confidence = "high"
+role = "ink-engine"
+evidence = ["Implements the reusable INK adventure runtime beneath SilentHillGame.", "Author backup ExtBase.java~ documents engine setup, UI, commands, and device policies."]
+
+[[classes]]
+original_name = "Cheat"
+semantic_name = "CheatController"
+confidence = "high"
+role = "debug-input"
+evidence = ["Recognizes hidden key sequences and routes the cheat menu."]
+
+[[classes]]
+original_name = "LoadRequest"
+semantic_name = "ResourceRequest"
+confidence = "high"
+role = "resource-request"
+evidence = ["Typed request record that resolves script, image, sound, and room resource paths."]
+
+[[classes]]
+original_name = "Menu"
+semantic_name = "MenuModel"
+confidence = "high"
+role = "menu-state"
+evidence = ["Stores choices, layout, scrolling, softkeys, and the active menu stack; painting is owned elsewhere."]
+
+[[classes]]
+original_name = "Resource"
+semantic_name = "GameResource"
+confidence = "high"
+role = "decoded-resource"
+evidence = ["Caches decoded image resources with dimensions, registration point, and transform metadata."]
+
+[[classes]]
+original_name = "RoomObject"
+semantic_name = "RoomObject"
+confidence = "high"
+role = "room-entity"
+evidence = ["Decoded room entity with geometry, script events, animation, hit bounds, and battle-panel state."]
+
+[[classes]]
+original_name = "Script"
+semantic_name = "InkScript"
+confidence = "high"
+role = "ink-script"
+evidence = ["Stores INK bytecode, string table, event offsets, and shared script variables."]
+
+[[classes]]
+original_name = "ScriptThread"
+semantic_name = "InkInterpreter"
+confidence = "high"
+role = "ink-interpreter"
+evidence = ["Interprets one INK event stream and tracks created/running/paused/waiting/returned state; it is not a Java Thread."]
+
+[[classes]]
+original_name = "s"
+semantic_name = "InkCodes"
+confidence = "high"
+role = "ink-code-domain"
+evidence = ["Defines the complete serialized command and event code domains consumed by InkInterpreter and room scripts."]
+
+[[classes]]
+original_name = "txt_consts"
+semantic_name = "TextId"
+confidence = "high"
+role = "text-id-domain"
+evidence = ["Defines packed UI text-table indices and the six locale selectors."]
