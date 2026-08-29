@@ -54,6 +54,9 @@ public class RecordStore {
         if (oracleDeleteMode == 3) {
             throw new NullPointerException("injected unchecked failure");
         }
+        if (oracleDeleteMode == 4) {
+            throw new AssertionError("injected delete error");
+        }
     }
 
     public static void oracleResetDelete(int mode) {

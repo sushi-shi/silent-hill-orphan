@@ -12,7 +12,7 @@ Living record of what is recovered and verified. Newest first.
   `orphan-me` starts the deterministic MIDP subset with a clipped CPU ARGB
   framebuffer. These are device/runtime implementations, not transliterated
   game bodies.
-- The first 161/350 game methods (`M.min`, `max`, `abs`, `dir`, `toInt`,
+- The first 162/350 game methods (`M.min`, `max`, `abs`, `dir`, `toInt`,
   `toBoolean`, `getLeft`,
   `getTop`, `resourceExit`, `destroyApp`, `pauseApp`, `appStart`, `resourceURLEncode`, `codedString`, `charToString`,
   the default constructors for `Application`, `CheatController`, `SilentHillGame`,
@@ -32,7 +32,7 @@ Living record of what is recovered and verified. Newest first.
   `ExtBase.actionKeyIdConvert`, both `popupCreate` overloads, `popupSetNext`,
   `actionKeyKeycodeToActionkey`, `actionKeyGetScriptId`,
   `actionKeyUnsetAllKeys`, `actionKeyInitSystem`, `isMenuScrollAllowed`,
-  `inventoryEquipUnequipHandling`, `splashMoreExists`, the two-argument `wrapString`,
+  `inventoryEquipUnequipHandling`, `removeSavedGameFromRMS`, `splashMoreExists`, the two-argument `wrapString`,
   `M.loading`, all three `loadRequest_getResourcePath` overloads,
   `M.setKeyStatus`, and `MyCanvas.<init>`, `paint`, `showNotify`, `resumeSound`, `keyInit`, `keyJadEntryAsInt`, `keyConvertToKeyId`, `keyPressed`, `keyReleased`,
   both `Menu.addChoice` overloads, `getChoiceNr`, `countChoices`,
@@ -49,16 +49,16 @@ Living record of what is recovered and verified. Newest first.
   `getMoveDir`, and `enterHover`) are strict
   Rust translations. Each is hash-bound to original
   bytecode and opcode streams, complete `javac` and `syn` ASTs, a written
-  per-node semantic crosswalk, and a live 994,477-case oracle in which the
+  per-node semantic crosswalk, and a live 994,522-case oracle in which the
   recovered baseline, canonical Java, and Rust agree. The naming-reference JAR
-  agrees on all 988,262 non-variant cases; its 6,215 excluded requests cover two
+  agrees on all 988,307 non-variant cases; its 6,215 excluded requests cover two
   input-timing policies and one rendering policy scoped by live validation of
   the variant ledger.
-  Coverage stays an explicit ratchet; the other 189 bodies are not claimed.
-- The 183 Java fields reached by those methods are exhaustively mapped: 149 mutable
+  Coverage stays an explicit ratchet; the other 188 bodies are not claimed.
+- The 184 Java fields reached by those methods are exhaustively mapped: 149 mutable
   fields become 149 Rust fields in `CheatControllerStatics`, `SilentHillGameStatics`, `ApplicationState`, `ResourceRequestState`, `GameResourceState`, `GameResourceStatics`, `InkEngineState`, `GameCanvasState`,
   `MenuState`, `MenuStatics`, `InkInterpreterState`, `InkInterpreterStatics`,
-  `InkScriptState`, `InkScriptStatics`, `RoomObjectState`, and `RoomObjectStatics`; thirty-four final
+  `InkScriptState`, `InkScriptStatics`, `RoomObjectState`, and `RoomObjectStatics`; thirty-five final
   coded-string/Ink constants become typed Rust constants, and the mutable transform
   table's eight class-initializer values have their own constant template. Each declaration
   has complete `javac`/`syn` node ownership; all sixteen state-container ASTs are
@@ -68,9 +68,9 @@ Living record of what is recovered and verified. Newest first.
   `ApplicationRepaintCanvasIfPossibleError`, `ApplicationResourceMakeSubChunkError`, and
   `RoomObjectStringEventError` and `RoomObjectEnterHoverError` enums and their variants are independently claimed
   as Rust-only adaptations.
-  The reverse `syn` inventory permits only the 163 reviewed functions, 230
-  reviewed value declarations, and 33 reviewed containers (426 total
-  declarations). Twenty-one focused Rust tests exercise the admitted bodies, and the
+  The reverse `syn` inventory permits only the 164 reviewed functions, 231
+  reviewed value declarations, and 33 reviewed containers (428 total
+  declarations). Twenty-two focused Rust tests exercise the admitted bodies, and the
   injected unowned-constant proof goes red.
 
 ## Phase 2 — canonical Java application and AST authority

@@ -986,6 +986,8 @@ public final class OrphanOriginalPureOracle {
         Method freeMemory = method(application, "freeMemory");
         Method setDisplay = method(application, "setDisplay", Displayable.class);
         Method rmsDelete = method(application, "rmsDelete", String.class);
+        Method removeSavedGameFromRms = method(
+                inkEngine, "removeSavedGameFromRMS", String.class);
         Method rmsGet = method(application, "rmsGet", String.class);
         Method saveChunkIni = method(application, "saveChunkINI", DataInputStream.class);
         Method resourceMakeSubChunk = method(application, "resourceMakeSubChunk");
@@ -1791,6 +1793,29 @@ public final class OrphanOriginalPureOracle {
                 String identity = RecordStore.oracleDeleteCalls == 0
                         ? "-" : RecordStore.oracleDeleteName == expectedName ? "I" : "W";
                 result = status + ":" + RecordStore.oracleDeleteCalls + ":" + identity;
+                RecordStore.oracleResetDelete(0);
+            } else if (parts[0].equals("remove-saved-game-from-rms")
+                    && parts.length == 3) {
+                String expectedGameId = utf16(parts[1]);
+                RecordStore.oracleResetDelete(value(parts, 2));
+                String status;
+                try {
+                    removeSavedGameFromRms.invoke(null, expectedGameId);
+                    status = "OK";
+                } catch (InvocationTargetException exception) {
+                    Throwable cause = exception.getCause();
+                    if (cause instanceof NullPointerException) {
+                        status = "NPE";
+                    } else if (cause instanceof AssertionError) {
+                        status = "ERR";
+                    } else {
+                        throw exception;
+                    }
+                }
+                String identity = RecordStore.oracleDeleteCalls == 0
+                        ? "-" : RecordStore.oracleDeleteName != expectedGameId ? "D" : "W";
+                result = status + ":" + utf16Output(RecordStore.oracleDeleteName) + ":"
+                        + RecordStore.oracleDeleteCalls + ":" + identity;
                 RecordStore.oracleResetDelete(0);
             } else if (parts[0].equals("rms-get") && parts.length == 6) {
                 String expectedName = utf16(parts[1]);

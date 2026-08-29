@@ -48,8 +48,8 @@ executable code. A separate domain gate requires 229 `TextId`, 72 Ink-command,
 and 105 Ink-event consumers and rejects same-valued constants borrowed from an
 unrelated domain. The corresponding Rust walker uses `syn`; reviewed
 crosswalk coverage is ratcheted by the method audit and currently covers the
-first 161 method bodies plus 183 Java fields they reach. Of those, 149 mutable
-fields map to sixteen instance/static Rust owner structs and thirty-four final
+first 162 method bodies plus 184 Java fields they reach. Of those, 149 mutable
+fields map to sixteen instance/static Rust owner structs and thirty-five final
 fields map to typed Rust constants; one mutable array also owns a separately
 inventoried initializer template. The
 reverse `syn` inventory separately rejects unreviewed functions, value
@@ -69,8 +69,8 @@ and five content profiles from all 115 verified JARs. The complete two-build
 source-named delta ledger accounts for 304 byte-identical common methods, 51
 reviewed method variants, five reference-only methods, and eight reference-only
 fields. `just java-test` executes the recovered baseline, canonical Java, and
-strict Rust on the same 994,477 edge cases for the 161 reviewed methods. The
-naming-reference JAR is also compared on all 988,262 cases outside its two
+strict Rust on the same 994,522 edge cases for the 162 reviewed methods. The
+naming-reference JAR is also compared on all 988,307 cases outside its two
 ledger-reviewed input-timing variants and one rendering-policy variant.
 
 The surviving `M.java~`, `MyCanvas.java~`, `Ext.java~`, and `ExtBase.java~`

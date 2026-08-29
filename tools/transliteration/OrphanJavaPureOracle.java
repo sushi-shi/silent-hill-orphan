@@ -1364,6 +1364,24 @@ public final class OrphanJavaPureOracle {
                         ? "-" : RecordStore.oracleDeleteName == expectedName ? "I" : "W";
                 result = status + ":" + RecordStore.oracleDeleteCalls + ":" + identity;
                 RecordStore.oracleResetDelete(0);
+            } else if (parts[0].equals("remove-saved-game-from-rms")
+                    && parts.length == 3) {
+                String expectedGameId = utf16(parts[1]);
+                RecordStore.oracleResetDelete(value(parts, 2));
+                String status;
+                try {
+                    InkEngine.removeSavedGameFromRMS(expectedGameId);
+                    status = "OK";
+                } catch (NullPointerException exception) {
+                    status = "NPE";
+                } catch (AssertionError error) {
+                    status = "ERR";
+                }
+                String identity = RecordStore.oracleDeleteCalls == 0
+                        ? "-" : RecordStore.oracleDeleteName != expectedGameId ? "D" : "W";
+                result = status + ":" + utf16Output(RecordStore.oracleDeleteName) + ":"
+                        + RecordStore.oracleDeleteCalls + ":" + identity;
+                RecordStore.oracleResetDelete(0);
             } else if (parts[0].equals("rms-get") && parts.length == 6) {
                 String expectedName = utf16(parts[1]);
                 int getMode = value(parts, 3);

@@ -1,17 +1,17 @@
 schema_version = 1
 baseline_sha256 = "ca9a874ce7c7fb11ed444701b65e967919d3d7c0bcf73f80a9fcf825fb6a4be7"
 total_body_count = 350
-reviewed_body_count = 161
-semantic_reviewed_body_count = 161
+reviewed_body_count = 162
+semantic_reviewed_body_count = 162
 total_field_count = 1075
-semantic_reviewed_field_count = 183
-total_rust_function_count = 163
-reviewed_rust_function_count = 163
-total_rust_value_declaration_count = 230
-reviewed_rust_value_declaration_count = 230
+semantic_reviewed_field_count = 184
+total_rust_function_count = 164
+reviewed_rust_function_count = 164
+total_rust_value_declaration_count = 231
+reviewed_rust_value_declaration_count = 231
 total_rust_container_count = 33
 reviewed_rust_container_count = 33
-total_rust_declaration_count = 426
+total_rust_declaration_count = 428
 
 [crosswalk_policy]
 blanket_max_span = 48
@@ -4077,6 +4077,49 @@ rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "f
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
 semantic_review = "Three thousand cases agree across both recovered JARs, canonical Java, and Rust. Eight nullable and hostile UTF-16 names cross success, RecordStoreNotFoundException, another RecordStoreException, AssertionError, and NullPointerException independently at open, get, and close with null, empty, and binary record data. The oracle compares callback order and counts, name and data identity, create=false, record ID one, returned bytes, and propagated status. Open and get Exceptions return null and skip all later calls, a close Exception returns the exact fetched array, and Error propagates at every stage. All thirty-four javac and ninety syn nodes plus four typed error variants and their enum container are owned exactly once."
+
+[[body]]
+java_class = "ExtBase"
+canonical_class = "InkEngine"
+java_name = "removeSavedGameFromRMS"
+descriptor = "(Ljava/lang/String;)V"
+java_item = "removeSavedGameFromRMS(String)"
+code_sha256 = "2e7c787b3dfde529fe9a91402da8090f6c9a0179dd983928933fdf0bd68db3e6"
+opcode_sha256 = "614af52775443ce488c7fd06756912da736cabd8bebd860622e26f9aa22644ab"
+java_ast_sha256 = "7de0d4eec1be678cf440609cac3159aa2ed8f8154c2432bedf995057cf9a5cec"
+java_nodes_sha256 = "7cedb97d576a854767685568daad3b0c031e6de3ac5769565e816226d2bb02d0"
+java_node_count = 15
+rust_node_counts = [43]
+operation = [
+  { semantic = "own the complete saved-game deletion wrapper", java_nodes = [0], rust_nodes = ["0:0"] },
+  { semantic = "allocate the transient Java StringBuffer / owned Rust UTF-16 name and append the exact RMS_variables_ prefix first", java_node_ranges = [[9, 13]], rust_node_ranges = [{ target = 0, start = 1, end = 4 }] },
+  { semantic = "append gameId code units exactly, using Java StringBuffer.append(String)'s literal null spelling for a null reference", java_nodes = [7, 8, 14], rust_node_ranges = [{ target = 0, start = 5, end = 30 }] },
+  { semantic = "call Application.rmsDelete once with the newly materialized nonnull name, discard either successful boolean, and propagate failures outside that callee's catches", java_node_ranges = [[1, 4]], rust_node_ranges = [{ target = 0, start = 31, end = 38 }] },
+]
+adaptation = [
+  { side = "java", category = "erased", reason = "Java materializes a second String allocation with toString after both appends; Rust retains the already-owned Vec as the final distinct name, and the oracle proves it cannot alias the input.", java_node_ranges = [[5, 6]] },
+  { side = "rust", category = "representation-adapter", reason = "Ok unit explicitly represents normal Java void completion after either successful boolean returned by rmsDelete.", rust_node_ranges = [{ target = 0, start = 39, end = 42 }] },
+]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:ink_engine_remove_saved_game_from_rms", ast_sha256 = "57db544fbf86f403b47bbb40a24d7b0ecefbf79262c1e8b7d342a4bfca49c617", nodes_sha256 = "921f17abc7dc4edb7e1247b6d3c14fd25eb63de1ab970896e844c4d842fbf8e8", node_count = 43 }]
+oracle = "pure-method-v1"
+semantic_status = "crosswalked"
+semantic_review = "Forty-five cases agree across both recovered JARs, canonical Java, and Rust. Nine nullable and hostile UTF-16 game IDs cross successful deletion, caught not-found, caught RecordStoreException, uncaught NullPointerException, and uncaught AssertionError. Every case observes one call, the exact RMS_variables_ plus Java-nullable-ID name, and a name allocation distinct from the input; both true and false callee returns complete void. All fifteen javac and forty-three syn body nodes plus the four-to-fifteen prefix declaration nodes are owned exactly once."
+
+[[field]]
+java_class = "ExtBase"
+canonical_class = "InkEngine"
+java_name = "SAVED_GAME_RMS_PREFIX"
+canonical_name = "SAVED_GAME_RMS_PREFIX"
+descriptor = "Ljava/lang/String;"
+java_item = "<field:SAVED_GAME_RMS_PREFIX>"
+java_ast_sha256 = "9834c4a34e3df9c99e7316e890e95a35a39358fa5cf642a58e208317949ecba9"
+java_nodes_sha256 = "3af635f3a6636bbfd6f956d25e48c60997363f1966a7a0360a30f47761d05f41"
+java_node_count = 4
+rust_node_counts = [15]
+operation = [{ semantic = "declare the exact fourteen-code-unit UTF-16 RMS_variables_ saved-game prefix", java_node_ranges = [[0, 3]], rust_node_ranges = [{ target = 0, start = 0, end = 14 }] }]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "const:INK_ENGINE_SAVED_GAME_RMS_PREFIX", ast_sha256 = "d0a95c84047124c12e4b8dbdbfd71100a14f8500aeedf7cf8a8ea556ff38c986", nodes_sha256 = "f021ae9960d1c0d4b2efe6b25323d0193111833f595954993952e4c5aaad752c", node_count = 15 }]
+semantic_status = "crosswalked"
+semantic_review = "The InkEngine-scoped UTF-16 constant preserves Java String code units and prevents an unrelated equal text value from satisfying the declaration crosswalk. The wrapper oracle observes the exact prefix in all forty-five constructed deletion names."
 
 [[body]]
 java_class = "M"

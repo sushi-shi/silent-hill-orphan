@@ -1685,15 +1685,41 @@ Replacing this shape with unconditional cleanup changes the observable call
 schedule, while assigning the result after close loses a successfully fetched
 array when close throws a caught exception.
 
+## A-63 — a wrapper may discard a result without discarding its call edge
+
+`InkEngine.removeSavedGameFromRMS(String)` builds a new name by appending the
+nullable game ID to the exact UTF-16 prefix `RMS_variables_`, calls the already
+admitted `Application.rmsDelete` once, and discards its boolean. Java
+`StringBuffer.append(String)` contributes the literal code units `null` for a
+null reference; empty and hostile UTF-16 inputs are otherwise copied unchanged.
+The following `toString` materializes a distinct nonnull `String`, so the
+downstream argument cannot alias even a nonnull input game ID.
+
+Rust factors the transient `StringBuffer` and final `String` allocation into one
+owned `Vec<u16>` initialized from an InkEngine-scoped fourteen-unit constant.
+The four-authority oracle composes the real admitted Rust `application_rms_delete`
+body beneath this wrapper. Its forty-five cases cross nine nullable and hostile
+IDs with success, not-found, another RMS failure, `NullPointerException`, and
+`AssertionError`. Every case observes the complete constructed name, exactly one
+delete attempt, and distinct argument identity. Both true and false callee
+returns complete normally, while failures outside the callee's typed catches
+propagate. All fifteen `javac` and forty-three `syn` body nodes are owned exactly
+once, together with all four Java and fifteen Rust prefix-declaration nodes.
+
+**Lesson.** Discarding a return value is not permission to replace or omit the
+call. Compose an admitted callee in the oracle, then separately prove argument
+construction, allocation identity, call count, and uncaught-failure propagation
+at the wrapper boundary.
+
 ## Verified clean so far
 
-- 161/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
+- 162/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
   and `syn` node ownership.
-- 183/1,075 Java fields have complete declaration-node ownership: 149 map into
-  sixteen hash-locked Rust owner containers, thirty-four map to typed scalar constants,
+- 184/1,075 Java fields have complete declaration-node ownership: 149 map into
+  sixteen hash-locked Rust owner containers, thirty-five map to typed scalar constants,
   and one mutable array also owns a separately inventoried initializer template.
-- The differential currently runs 994,477 cases against the recovered baseline,
-  canonical Java, and Rust; the naming-reference JAR agrees on all 988,262
+- The differential currently runs 994,522 cases against the recovered baseline,
+  canonical Java, and Rust; the naming-reference JAR agrees on all 988,307
   cases, with 6,215 requests excluded only by its two ledger-reviewed
   input-timing variants and one ledger-reviewed rendering-policy variant.
 - Exhaustive subdomains include all Java `char` values, every pair of singleton

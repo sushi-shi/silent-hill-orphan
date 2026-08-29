@@ -606,6 +606,14 @@ FIELD_REQUESTS = [
 CONST_FIELD_REQUESTS = [
     ("MyCanvas", "GameCanvas", "KEY_UP", "KEY_UP", "I", "GAME_CANVAS_KEY_UP"),
     (
+        "ExtBase",
+        "InkEngine",
+        "SAVED_GAME_RMS_PREFIX",
+        "SAVED_GAME_RMS_PREFIX",
+        "Ljava/lang/String;",
+        "INK_ENGINE_SAVED_GAME_RMS_PREFIX",
+    ),
+    (
         "M",
         "Application",
         "COLLUM_WIDTH",
@@ -847,6 +855,7 @@ def print_entries() -> None:
         ("M", "Application", "paint", "(Ljavax/microedition/lcdui/Graphics;)V", "paint(Graphics)", "fn:application_paint"),
         ("M", "Application", "rmsDelete", "(Ljava/lang/String;)Z", "rmsDelete(String)", "fn:application_rms_delete"),
         ("M", "Application", "rmsGet", "(Ljava/lang/String;)[B", "rmsGet(String)", "fn:application_rms_get"),
+        ("ExtBase", "InkEngine", "removeSavedGameFromRMS", "(Ljava/lang/String;)V", "removeSavedGameFromRMS(String)", "fn:ink_engine_remove_saved_game_from_rms"),
         ("M", "Application", "saveChunkINI", "(Ljava/io/DataInputStream;)V", "saveChunkINI(DataInputStream)", "fn:application_save_chunk_ini"),
         ("M", "Application", "resourceMakeSubChunk", "()[B", "resourceMakeSubChunk()", "fn:application_resource_make_subchunk"),
         ("M", "Application", "repaintCanvasIfPossible", "()V", "repaintCanvasIfPossible()", "fn:application_repaint_canvas_if_possible"),

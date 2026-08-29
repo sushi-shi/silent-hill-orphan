@@ -16,22 +16,23 @@ use orphan_game_xlat::{
     game_resource_paint, game_resource_paint_simple, get_game_text, get_game_text_from_string,
     get_language_selection_position, get_left, get_top, ink_codes_new,
     ink_engine_inventory_equip_unequip_handling, ink_engine_new, ink_engine_popup_create,
-    ink_engine_popup_create_with_max_time, ink_engine_popup_set_next, ink_engine_wrap_string,
-    ink_interpreter_execute, ink_interpreter_has_command, ink_interpreter_integer_argument,
-    ink_interpreter_new, ink_interpreter_read, ink_interpreter_read_bytes,
-    ink_interpreter_read_signed, ink_interpreter_resume, ink_script_execute_event,
-    ink_script_execute_event_by_id, ink_script_execute_event_debug, ink_script_get_item_name,
-    ink_script_get_string, ink_script_get_variable, ink_script_get_variable_as_integer,
-    ink_script_has_command, ink_script_has_event, ink_script_initialize, ink_script_is_waiting,
-    ink_script_new, ink_script_resume, ink_script_set_variable, ink_script_stop,
-    ink_server_get_hint, ink_server_get_variable, ink_server_set_variable,
-    ink_server_unset_variable, inventory_remove, inventory_set, inventory_size,
-    is_menu_scroll_allowed, key_convert_to_key_id, key_init, load_request_resource_path,
-    load_request_resource_path_for_object, load_request_resource_path_for_string, loading, max,
-    menu_active, menu_add_choice, menu_add_choice_integer, menu_close_all, menu_close_current,
-    menu_count_choices, menu_get_choice_id, menu_get_choice_number, menu_get_current,
-    menu_initialize, menu_next_choice, menu_previous_choice, menu_scroll_decrease,
-    menu_scroll_increase, menu_set_current, menu_set_inventory_item_resource, menu_set_position,
+    ink_engine_popup_create_with_max_time, ink_engine_popup_set_next,
+    ink_engine_remove_saved_game_from_rms, ink_engine_wrap_string, ink_interpreter_execute,
+    ink_interpreter_has_command, ink_interpreter_integer_argument, ink_interpreter_new,
+    ink_interpreter_read, ink_interpreter_read_bytes, ink_interpreter_read_signed,
+    ink_interpreter_resume, ink_script_execute_event, ink_script_execute_event_by_id,
+    ink_script_execute_event_debug, ink_script_get_item_name, ink_script_get_string,
+    ink_script_get_variable, ink_script_get_variable_as_integer, ink_script_has_command,
+    ink_script_has_event, ink_script_initialize, ink_script_is_waiting, ink_script_new,
+    ink_script_resume, ink_script_set_variable, ink_script_stop, ink_server_get_hint,
+    ink_server_get_variable, ink_server_set_variable, ink_server_unset_variable, inventory_remove,
+    inventory_set, inventory_size, is_menu_scroll_allowed, key_convert_to_key_id, key_init,
+    load_request_resource_path, load_request_resource_path_for_object,
+    load_request_resource_path_for_string, loading, max, menu_active, menu_add_choice,
+    menu_add_choice_integer, menu_close_all, menu_close_current, menu_count_choices,
+    menu_get_choice_id, menu_get_choice_number, menu_get_current, menu_initialize,
+    menu_next_choice, menu_previous_choice, menu_scroll_decrease, menu_scroll_increase,
+    menu_set_current, menu_set_inventory_item_resource, menu_set_position,
     menu_set_softkey_options, menu_set_top, min, random_scaled, read_string, read_string_list,
     remove_string_prefix, reset_load, reset_variable_system, resource_exit, resource_heap_index,
     resource_merge_sort_cmp, resource_request_create_from_input, resource_request_description,
@@ -1974,6 +1975,42 @@ fn main() {
                     Err(_) => "NPE",
                 };
                 format!("{status}:{}:{}", calls.get(), identity.get())
+            }
+            Some("remove-saved-game-from-rms") if parts.len() == 3 => {
+                let game_id = utf16(parts[1]);
+                let mode = value(&parts, 2);
+                let calls = core::cell::Cell::new(0);
+                let observed_name = core::cell::RefCell::new(String::new());
+                let identity = core::cell::Cell::new("W");
+                let result = ink_engine_remove_saved_game_from_rms(game_id.as_deref(), |name| {
+                    application_rms_delete(name, |observed| {
+                        calls.set(calls.get() + 1);
+                        *observed_name.borrow_mut() = utf16_output(Some(observed));
+                        let aliases_input = game_id.as_deref().is_some_and(|input| {
+                            observed.as_ptr() == input.as_ptr() && observed.len() == input.len()
+                        });
+                        identity.set(if aliases_input { "W" } else { "D" });
+                        match mode {
+                            0 => Ok(()),
+                            1 => Err(ApplicationRmsDeleteError::NotFound),
+                            2 => Err(ApplicationRmsDeleteError::RecordStore),
+                            3 | 4 => Err(ApplicationRmsDeleteError::Uncaught(mode)),
+                            _ => unreachable!(),
+                        }
+                    })
+                });
+                let status = match result {
+                    Ok(()) => "OK",
+                    Err(3) => "NPE",
+                    Err(4) => "ERR",
+                    Err(_) => unreachable!(),
+                };
+                format!(
+                    "{status}:{}:{}:{}",
+                    observed_name.borrow(),
+                    calls.get(),
+                    identity.get()
+                )
             }
             Some("rms-get") if parts.len() == 6 => {
                 let name = utf16(parts[1]);

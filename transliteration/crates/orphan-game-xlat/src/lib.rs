@@ -128,6 +128,8 @@ pub const INK_SCRIPT_GFX_TYPE_INTEGER: i32 = 2;
 pub const INK_EVENT_GET_NAME: i32 = 1;
 pub const INK_EVENT_GET_MOVE_DIRECTION: i32 = 30;
 pub const INK_EVENT_HOVER_IN: i32 = 54;
+pub const INK_ENGINE_SAVED_GAME_RMS_PREFIX: [u16; 14] =
+    [82, 77, 83, 95, 118, 97, 114, 105, 97, 98, 108, 101, 115, 95];
 pub const ROOM_OBJECT_TYPE_GRAPHICS: i32 = 1;
 pub const ROOM_OBJECT_TYPE_ZONE: i32 = 2;
 pub const ROOM_OBJECT_TYPE_BATTLE_ZONE: i32 = 3;
@@ -329,6 +331,23 @@ where
         Err(ApplicationRmsDeleteError::RecordStore) => Ok(false),
         Err(ApplicationRmsDeleteError::Uncaught(error)) => Err(error),
     }
+}
+
+pub fn ink_engine_remove_saved_game_from_rms<Delete, E>(
+    game_id: Option<&[u16]>,
+    rms_delete: Delete,
+) -> Result<(), E>
+where
+    Delete: FnOnce(&[u16]) -> Result<bool, E>,
+{
+    let mut name = INK_ENGINE_SAVED_GAME_RMS_PREFIX.to_vec();
+    if let Some(game_id) = game_id {
+        name.extend_from_slice(game_id);
+    } else {
+        name.extend(b"null".iter().map(|byte| u16::from(*byte)));
+    }
+    let _ = rms_delete(&name)?;
+    Ok(())
 }
 
 pub fn application_rms_get<Name, Store, OpenRecordStore, GetRecord, CloseRecordStore, E>(
@@ -3473,6 +3492,57 @@ mod tests {
             |_| Err(ApplicationRmsGetCallError::Uncaught("close-error")),
         );
         assert_eq!(close_error, Err("close-error"));
+    }
+
+    #[test]
+    fn remove_saved_game_builds_a_distinct_name_and_discards_the_delete_result() {
+        let game_id = [0_u16, 0xd800, 0xffff];
+        let game_id_pointer = game_id.as_ptr();
+        let mut calls = 0;
+        let discarded_false = ink_engine_remove_saved_game_from_rms(
+            Some(&game_id),
+            |name| -> Result<bool, &'static str> {
+                calls += 1;
+                assert_ne!(name.as_ptr(), game_id_pointer);
+                assert_eq!(
+                    name,
+                    [
+                        82, 77, 83, 95, 118, 97, 114, 105, 97, 98, 108, 101, 115, 95, 0, 0xd800,
+                        0xffff,
+                    ]
+                );
+                Ok(false)
+            },
+        );
+        assert_eq!(discarded_false, Ok(()));
+        assert_eq!(calls, 1);
+
+        let null_id =
+            ink_engine_remove_saved_game_from_rms(None, |name| -> Result<bool, &'static str> {
+                assert_eq!(
+                    name,
+                    [
+                        82, 77, 83, 95, 118, 97, 114, 105, 97, 98, 108, 101, 115, 95, 110, 117,
+                        108, 108,
+                    ]
+                );
+                Ok(true)
+            });
+        assert_eq!(null_id, Ok(()));
+
+        let empty_id = ink_engine_remove_saved_game_from_rms(
+            Some(&[]),
+            |name| -> Result<bool, &'static str> {
+                assert_eq!(name, INK_ENGINE_SAVED_GAME_RMS_PREFIX);
+                Ok(true)
+            },
+        );
+        assert_eq!(empty_id, Ok(()));
+
+        let failure = ink_engine_remove_saved_game_from_rms(Some(&game_id), |_| {
+            Err::<bool, _>("delete-error")
+        });
+        assert_eq!(failure, Err("delete-error"));
     }
 
     #[test]
