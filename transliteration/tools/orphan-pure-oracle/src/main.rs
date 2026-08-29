@@ -6,12 +6,12 @@ use orphan_game_xlat::{
     action_key_keycode_to_action_key, action_key_unset_all_keys, application_app_start,
     application_clear_all_rms, application_destroy_app, application_free_memory, application_new,
     application_paint, application_pause_app, application_print_array, application_rms_delete,
-    application_room_repaint_run, application_set_display, array_copy_string_handles,
-    char_to_string, cheat_controller_initialize, cheat_controller_new, coded_string, dir, find,
-    game_canvas_key_jad_entry_as_int, game_canvas_key_pressed, game_canvas_key_released,
-    game_canvas_new, game_canvas_paint, game_canvas_show_notify, game_language_path,
-    game_resource_equals, game_resource_initialize, game_resource_new, game_resource_paint,
-    game_resource_paint_simple, get_game_text, get_game_text_from_string,
+    application_room_repaint_run, application_save_chunk_ini, application_set_display,
+    array_copy_string_handles, char_to_string, cheat_controller_initialize, cheat_controller_new,
+    coded_string, dir, find, game_canvas_key_jad_entry_as_int, game_canvas_key_pressed,
+    game_canvas_key_released, game_canvas_new, game_canvas_paint, game_canvas_show_notify,
+    game_language_path, game_resource_equals, game_resource_initialize, game_resource_new,
+    game_resource_paint, game_resource_paint_simple, get_game_text, get_game_text_from_string,
     get_language_selection_position, get_left, get_top, ink_codes_new,
     ink_engine_inventory_equip_unequip_handling, ink_engine_new, ink_engine_popup_create,
     ink_engine_popup_create_with_max_time, ink_engine_popup_set_next, ink_engine_wrap_string,
@@ -1963,6 +1963,54 @@ fn main() {
                     Err(_) => "NPE",
                 };
                 format!("{status}:{}:{}", calls.get(), identity.get())
+            }
+            Some("save-chunk-ini") if parts.len() == 3 => {
+                let stream_mode = value(&parts, 1);
+                let open_mode = value(&parts, 2);
+                let input = (stream_mode != 0).then_some(41_u32);
+                let mut open_calls = 0;
+                let mut open_name = String::from("null");
+                let mut open_create = false;
+                let mut set_calls = 0;
+                let mut set_data: Option<Vec<u8>> = None;
+                let mut set_offset = 0;
+                let mut set_length = 0;
+                application_save_chunk_ini(
+                    input,
+                    |observed| {
+                        assert_eq!(observed, input);
+                        match stream_mode {
+                            0 => Ok(None),
+                            1 => Ok(Some(Vec::new())),
+                            2 => Ok(Some(vec![0, 1, 255])),
+                            3 | 4 => Err("read"),
+                            _ => unreachable!(),
+                        }
+                    },
+                    |name, data| {
+                        let Some(data) = data else {
+                            return Ok(false);
+                        };
+                        open_calls += 1;
+                        open_name = utf16_output(Some(name));
+                        open_create = true;
+                        if open_mode != 0 {
+                            return Ok(false);
+                        }
+                        set_calls += 1;
+                        set_offset = 0;
+                        set_length = data.len();
+                        set_data = Some(data);
+                        Ok::<_, &'static str>(true)
+                    },
+                );
+                let data = set_data
+                    .as_deref()
+                    .map_or_else(|| "null".to_owned(), bytes_output);
+                format!(
+                    "{open_calls}:{open_name}:{}:{set_calls}:{data}:{set_offset}:{set_length}",
+                    i32::from(open_create)
+                )
             }
             Some("resource-restart-importants") if parts.len() == 2 => {
                 let old_length = value(&parts, 1);

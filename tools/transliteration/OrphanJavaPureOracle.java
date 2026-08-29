@@ -77,6 +77,25 @@ public final class OrphanJavaPureOracle {
         }
     }
 
+    private static final class FailingInputStream extends java.io.InputStream {
+        final int mode;
+
+        FailingInputStream(int mode) {
+            this.mode = mode;
+        }
+
+        public int available() throws java.io.IOException {
+            if (this.mode == 3) {
+                throw new java.io.IOException("injected available failure");
+            }
+            return 0;
+        }
+
+        public int read() throws java.io.IOException {
+            throw new java.io.IOException("injected read failure");
+        }
+    }
+
     private static final class RecordingGraphics extends Graphics {
         final Image expectedImage;
         final boolean fail;
@@ -1269,6 +1288,29 @@ public final class OrphanJavaPureOracle {
                         ? "-" : RecordStore.oracleDeleteName == expectedName ? "I" : "W";
                 result = status + ":" + RecordStore.oracleDeleteCalls + ":" + identity;
                 RecordStore.oracleResetDelete(0);
+            } else if (parts[0].equals("save-chunk-ini") && parts.length == 3) {
+                int streamMode = value(parts, 1);
+                DataInputStream chunkInput;
+                if (streamMode == 0) {
+                    chunkInput = null;
+                } else if (streamMode == 1) {
+                    chunkInput = new DataInputStream(new ByteArrayInputStream(new byte[0]));
+                } else if (streamMode == 2) {
+                    chunkInput = new DataInputStream(
+                            new ByteArrayInputStream(new byte[] {0, 1, (byte) 255}));
+                } else {
+                    chunkInput = new DataInputStream(new FailingInputStream(streamMode));
+                }
+                RecordStore.oracleResetWrite(value(parts, 2));
+                Application.saveChunkINI(chunkInput);
+                result = RecordStore.oracleOpenCalls + ":"
+                        + utf16Output(RecordStore.oracleOpenName) + ":"
+                        + (RecordStore.oracleOpenCreate ? "1" : "0") + ":"
+                        + RecordStore.oracleSetCalls + ":"
+                        + (RecordStore.oracleSetData == null
+                                ? "null" : bytesOutput(RecordStore.oracleSetData)) + ":"
+                        + RecordStore.oracleSetOffset + ":" + RecordStore.oracleSetLength;
+                RecordStore.oracleResetWrite(0);
             } else if (parts[0].equals("resource-restart-importants") && parts.length == 2) {
                 int oldLength = value(parts, 1);
                 Application.resourceImportants = oldLength < 0 ? null : new Vector();

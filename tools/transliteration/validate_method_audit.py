@@ -675,6 +675,7 @@ def print_entries() -> None:
         ("M", "Application", "setDisplay", "(Ljavax/microedition/lcdui/Displayable;)V", "setDisplay(Displayable)", "fn:application_set_display"),
         ("M", "Application", "paint", "(Ljavax/microedition/lcdui/Graphics;)V", "paint(Graphics)", "fn:application_paint"),
         ("M", "Application", "rmsDelete", "(Ljava/lang/String;)Z", "rmsDelete(String)", "fn:application_rms_delete"),
+        ("M", "Application", "saveChunkINI", "(Ljava/io/DataInputStream;)V", "saveChunkINI(DataInputStream)", "fn:application_save_chunk_ini"),
         ("MyCanvas", "GameCanvas", "<init>", "()V", "<init>()", "fn:game_canvas_new"),
         ("MyCanvas", "GameCanvas", "keyJadEntryAsInt", "(Ljava/lang/String;)I", "keyJadEntryAsInt(String)", "fn:game_canvas_key_jad_entry_as_int"),
         ("M", "Application", "resourceRestartImportants", "()V", "resourceRestartImportants()", "fn:resource_restart_importants"),

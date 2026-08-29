@@ -1,17 +1,17 @@
 schema_version = 1
 baseline_sha256 = "ca9a874ce7c7fb11ed444701b65e967919d3d7c0bcf73f80a9fcf825fb6a4be7"
 total_body_count = 350
-reviewed_body_count = 156
-semantic_reviewed_body_count = 156
+reviewed_body_count = 157
+semantic_reviewed_body_count = 157
 total_field_count = 1075
 semantic_reviewed_field_count = 175
-total_rust_function_count = 158
-reviewed_rust_function_count = 158
+total_rust_function_count = 159
+reviewed_rust_function_count = 159
 total_rust_value_declaration_count = 212
 reviewed_rust_value_declaration_count = 212
 total_rust_container_count = 30
 reviewed_rust_container_count = 30
-total_rust_declaration_count = 400
+total_rust_declaration_count = 401
 
 [[field]]
 java_class = "Cheat"
@@ -3931,6 +3931,29 @@ rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "f
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
 semantic_review = "Thirty-two hostile-name cases agree across both recovered JARs, canonical Java, and Rust. Null, empty, NUL, isolated-surrogate, noncharacter, ASCII path-like, and multilingual UTF-16 names cross successful deletion, the caught not-found subtype, another caught RecordStoreException, and an uncaught NullPointerException. Every case records one call and exact String identity; the focused Rust test independently proves all four result classes. All twenty-four javac and twenty-seven syn nodes are owned exactly once."
+
+[[body]]
+java_class = "M"
+canonical_class = "Application"
+java_name = "saveChunkINI"
+descriptor = "(Ljava/io/DataInputStream;)V"
+java_item = "saveChunkINI(DataInputStream)"
+code_sha256 = "b27a13ff4d8fa77cd97f1848bd09d6b9653f86eb9ded6367898d355fe1f423ec"
+opcode_sha256 = "68afe1ef45822b4991971979e72a9186c42de0f91084c0c27a00053ffaaff792"
+java_ast_sha256 = "979874769c4082387ac50b783b534030a08251a5dc50c39ea34b09bbcc6a8616"
+java_nodes_sha256 = "f00f770e6b633e2053a55dbcc962a4d8d570078059d676abfde6d767cccada8c"
+java_node_count = 15
+rust_node_counts = [31]
+operation = [
+  { semantic = "own the complete exception-swallowing body", java_nodes = [0], rust_nodes = ["0:0"] },
+  { semantic = "catch any Exception from byte collection or RMS publication and complete void without exposing it", java_node_ranges = [[1, 2], [10, 14]], rust_nodes = ["0:1", "0:2"], rust_node_ranges = [{ target = 0, start = 8, end = 10 }] },
+  { semantic = "invoke inkServerGetBytes first with the nullable DataInputStream identity unchanged and retain its nullable byte-array result", java_node_ranges = [[7, 9]], rust_node_ranges = [{ target = 0, start = 3, end = 7 }] },
+  { semantic = "invoke rmsSet second with the exact RMS_chunkINI UTF-16 name and collected byte-array identity, discarding its boolean result", java_node_ranges = [[3, 6]], rust_node_ranges = [{ target = 0, start = 11, end = 30 }] },
+]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:application_save_chunk_ini", ast_sha256 = "b6e3ea6e125b53adb01d5dc54b1bc85e0c0ce02db89d67bc7af6f7f51504c71f", nodes_sha256 = "b2117558a480208d3b5e04089de37068ae52a4d40e55a19b2900c84385f9bfa7", node_count = 31 }]
+oracle = "pure-method-v1"
+semantic_status = "crosswalked"
+semantic_review = "Ten cases agree across both recovered JARs, canonical Java, and Rust. Null, empty, three-byte, available-failing, and read-failing DataInputStreams cross successful and failing RMS opens. The instrumented platform stub records the exact RMS_chunkINI name, create flag, setRecord count, byte content, offset, and length; the Rust adapter mirrors only these stable wrapper-visible facts. Focused tests additionally prove exact input/byte identity, call order, nullable-byte forwarding even when rmsSet returns false, suppression of the second call after collection failure, and swallowed publication failure. All fifteen javac and thirty-one syn nodes are owned exactly once."
 
 [[field]]
 java_class = "ExtBase"

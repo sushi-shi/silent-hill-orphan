@@ -12,7 +12,7 @@ Living record of what is recovered and verified. Newest first.
   `orphan-me` starts the deterministic MIDP subset with a clipped CPU ARGB
   framebuffer. These are device/runtime implementations, not transliterated
   game bodies.
-- The first 156/350 game methods (`M.min`, `max`, `abs`, `dir`, `toInt`,
+- The first 157/350 game methods (`M.min`, `max`, `abs`, `dir`, `toInt`,
   `toBoolean`, `getLeft`,
   `getTop`, `resourceExit`, `destroyApp`, `pauseApp`, `appStart`, `resourceURLEncode`, `codedString`, `charToString`,
   the default constructors for `Application`, `CheatController`, `SilentHillGame`,
@@ -23,7 +23,7 @@ Living record of what is recovered and verified. Newest first.
   `tickBasedTime`, `tickBasedTimeUpdate`, `tickBasedTimeReset`, `getGameLangPath`,
   both `getGameText` overloads, `getPosInLanguageSelectionList`,
   `txtStringReplace`, `removeStringPrefix`, both Ink-server getters and mutators,
-  `resetVariableSystem`, `roomRepaintRun`, `clearAllRMS`, `freeMemory`, `setDisplay`, `paint`, `rmsDelete`, `roomGetCurrent`, `roomSetCurrent`, `roomGetHistorySize`,
+  `resetVariableSystem`, `roomRepaintRun`, `clearAllRMS`, `freeMemory`, `setDisplay`, `paint`, `rmsDelete`, `saveChunkINI`, `roomGetCurrent`, `roomSetCurrent`, `roomGetHistorySize`,
   `roomGetLastInRoomHistory`, `roomAddToRoomHistory`, `roomRemoveLastInRoomHistory`,
   `resourceIsOnHeap`, `random`, `arrayCopyString`,
   both `LoadRequest` constructors, `createFromInputStream`, `getID`, `getDescription`, `equals`,
@@ -49,11 +49,11 @@ Living record of what is recovered and verified. Newest first.
   `getMoveDir`, and `enterHover`) are strict
   Rust translations. Each is hash-bound to original
   bytecode and opcode streams, complete `javac` and `syn` ASTs, a written
-  per-node semantic crosswalk, and a live 991,300-case oracle in which the
+  per-node semantic crosswalk, and a live 991,310-case oracle in which the
   recovered baseline, canonical Java, and Rust agree. The naming-reference JAR
-  agrees on all 985,104 non-variant cases; its two extra input-timing policies
+  agrees on all 985,114 non-variant cases; its two extra input-timing policies
   are scoped by live validation of the variant ledger. Coverage stays an
-  explicit ratchet; the other 194 bodies are not claimed.
+  explicit ratchet; the other 193 bodies are not claimed.
 - The 175 Java fields reached by those methods are exhaustively mapped: 142 mutable
   fields become 142 Rust fields in `CheatControllerStatics`, `SilentHillGameStatics`, `ApplicationState`, `ResourceRequestState`, `GameResourceState`, `GameResourceStatics`, `InkEngineState`, `GameCanvasState`,
   `MenuState`, `MenuStatics`, `InkInterpreterState`, `InkInterpreterStatics`,
@@ -66,8 +66,8 @@ Living record of what is recovered and verified. Newest first.
   `InkScriptGetItemNameError`, `InkEnginePopupCreateError`, `ApplicationSetDisplayError`, and
   `RoomObjectStringEventError` and `RoomObjectEnterHoverError` enums and their variants are independently claimed
   as Rust-only adaptations.
-  The reverse `syn` inventory permits only the 158 reviewed functions, 212
-  reviewed value declarations, and thirty reviewed containers (400 total
+  The reverse `syn` inventory permits only the 159 reviewed functions, 212
+  reviewed value declarations, and thirty reviewed containers (401 total
   declarations), and its
   injected unowned-constant proof goes red.
 

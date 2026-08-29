@@ -303,8 +303,8 @@ reason for the disagreement.
 The oracle now validates those two exact member signatures against the
 hash-locked source-named variant ledger before excluding only their 6,196
 requests from the naming-reference comparison. The recovered baseline,
-canonical Java, and Rust still compare on all 991,300 cases. The
-naming-reference JAR still compares on the remaining 985,104 cases, and
+canonical Java, and Rust still compare on all 991,310 cases. The
+naming-reference JAR still compares on the remaining 985,114 cases, and
 `Application.setKeyStatus` remains a four-authority comparison because its body
 is common. Complete post-state checks prove the sticky new-key latch, current
 pressed state, last-key write, and signed-byte scroll reset—not merely the
@@ -1541,15 +1541,38 @@ All twenty-four `javac` and twenty-seven `syn` nodes are owned exactly once.
 order can change an ordinary return value, and errors outside the declared
 catches must remain observable rather than being silently converted.
 
+## A-58 — a swallowed wrapper still has an observable call schedule
+
+`Application.saveChunkINI(DataInputStream)` first passes the nullable stream to
+`inkServerGetBytes`, then passes that exact nullable byte-array result with the
+fixed UTF-16 name `RMS_chunkINI` to `rmsSet`. Its outer catch swallows any
+`Exception` from either step and the boolean returned by `rmsSet` is discarded.
+The Rust body uses an explicit `Result` boundary for each unreviewed callee,
+returns after collection failure, and deliberately ignores publication result
+or failure.
+
+Ten four-authority cases cross null, empty, and three-byte streams, failures
+from `available` and `read`, and successful or failing record-store opens. The
+instrumented RMS stub records the exact name, create flag, byte content,
+offset, and length. Focused Rust tests additionally prove stream and byte-slice
+identity, the get-before-set order, forwarding of a null byte result even when
+the setter returns false, suppression of the setter after collection failure,
+and swallowed setter failure. All fifteen `javac` and thirty-one `syn` nodes
+are owned exactly once.
+
+**Lesson.** An empty catch does not make a wrapper untestable. Record the
+downstream attempts and partial effects, then use structural evidence for call
+edges whose callee intentionally leaves no external trace.
+
 ## Verified clean so far
 
-- 156/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
+- 157/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
   and `syn` node ownership.
 - 175/1,075 Java fields have complete declaration-node ownership: 142 map into
   sixteen hash-locked Rust owner containers, thirty-three map to typed scalar constants,
   and one mutable array also owns a separately inventoried initializer template.
-- The differential currently runs 991,300 cases against the recovered baseline,
-  canonical Java, and Rust; the naming-reference JAR agrees on all 985,104
+- The differential currently runs 991,310 cases against the recovered baseline,
+  canonical Java, and Rust; the naming-reference JAR agrees on all 985,114
   cases outside its two ledger-reviewed input-timing variants.
 - Exhaustive subdomains include all Java `char` values, every pair of singleton
   unsigned comparator bytes, all 256 signed menu-scroll counter states, and all

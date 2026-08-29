@@ -283,6 +283,20 @@ where
     }
 }
 
+pub fn application_save_chunk_ini<Input, Bytes, GetBytes, SetRms, E>(
+    input: Input,
+    get_bytes: GetBytes,
+    set_rms: SetRms,
+) where
+    GetBytes: FnOnce(Input) -> Result<Bytes, E>,
+    SetRms: FnOnce(&[u16], Bytes) -> Result<bool, E>,
+{
+    let Ok(bytes) = get_bytes(input) else {
+        return;
+    };
+    let _ = set_rms(&[82, 77, 83, 95, 99, 104, 117, 110, 107, 73, 78, 73], bytes);
+}
+
 pub fn ink_engine_wrap_string<Text, Font, Output>(
     text: Text,
     maximum_length: i32,
@@ -3410,6 +3424,58 @@ mod tests {
         });
         assert_eq!(uncaught, Err("npe"));
         assert_eq!(calls.get(), 4);
+    }
+
+    #[test]
+    fn save_chunk_ini_reads_before_setting_the_fixed_record_name_and_swallows_failures() {
+        let input = [1_u8, 0, 255];
+        let bytes = [7_u8, 8];
+        let calls = core::cell::RefCell::new(Vec::new());
+        application_save_chunk_ini(
+            Some(&input[..]),
+            |observed| {
+                calls.borrow_mut().push("get");
+                assert_eq!(observed.unwrap().as_ptr(), input.as_ptr());
+                Ok::<_, &'static str>(&bytes[..])
+            },
+            |name, observed| {
+                calls.borrow_mut().push("set");
+                assert_eq!(name, &[82, 77, 83, 95, 99, 104, 117, 110, 107, 73, 78, 73]);
+                assert_eq!(observed.as_ptr(), bytes.as_ptr());
+                Ok(false)
+            },
+        );
+        assert_eq!(&*calls.borrow(), &["get", "set"]);
+
+        calls.borrow_mut().clear();
+        application_save_chunk_ini(
+            None::<u32>,
+            |_| Ok::<_, &'static str>(None::<Vec<u8>>),
+            |name, observed| {
+                calls.borrow_mut().push("set-null");
+                assert_eq!(name, &[82, 77, 83, 95, 99, 104, 117, 110, 107, 73, 78, 73]);
+                assert!(observed.is_none());
+                Ok(false)
+            },
+        );
+        assert_eq!(&*calls.borrow(), &["set-null"]);
+
+        calls.borrow_mut().clear();
+        application_save_chunk_ini(
+            Some(&input[..]),
+            |_| Err::<&[u8], _>("get"),
+            |_, _| {
+                calls.borrow_mut().push("set");
+                Ok(false)
+            },
+        );
+        assert!(calls.borrow().is_empty());
+
+        application_save_chunk_ini(
+            Some(&input[..]),
+            |_| Ok::<_, &'static str>(&bytes[..]),
+            |_, _| Err("set"),
+        );
     }
 
     #[test]
