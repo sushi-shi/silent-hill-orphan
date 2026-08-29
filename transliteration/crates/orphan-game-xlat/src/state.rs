@@ -21,6 +21,8 @@ pub struct ApplicationState {
     pub canvas_width: i32,
     pub fade_frames: i32,
     pub demo_frames: i32,
+    pub painting: bool,
+    pub canvas_instance: Option<u32>,
     pub key_last_pressed: i32,
     pub key_new: bool,
     pub key_pressed: bool,

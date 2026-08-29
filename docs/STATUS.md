@@ -12,7 +12,7 @@ Living record of what is recovered and verified. Newest first.
   `orphan-me` starts the deterministic MIDP subset with a clipped CPU ARGB
   framebuffer. These are device/runtime implementations, not transliterated
   game bodies.
-- The first 158/350 game methods (`M.min`, `max`, `abs`, `dir`, `toInt`,
+- The first 159/350 game methods (`M.min`, `max`, `abs`, `dir`, `toInt`,
   `toBoolean`, `getLeft`,
   `getTop`, `resourceExit`, `destroyApp`, `pauseApp`, `appStart`, `resourceURLEncode`, `codedString`, `charToString`,
   the default constructors for `Application`, `CheatController`, `SilentHillGame`,
@@ -23,7 +23,7 @@ Living record of what is recovered and verified. Newest first.
   `tickBasedTime`, `tickBasedTimeUpdate`, `tickBasedTimeReset`, `getGameLangPath`,
   both `getGameText` overloads, `getPosInLanguageSelectionList`,
   `txtStringReplace`, `removeStringPrefix`, both Ink-server getters and mutators,
-  `resetVariableSystem`, `roomRepaintRun`, `clearAllRMS`, `freeMemory`, `setDisplay`, `paint`, `rmsDelete`, `saveChunkINI`, `resourceMakeSubChunk`, `roomGetCurrent`, `roomSetCurrent`, `roomGetHistorySize`,
+  `resetVariableSystem`, `roomRepaintRun`, `clearAllRMS`, `freeMemory`, `setDisplay`, `paint`, `repaintCanvasIfPossible`, `rmsDelete`, `saveChunkINI`, `resourceMakeSubChunk`, `roomGetCurrent`, `roomSetCurrent`, `roomGetHistorySize`,
   `roomGetLastInRoomHistory`, `roomAddToRoomHistory`, `roomRemoveLastInRoomHistory`,
   `resourceIsOnHeap`, `random`, `arrayCopyString`,
   both `LoadRequest` constructors, `createFromInputStream`, `getID`, `getDescription`, `equals`,
@@ -49,13 +49,14 @@ Living record of what is recovered and verified. Newest first.
   `getMoveDir`, and `enterHover`) are strict
   Rust translations. Each is hash-bound to original
   bytecode and opcode streams, complete `javac` and `syn` ASTs, a written
-  per-node semantic crosswalk, and a live 991,338-case oracle in which the
+  per-node semantic crosswalk, and a live 991,357-case oracle in which the
   recovered baseline, canonical Java, and Rust agree. The naming-reference JAR
-  agrees on all 985,142 non-variant cases; its 6,196 excluded requests cover two
-  extra input-timing policies scoped by live validation of the variant ledger.
-  Coverage stays an explicit ratchet; the other 192 bodies are not claimed.
-- The 177 Java fields reached by those methods are exhaustively mapped: 144 mutable
-  fields become 144 Rust fields in `CheatControllerStatics`, `SilentHillGameStatics`, `ApplicationState`, `ResourceRequestState`, `GameResourceState`, `GameResourceStatics`, `InkEngineState`, `GameCanvasState`,
+  agrees on all 985,142 non-variant cases; its 6,215 excluded requests cover two
+  input-timing policies and one rendering policy scoped by live validation of
+  the variant ledger.
+  Coverage stays an explicit ratchet; the other 191 bodies are not claimed.
+- The 179 Java fields reached by those methods are exhaustively mapped: 146 mutable
+  fields become 146 Rust fields in `CheatControllerStatics`, `SilentHillGameStatics`, `ApplicationState`, `ResourceRequestState`, `GameResourceState`, `GameResourceStatics`, `InkEngineState`, `GameCanvasState`,
   `MenuState`, `MenuStatics`, `InkInterpreterState`, `InkInterpreterStatics`,
   `InkScriptState`, `InkScriptStatics`, `RoomObjectState`, and `RoomObjectStatics`; thirty-three final
   coded-string/Ink constants become typed Rust constants, and the mutable transform
@@ -64,12 +65,12 @@ Living record of what is recovered and verified. Newest first.
   hash-locked. Typed `JavaObject`, `JavaOwnedObject`, `JavaResourceId`,
   `InkVariableError`, `InkScriptRegistryValue`, `InkScriptExecuteEventError`,
   `InkScriptGetItemNameError`, `InkEnginePopupCreateError`, `ApplicationSetDisplayError`,
-  `ApplicationResourceMakeSubChunkError`, and
+  `ApplicationRepaintCanvasIfPossibleError`, `ApplicationResourceMakeSubChunkError`, and
   `RoomObjectStringEventError` and `RoomObjectEnterHoverError` enums and their variants are independently claimed
   as Rust-only adaptations.
-  The reverse `syn` inventory permits only the 160 reviewed functions, 216
-  reviewed value declarations, and 31 reviewed containers (407 total
-  declarations). Eighteen focused Rust tests exercise the admitted bodies, and the
+  The reverse `syn` inventory permits only the 161 reviewed functions, 222
+  reviewed value declarations, and 32 reviewed containers (415 total
+  declarations). Nineteen focused Rust tests exercise the admitted bodies, and the
   injected unowned-constant proof goes red.
 
 ## Phase 2 — canonical Java application and AST authority

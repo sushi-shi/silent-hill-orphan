@@ -22,6 +22,10 @@ import javax.microedition.rms.RecordStore;
 
 /** Calls the actual canonical Java methods for differential testing. */
 public final class OrphanJavaPureOracle {
+    private static final class OracleCanvas extends Canvas {
+        protected void paint(Graphics graphics) {}
+    }
+
     private static final class Handle {
         final int id;
 
@@ -135,6 +139,71 @@ public final class OrphanJavaPureOracle {
     private static String paintSimpleOutput(String status, RecordingGraphics graphics) {
         return status + ":" + (graphics == null || graphics.attempt == null
                 ? "null" : graphics.attempt);
+    }
+
+    private static String repaintCanvasIdentity(Canvas canvas) {
+        if (canvas == null) {
+            return "null";
+        }
+        if (canvas == Canvas.oracleRepaintCanvas1) {
+            return "1";
+        }
+        if (canvas == Canvas.oracleRepaintCanvas2) {
+            return "2";
+        }
+        if (canvas == Canvas.oracleRepaintCanvas3) {
+            return "3";
+        }
+        return "WRONG";
+    }
+
+    private static String repaintCanvasIfPossibleOutput(
+            boolean initialPainting,
+            boolean canvasPresent,
+            int repaintMode,
+            int serviceRepaintsMode) {
+        final Canvas canvas1 = new OracleCanvas();
+        final Canvas canvas2 = new OracleCanvas();
+        final Canvas canvas3 = new OracleCanvas();
+        Canvas.oracleResetRepaint(
+                canvas1,
+                canvas2,
+                canvas3,
+                repaintMode,
+                serviceRepaintsMode,
+                new Canvas.OracleRepaintApplication() {
+                    public void setCanvas(Canvas canvas) {
+                        Application.canvas = canvas;
+                    }
+
+                    public void setPainting(boolean painting) {
+                        Application.painting = painting;
+                    }
+
+                    public void repaintCanvasIfPossible() {
+                        Application.repaintCanvasIfPossible();
+                    }
+                });
+        Application.painting = initialPainting;
+        Application.canvas = canvasPresent ? canvas1 : null;
+        String status;
+        try {
+            Application.repaintCanvasIfPossible();
+            status = "OK";
+        } catch (Canvas.OracleRepaintFailure exception) {
+            status = "REPAINT";
+        } catch (Canvas.OracleServiceRepaintsFailure exception) {
+            status = "SERVICE";
+        } catch (NullPointerException exception) {
+            status = Canvas.oracleRepaintTrace.length() == 0 ? "NPE-R" : "NPE-S";
+        }
+        String trace = Canvas.oracleRepaintTrace.length() == 0
+                ? "-" : Canvas.oracleRepaintTrace.toString();
+        String result = status + ":" + trace + ":"
+                + (Application.painting ? "1" : "0") + ":"
+                + repaintCanvasIdentity(Application.canvas);
+        Canvas.oracleResetRepaint(null, null, null, 0, 0, null);
+        return result;
     }
 
     private static String paintOutput(String status, RecordingGraphics graphics) {
@@ -951,6 +1020,13 @@ public final class OrphanJavaPureOracle {
                     outcome = "NPE";
                 }
                 result = outcome + ":" + (ticker == null ? "0" : Integer.toString(ticker.attempts));
+            } else if (parts[0].equals("repaint-canvas-if-possible")
+                    && parts.length == 5) {
+                result = repaintCanvasIfPossibleOutput(
+                        value(parts, 1) != 0,
+                        parts[2].equals("1"),
+                        value(parts, 3),
+                        value(parts, 4));
             } else if (parts[0].equals("popup-create") && parts.length == 4) {
                 String text = utf16(parts[1]);
                 int recoveryCode = value(parts, 2);

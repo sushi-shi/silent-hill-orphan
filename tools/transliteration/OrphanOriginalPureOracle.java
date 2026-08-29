@@ -23,6 +23,59 @@ import javax.microedition.rms.RecordStore;
 
 /** Calls package-private static methods on the verified original {@code M}. */
 public final class OrphanOriginalPureOracle {
+    private static final class OracleCanvas extends Canvas {
+        protected void paint(Graphics graphics) {}
+    }
+
+    private static final class ReflectiveRepaintApplication
+            implements Canvas.OracleRepaintApplication {
+        private final Field canvas;
+        private final Field painting;
+        private final Method repaintCanvasIfPossible;
+
+        ReflectiveRepaintApplication(
+                Field canvas,
+                Field painting,
+                Method repaintCanvasIfPossible) {
+            this.canvas = canvas;
+            this.painting = painting;
+            this.repaintCanvasIfPossible = repaintCanvasIfPossible;
+        }
+
+        public void setCanvas(Canvas canvas) {
+            try {
+                this.canvas.set(null, canvas);
+            } catch (Exception exception) {
+                throw new RuntimeException(exception);
+            }
+        }
+
+        public void setPainting(boolean painting) {
+            try {
+                this.painting.setBoolean(null, painting);
+            } catch (Exception exception) {
+                throw new RuntimeException(exception);
+            }
+        }
+
+        public void repaintCanvasIfPossible() {
+            try {
+                this.repaintCanvasIfPossible.invoke(null);
+            } catch (InvocationTargetException exception) {
+                Throwable cause = exception.getCause();
+                if (cause instanceof RuntimeException) {
+                    throw (RuntimeException) cause;
+                }
+                if (cause instanceof Error) {
+                    throw (Error) cause;
+                }
+                throw new RuntimeException(cause);
+            } catch (Exception exception) {
+                throw new RuntimeException(exception);
+            }
+        }
+    }
+
     private static final class Handle {
         final int id;
 
@@ -136,6 +189,68 @@ public final class OrphanOriginalPureOracle {
     private static String paintSimpleOutput(String status, RecordingGraphics graphics) {
         return status + ":" + (graphics == null || graphics.attempt == null
                 ? "null" : graphics.attempt);
+    }
+
+    private static String repaintCanvasIdentity(Object canvas) {
+        if (canvas == null) {
+            return "null";
+        }
+        if (canvas == Canvas.oracleRepaintCanvas1) {
+            return "1";
+        }
+        if (canvas == Canvas.oracleRepaintCanvas2) {
+            return "2";
+        }
+        if (canvas == Canvas.oracleRepaintCanvas3) {
+            return "3";
+        }
+        return "WRONG";
+    }
+
+    private static String repaintCanvasIfPossibleOutput(
+            Field applicationCanvas,
+            Field applicationPainting,
+            Method repaintCanvasIfPossible,
+            boolean initialPainting,
+            boolean canvasPresent,
+            int repaintMode,
+            int serviceRepaintsMode) throws Exception {
+        Canvas canvas1 = new OracleCanvas();
+        Canvas canvas2 = new OracleCanvas();
+        Canvas canvas3 = new OracleCanvas();
+        Canvas.oracleResetRepaint(
+                canvas1,
+                canvas2,
+                canvas3,
+                repaintMode,
+                serviceRepaintsMode,
+                new ReflectiveRepaintApplication(
+                        applicationCanvas, applicationPainting, repaintCanvasIfPossible));
+        applicationPainting.setBoolean(null, initialPainting);
+        applicationCanvas.set(null, canvasPresent ? canvas1 : null);
+        String status;
+        try {
+            repaintCanvasIfPossible.invoke(null);
+            status = "OK";
+        } catch (InvocationTargetException exception) {
+            Throwable cause = exception.getCause();
+            if (cause instanceof Canvas.OracleRepaintFailure) {
+                status = "REPAINT";
+            } else if (cause instanceof Canvas.OracleServiceRepaintsFailure) {
+                status = "SERVICE";
+            } else if (cause instanceof NullPointerException) {
+                status = Canvas.oracleRepaintTrace.length() == 0 ? "NPE-R" : "NPE-S";
+            } else {
+                throw exception;
+            }
+        }
+        String trace = Canvas.oracleRepaintTrace.length() == 0
+                ? "-" : Canvas.oracleRepaintTrace.toString();
+        String result = status + ":" + trace + ":"
+                + (applicationPainting.getBoolean(null) ? "1" : "0") + ":"
+                + repaintCanvasIdentity(applicationCanvas.get(null));
+        Canvas.oracleResetRepaint(null, null, null, 0, 0, null);
+        return result;
     }
 
     private static String paintOutput(String status, RecordingGraphics graphics) {
@@ -852,6 +967,7 @@ public final class OrphanOriginalPureOracle {
         Method destroyApp = method(application, "destroyApp", Boolean.TYPE);
         Method pauseApp = method(application, "pauseApp");
         Method appStart = method(application, "appStart");
+        Method repaintCanvasIfPossible = method(application, "repaintCanvasIfPossible");
         Method popupCreate = method(inkEngine, "popupCreate", String.class, Integer.TYPE);
         Method popupCreateMax = method(
                 inkEngine, "popupCreate", String.class, Integer.TYPE, Integer.TYPE);
@@ -1077,6 +1193,7 @@ public final class OrphanOriginalPureOracle {
         Field fadeFrames = field(application, "FADE_FRAMES");
         Field demoFrames = field(application, "DEMO_FRAMES");
         Field applicationPainting = field(application, "painting");
+        Field applicationCanvas = field(application, "canvas");
         Field loadingBarMarkerX = field(application, "loadingBarMarkerX");
         Field gotoDissolveFxCounter = field(application, "gotoDissolveFXCounter");
         Field requestType = field(requestClass, "type");
@@ -1259,6 +1376,16 @@ public final class OrphanOriginalPureOracle {
                     }
                 }
                 result = outcome + ":" + (ticker == null ? "0" : Integer.toString(ticker.attempts));
+            } else if (parts[0].equals("repaint-canvas-if-possible")
+                    && parts.length == 5) {
+                result = repaintCanvasIfPossibleOutput(
+                        applicationCanvas,
+                        applicationPainting,
+                        repaintCanvasIfPossible,
+                        value(parts, 1) != 0,
+                        parts[2].equals("1"),
+                        value(parts, 3),
+                        value(parts, 4));
             } else if (parts[0].equals("popup-create") && parts.length == 4) {
                 String text = utf16(parts[1]);
                 int recoveryCode = value(parts, 2);

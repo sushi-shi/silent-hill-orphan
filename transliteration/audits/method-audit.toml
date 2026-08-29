@@ -1,17 +1,17 @@
 schema_version = 1
 baseline_sha256 = "ca9a874ce7c7fb11ed444701b65e967919d3d7c0bcf73f80a9fcf825fb6a4be7"
 total_body_count = 350
-reviewed_body_count = 158
-semantic_reviewed_body_count = 158
+reviewed_body_count = 159
+semantic_reviewed_body_count = 159
 total_field_count = 1075
-semantic_reviewed_field_count = 177
-total_rust_function_count = 160
-reviewed_rust_function_count = 160
-total_rust_value_declaration_count = 216
-reviewed_rust_value_declaration_count = 216
-total_rust_container_count = 31
-reviewed_rust_container_count = 31
-total_rust_declaration_count = 407
+semantic_reviewed_field_count = 179
+total_rust_function_count = 161
+reviewed_rust_function_count = 161
+total_rust_value_declaration_count = 222
+reviewed_rust_value_declaration_count = 222
+total_rust_container_count = 32
+reviewed_rust_container_count = 32
+total_rust_declaration_count = 415
 
 [[field]]
 java_class = "Cheat"
@@ -1213,7 +1213,7 @@ semantic_review = "Single-owner container for CheatController's reviewed static 
 [[rust_container]]
 file = "transliteration/crates/orphan-game-xlat/src/state.rs"
 item = "struct:ApplicationState"
-ast_sha256 = "b01e91d0547ab668efda8e9d36dd20cd17fc52a9ede42164b15aa982952efe2f"
+ast_sha256 = "5185153a867a0fabed35813d946b1cfda09af1d129bb0f6d976604660e2d3cce"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
 semantic_review = "Structural owner for the reviewed Application fields; its complete syn AST is locked while its field nodes are owned by the field crosswalks."
@@ -4011,6 +4011,34 @@ oracle = "pure-method-v1"
 semantic_status = "crosswalked"
 semantic_review = "Twenty-eight cases agree across both recovered JARs, canonical Java, and Rust. Null, zero-, three-, and eight-byte sources cross negative, zero, in-bounds, exact-bound, and oversized lengths; output distinguishes NegativeArraySizeException, NullPointerException, and IndexOutOfBoundsException, records a distinct returned array, and compares the unchanged source. The Rust body deliberately retains both static size reads, evaluates the source before the second read, defers the null fault until all arraycopy arguments exist, checks both bounds, and copies only the requested destination prefix so a smaller interleaved second length retains the zero tail. The focused test independently proves prefix copying, non-aliasing, failure ordering, and bounds behavior. All nineteen javac and 108 syn body nodes plus both field declarations are owned exactly once."
 
+[[body]]
+java_class = "M"
+canonical_class = "Application"
+java_name = "repaintCanvasIfPossible"
+descriptor = "()V"
+java_item = "repaintCanvasIfPossible()"
+code_sha256 = "fa58efc4ce7b170db5d999922de73266cf6897a44ab430f3a267d011d08b8e08"
+opcode_sha256 = "e2eb69537baf101b0e5ee97a37a9482effbec0b4bc532165f814cc8a751cbabe"
+java_ast_sha256 = "2067103894f3320dfa930f58a5ff681c843de088ff9a96238f624d09a0430240"
+java_nodes_sha256 = "f467a306d495fc19be496ec740382d44707d31ca042f8c6b13c0eb0933aed5d5"
+java_node_count = 18
+rust_node_counts = [58]
+operation = [
+  { semantic = "own the complete guarded repaint body", java_nodes = [0], rust_nodes = ["0:0"] },
+  { semantic = "read painting first and return immediately when a repaint is already active without touching canvas", java_node_ranges = [[1, 5]], rust_node_ranges = [{ target = 0, start = 1, end = 6 }] },
+  { semantic = "publish painting true before either Canvas dereference or callback", java_node_ranges = [[6, 9]], rust_node_ranges = [{ target = 0, start = 11, end = 15 }] },
+  { semantic = "read the first nullable canvas identity, invoke repaint exactly once with mutable reentrant state access, and stop at its null or callback failure boundary", java_node_ranges = [[10, 13]], rust_node_ranges = [{ target = 0, start = 16, end = 34 }] },
+  { semantic = "after repaint returns, re-read canvas and invoke serviceRepaints exactly once with the replacement identity, preserving its separate null and callback failure boundaries", java_node_ranges = [[14, 17]], rust_node_ranges = [{ target = 0, start = 35, end = 53 }] },
+]
+adaptation = [
+  { side = "rust", reason = "Ok unit represents the Java void completion of the guarded early return.", rust_node_ranges = [{ target = 0, start = 7, end = 10 }] },
+  { side = "rust", reason = "Ok unit represents normal Java void completion after serviceRepaints returns.", rust_node_ranges = [{ target = 0, start = 54, end = 57 }] },
+]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:application_repaint_canvas_if_possible", ast_sha256 = "3846381d8c8ffc201581c6558f6f37641bd3f25689434bba974f81f31e45109a", nodes_sha256 = "f70c7e3775a7fda850bb2cf82f57dba3a21dccd3971294fc2e1db2968abf2531", node_count = 58 }]
+oracle = "pure-method-v1"
+semantic_status = "crosswalked"
+semantic_review = "Nineteen baseline-policy cases agree across the recovered baseline JAR, canonical Java, and Rust. The naming-reference JAR is excluded only for this command through its hash-locked rendering-policy ledger row because that build omits serviceRepaints and adds key-flag behavior. Guarded true, null/non-null first canvas, repaint and service failures, repaint-driven canvas clear/replacement, repaint/service painting mutation, and true guarded recursion are compared by status, exact R/S receiver trace, final painting, and final canvas identity. These observations prove painting is published before the first dereference, repaint failure suppresses the second read, canvas is re-read after repaint, and callback writes are neither rechecked nor restored. The focused Rust test independently exercises every failure cut point and reentrant transition. All eighteen javac and fifty-eight syn body nodes plus both field declarations are owned exactly once."
+
 [[field]]
 java_class = "ExtBase"
 canonical_class = "InkEngine"
@@ -5233,6 +5261,37 @@ semantic_review = "Construction succeeds in every authority. TextId has no insta
 [[field]]
 java_class = "M"
 canonical_class = "Application"
+java_name = "canvas"
+descriptor = "Ljavax/microedition/lcdui/Canvas;"
+java_item = "<field:canvas>"
+java_ast_sha256 = "26529fb4d5be64ae3dc0307c556943cd9ca933751620383cb38dde464983a933"
+java_nodes_sha256 = "d402a92c7f831156237088d7eccbca99ab9c222bb1ce019045e0fb4f05393c7a"
+java_node_count = 3
+rust_node_counts = [3]
+operation = [{ semantic = "declare the nullable Application-owned Canvas identity re-read across synchronous repaint callbacks", java_node_ranges = [[0, 2]], rust_node_ranges = [{ target = 0, start = 0, end = 2 }] }]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/state.rs", item = "field:ApplicationState::canvas_instance", ast_sha256 = "2809108e440045b275164b8dcace84dcce5834433f07e70dbeefadd7ce01fb5b", nodes_sha256 = "849f33d7fde336fedaeeec520fcc12f295716c81968c6e640e82a1bc3e7f2042", node_count = 3 }]
+semantic_status = "crosswalked"
+semantic_review = "ApplicationState is the sole owner. Option preserves the JVM null reference and u32 preserves stable Canvas identity while callbacks can replace or clear the field between the original method's two getstatic instructions."
+
+[[field]]
+java_class = "M"
+canonical_class = "Application"
+java_name = "painting"
+descriptor = "Z"
+java_item = "<field:painting>"
+java_ast_sha256 = "97272c7361c5a58e79177cb50ed10b1eae984cd7310b147f4be842ef40d343a2"
+java_nodes_sha256 = "fdca35f24086af8e709476cb156f595749c19163cabf6f4efc3bedc45d8071a8"
+java_node_count = 4
+rust_node_counts = [2]
+operation = [{ semantic = "declare the Application-owned repaint reentrancy guard", java_node_ranges = [[0, 2]], rust_node_ranges = [{ target = 0, start = 0, end = 1 }] }]
+adaptation = [{ side = "java", reason = "The source-level false initializer belongs to the still-pending Application.<clinit>; explicit Rust startup must publish false, while the owner remains seedable to true so the guarded early-return path is oracle-visible.", java_nodes = [3] }]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/state.rs", item = "field:ApplicationState::painting", ast_sha256 = "c78bc75ec9d1e7d6ee03a96a4c71b0c761f212fda40b859497287d02bb596d82", nodes_sha256 = "0f88f1cfe34a46689f828db8a1ef75bfd3518714f376ff16d272d8c68d9b822a", node_count = 2 }]
+semantic_status = "crosswalked"
+semantic_review = "ApplicationState is the sole mutable owner. bool preserves the Java boolean domain; the method publishes true before either Canvas dereference, never clears it itself, and deliberately observes callback writes without rechecking the guard."
+
+[[field]]
+java_class = "M"
+canonical_class = "Application"
 java_name = "canvasWidth"
 descriptor = "I"
 java_item = "<field:canvasWidth>"
@@ -5522,6 +5581,46 @@ ast_sha256 = "8c9ca127b005bf8b3499dffdfb3b4405d7e4838259feaa3a343fa27062d5b24c"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
 semantic_review = "Rust-only typed failure container preserving the two sequential implicit JVM failure sites in Application.resourceMakeSubChunk without conflating allocation and arraycopy exceptions."
+
+[[rust_value]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "variant:ApplicationRepaintCanvasIfPossibleError::CanvasNullBeforeRepaint"
+ast_sha256 = "163f97a9a286969b010e61d4f5f5ad35ed26446d581fb739489cc6ee379fe963"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Rust-only marker for the first Canvas invokevirtual null receiver after painting has already been published true."
+
+[[rust_value]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "variant:ApplicationRepaintCanvasIfPossibleError::Repaint"
+ast_sha256 = "0c9b98e51738b06d22c6d7b8e62acbc73ce06f76b507b6ed638b43622a917124"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Rust-only transparent wrapper for a failure thrown synchronously by Canvas.repaint before the second canvas read."
+
+[[rust_value]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "variant:ApplicationRepaintCanvasIfPossibleError::CanvasNullBeforeServiceRepaints"
+ast_sha256 = "cef6975eb0270af41784a2ade253423488d90d1d94f75cf5385edaacdf534e69"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Rust-only marker for a null Canvas observed by the deliberate post-repaint field re-read before serviceRepaints."
+
+[[rust_value]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "variant:ApplicationRepaintCanvasIfPossibleError::ServiceRepaints"
+ast_sha256 = "f982713f36e5163bb4b1f38e5187bad207f9736ad59c7f675a88490e858da472"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Rust-only transparent wrapper for a failure thrown by Canvas.serviceRepaints after both Canvas reads and repaint have completed."
+
+[[rust_container]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "enum:ApplicationRepaintCanvasIfPossibleError"
+ast_sha256 = "a1b543e31d1022a82e88f53ae02b2e5fb25c491a900a41dbcd0f7d660a2bd4c3"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Rust-only typed boundary retaining the four observable failure cut points around the two distinct Canvas field reads and platform calls."
 
 [[body]]
 java_class = "ExtBase"

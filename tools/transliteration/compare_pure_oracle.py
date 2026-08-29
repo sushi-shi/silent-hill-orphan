@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare 157 methods across recovered JARs, canonical Java, and Rust."""
+"""Compare 159 methods across recovered JARs, canonical Java, and Rust."""
 
 from __future__ import annotations
 
@@ -26,13 +26,19 @@ ORIGINAL_HARNESS = (
 )
 RUST_BINARY = ROOT / "target" / "debug" / "orphan-pure-oracle"
 
-# These methods are explicitly classified as input-timing-policy variants in
+# These methods have explicitly reviewed baseline/reference differences in
 # java/reconstruction/variants/source-named.toml. The production transliteration
-# targets the selected baseline; the naming-reference JAR has extra logo/time
-# guards and therefore remains an authority only for the non-variant requests.
+# targets the selected baseline, while the naming-reference JAR remains an
+# authority only for non-variant requests.
 BASELINE_ONLY_METHODS = {
     "key-pressed": ("GameCanvas", "keyPressed", "(I)V", "input-timing-policy"),
     "key-released": ("GameCanvas", "keyReleased", "(I)V", "input-timing-policy"),
+    "repaint-canvas-if-possible": (
+        "Application",
+        "repaintCanvasIfPossible",
+        "()V",
+        "rendering-policy",
+    ),
 }
 BASELINE_ONLY_COMMANDS = frozenset(BASELINE_ONLY_METHODS)
 
@@ -101,6 +107,38 @@ def requests() -> list[str]:
     )
     result.extend(f"pause-app {hidden}" for hidden in (0, 1))
     result.extend(f"app-start {mode}" for mode in (0, 1, 2))
+    repaint_canvas_cases = (
+        # The true guard must suppress even a null dereference, injected
+        # failures, and re-entry.
+        (1, "null", 1, 1),
+        (1, "1", 6, 1),
+        # The flag write precedes the first canvas read.
+        (0, "null", 0, 0),
+        (0, "null", 6, 1),
+        # Ordinary completion plus every repaint-side mutation/failure.
+        (0, "1", 0, 0),
+        (0, "1", 1, 0),
+        (0, "1", 2, 0),
+        (0, "1", 3, 0),
+        (0, "1", 4, 0),
+        (0, "1", 5, 0),
+        (0, "1", 6, 0),
+        # serviceRepaints uses the second canvas read and propagates failures;
+        # its mutations occur after both calls.
+        (0, "1", 0, 1),
+        (0, "1", 3, 1),
+        (0, "1", 0, 2),
+        (0, "1", 3, 2),
+        (0, "1", 0, 3),
+        (0, "1", 3, 3),
+        (0, "1", 0, 4),
+        (0, "1", 5, 4),
+    )
+    result.extend(
+        "repaint-canvas-if-possible "
+        f"{painting} {canvas} {repaint_mode} {service_mode}"
+        for painting, canvas, repaint_mode, service_mode in repaint_canvas_cases
+    )
     result.extend(
         f"resource-restart-importants {length}"
         for length in (-1, 0, 1, 12, 127)
@@ -3061,7 +3099,7 @@ def run(*, self_test: bool, java_only: bool) -> int:
         "pure-method oracle OK: recovered baseline == canonical Java"
         f"{rust_authority} for {len(cases)} edge cases; naming-reference JAR "
         f"also agrees on {len(cases) - baseline_only_count} non-variant cases "
-        f"({baseline_only_count} reviewed baseline input-policy cases)"
+        f"({baseline_only_count} reviewed baseline-only variant cases)"
     )
     return 0
 

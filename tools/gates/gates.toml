@@ -196,6 +196,7 @@ inputs = [
   "java/reconstruction/builds.toml",
   "java/reconstruction/mappings",
   "java/reconstruction/ast-authority.toml",
+  "transliteration/audits/method-audit.toml",
   "tools/transliteration/JavaAstAuditDump.java",
   "tools/transliteration/validate_ast_authority.py",
 ]

@@ -71,6 +71,14 @@ pub enum ApplicationSetDisplayError<E> {
 }
 
 #[derive(Debug, Eq, PartialEq)]
+pub enum ApplicationRepaintCanvasIfPossibleError<E> {
+    CanvasNullBeforeRepaint,
+    Repaint(E),
+    CanvasNullBeforeServiceRepaints,
+    ServiceRepaints(E),
+}
+
+#[derive(Debug, Eq, PartialEq)]
 pub enum ApplicationRmsDeleteError<E> {
     NotFound,
     RecordStore,
@@ -272,6 +280,31 @@ where
     if state.fade_frames <= state.demo_frames {
         paint(graphics)?;
     }
+    Ok(())
+}
+
+pub fn application_repaint_canvas_if_possible<Repaint, ServiceRepaints, E>(
+    state: &mut ApplicationState,
+    repaint: Repaint,
+    service_repaints: ServiceRepaints,
+) -> Result<(), ApplicationRepaintCanvasIfPossibleError<E>>
+where
+    Repaint: FnOnce(u32, &mut ApplicationState) -> Result<(), E>,
+    ServiceRepaints: FnOnce(u32, &mut ApplicationState) -> Result<(), E>,
+{
+    if state.painting {
+        return Ok(());
+    }
+    state.painting = true;
+    let repaint_canvas = state
+        .canvas_instance
+        .ok_or(ApplicationRepaintCanvasIfPossibleError::CanvasNullBeforeRepaint)?;
+    repaint(repaint_canvas, state).map_err(ApplicationRepaintCanvasIfPossibleError::Repaint)?;
+    let service_repaints_canvas = state
+        .canvas_instance
+        .ok_or(ApplicationRepaintCanvasIfPossibleError::CanvasNullBeforeServiceRepaints)?;
+    service_repaints(service_repaints_canvas, state)
+        .map_err(ApplicationRepaintCanvasIfPossibleError::ServiceRepaints)?;
     Ok(())
 }
 
@@ -3243,6 +3276,8 @@ mod tests {
             canvas_width: 0,
             fade_frames: 0,
             demo_frames: 0,
+            painting: false,
+            canvas_instance: None,
             key_last_pressed: 0,
             key_new: false,
             key_pressed: false,
@@ -3301,6 +3336,8 @@ mod tests {
             canvas_width: 0,
             fade_frames: 0,
             demo_frames: 0,
+            painting: false,
+            canvas_instance: None,
             key_last_pressed: 0,
             key_new: false,
             key_pressed: false,
@@ -3391,6 +3428,8 @@ mod tests {
             canvas_width: 0,
             fade_frames: 4,
             demo_frames: 4,
+            painting: false,
+            canvas_instance: None,
             key_last_pressed: 0,
             key_new: false,
             key_pressed: false,
@@ -3431,6 +3470,177 @@ mod tests {
         });
         assert_eq!(skipped, Ok(()));
         assert_eq!(calls, 1);
+    }
+
+    #[test]
+    fn repaint_canvas_if_possible_preserves_guard_rereads_and_failure_boundaries() {
+        let mut application = ApplicationState {
+            tick_based_time_value: 0,
+            canvas_width: 0,
+            fade_frames: 0,
+            demo_frames: 0,
+            painting: true,
+            canvas_instance: None,
+            key_last_pressed: 0,
+            key_new: false,
+            key_pressed: false,
+            load_bar_active: false,
+            goto_dissolve_fx_counter: 0,
+            loading_mode: 0,
+            load_thread: None,
+            room_repaint_thread: None,
+            resource_importants: None,
+            resources_to_download: None,
+            game_id: None,
+            game_texts: None,
+            save_is_possible: false,
+            languages: None,
+            resource_heap_sources: None,
+            resource_sc_data: None,
+            resource_sc_current_size: 0,
+            random_instance: None,
+            runtime_instance: None,
+            midlet_instance: None,
+            ink_server_variables: None,
+            ink_server_hints: None,
+            game_changed_since_last_save: false,
+        };
+        let calls = core::cell::RefCell::new(alloc::vec::Vec::new());
+
+        let skipped = application_repaint_canvas_if_possible(
+            &mut application,
+            |_, _| {
+                calls.borrow_mut().push(("repaint", 0));
+                Err::<(), _>("unreachable")
+            },
+            |_, _| {
+                calls.borrow_mut().push(("service", 0));
+                Err::<(), _>("unreachable")
+            },
+        );
+        assert_eq!(skipped, Ok(()));
+        assert!(calls.borrow().is_empty());
+
+        application.painting = false;
+        let null_repaint = application_repaint_canvas_if_possible(
+            &mut application,
+            |_, _| Ok::<(), &'static str>(()),
+            |_, _| Ok(()),
+        );
+        assert_eq!(
+            null_repaint,
+            Err(ApplicationRepaintCanvasIfPossibleError::CanvasNullBeforeRepaint)
+        );
+        assert!(application.painting);
+
+        application.painting = false;
+        application.canvas_instance = Some(1);
+        let repaint_failure = application_repaint_canvas_if_possible(
+            &mut application,
+            |canvas, _| {
+                calls.borrow_mut().push(("repaint", canvas));
+                Err("repaint")
+            },
+            |canvas, _| {
+                calls.borrow_mut().push(("service", canvas));
+                Ok(())
+            },
+        );
+        assert_eq!(
+            repaint_failure,
+            Err(ApplicationRepaintCanvasIfPossibleError::Repaint("repaint"))
+        );
+        assert_eq!(&*calls.borrow(), &[("repaint", 1)]);
+        assert!(application.painting);
+
+        calls.borrow_mut().clear();
+        application.painting = false;
+        application.canvas_instance = Some(1);
+        let cleared = application_repaint_canvas_if_possible(
+            &mut application,
+            |canvas, state| {
+                calls.borrow_mut().push(("repaint", canvas));
+                state.canvas_instance = None;
+                Ok::<(), &'static str>(())
+            },
+            |canvas, _| {
+                calls.borrow_mut().push(("service", canvas));
+                Ok(())
+            },
+        );
+        assert_eq!(
+            cleared,
+            Err(ApplicationRepaintCanvasIfPossibleError::CanvasNullBeforeServiceRepaints)
+        );
+        assert_eq!(&*calls.borrow(), &[("repaint", 1)]);
+        assert!(application.painting);
+
+        calls.borrow_mut().clear();
+        application.painting = false;
+        application.canvas_instance = Some(1);
+        let replaced = application_repaint_canvas_if_possible(
+            &mut application,
+            |canvas, state| {
+                calls.borrow_mut().push(("repaint", canvas));
+                state.canvas_instance = Some(2);
+                state.painting = false;
+                Ok::<(), &'static str>(())
+            },
+            |canvas, state| {
+                calls.borrow_mut().push(("service", canvas));
+                assert!(!state.painting);
+                Ok(())
+            },
+        );
+        assert_eq!(replaced, Ok(()));
+        assert_eq!(&*calls.borrow(), &[("repaint", 1), ("service", 2)]);
+        assert!(!application.painting);
+        assert_eq!(application.canvas_instance, Some(2));
+
+        calls.borrow_mut().clear();
+        application.painting = false;
+        application.canvas_instance = Some(1);
+        let service_failure = application_repaint_canvas_if_possible(
+            &mut application,
+            |canvas, _| {
+                calls.borrow_mut().push(("repaint", canvas));
+                Ok::<(), &'static str>(())
+            },
+            |canvas, _| {
+                calls.borrow_mut().push(("service", canvas));
+                Err("service")
+            },
+        );
+        assert_eq!(
+            service_failure,
+            Err(ApplicationRepaintCanvasIfPossibleError::ServiceRepaints(
+                "service"
+            ))
+        );
+        assert_eq!(&*calls.borrow(), &[("repaint", 1), ("service", 1)]);
+        assert!(application.painting);
+
+        calls.borrow_mut().clear();
+        application.painting = false;
+        let recursive = application_repaint_canvas_if_possible(
+            &mut application,
+            |canvas, state| {
+                calls.borrow_mut().push(("repaint", canvas));
+                let nested = application_repaint_canvas_if_possible(
+                    state,
+                    |_, _| Err::<(), _>("nested-repaint"),
+                    |_, _| Err::<(), _>("nested-service"),
+                );
+                assert_eq!(nested, Ok(()));
+                Ok::<(), &'static str>(())
+            },
+            |canvas, _| {
+                calls.borrow_mut().push(("service", canvas));
+                Ok(())
+            },
+        );
+        assert_eq!(recursive, Ok(()));
+        assert_eq!(&*calls.borrow(), &[("repaint", 1), ("service", 1)]);
     }
 
     #[test]
@@ -3529,6 +3739,8 @@ mod tests {
             canvas_width: 0,
             fade_frames: 0,
             demo_frames: 0,
+            painting: false,
+            canvas_instance: None,
             key_last_pressed: 0,
             key_new: false,
             key_pressed: false,
@@ -3656,6 +3868,8 @@ mod tests {
             canvas_width: 0,
             fade_frames: 0,
             demo_frames: 0,
+            painting: false,
+            canvas_instance: None,
             key_last_pressed: 0,
             key_new: false,
             key_pressed: false,
@@ -3782,6 +3996,8 @@ mod tests {
             canvas_width: 0,
             fade_frames: 0,
             demo_frames: 0,
+            painting: false,
+            canvas_instance: None,
             key_last_pressed: 0,
             key_new: false,
             key_pressed: false,
@@ -3846,6 +4062,8 @@ mod tests {
             canvas_width: 0,
             fade_frames: 0,
             demo_frames: 0,
+            painting: false,
+            canvas_instance: None,
             key_last_pressed: 0,
             key_new: false,
             key_pressed: false,

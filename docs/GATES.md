@@ -32,7 +32,7 @@ row when you add a gate.
 | Recovered-JAR/canonical Java behavior | `just java-original-oracle` | `just java-original-oracle-canfail` (one recovered-JAR result is changed; exactly one case diverges) |
 | Pure-method Java/Rust differential | `just pure-oracle` | `just pure-oracle-canfail` (both recovered JARs and canonical Java are independent authorities; one Rust result is changed and exactly one case diverges) |
 | Three-authority method/declaration audit | `just method-audit-check` | `just method-audit-canfail` changes one reviewed original opcode digest; `just method-crosswalk-canfail` and `just declaration-crosswalk-canfail` each leave one `javac` node without a semantic owner; all are rejected, and the AST-walker unit test requires statement-position boundary macros to be visible (finding O-1) |
-| Production Rust ownership scope | `just method-audit-check` | `just method-ownership-canfail` injects an unowned production constant; the reverse `syn` inventory rejects it and separately accounts for every function, value declaration, and owner container. The first 177/1075 Java fields map exhaustively to 144 Rust fields in sixteen hash-locked owner structs, thirty-three typed scalar constants, and one mutable-array initializer template. |
+| Production Rust ownership scope | `just method-audit-check` | `just method-ownership-canfail` injects an unowned production constant; the reverse `syn` inventory rejects it and separately accounts for every function, value declaration, and owner container. The first 179/1075 Java fields map exhaustively to 146 Rust fields in sixteen hash-locked owner structs, thirty-three typed scalar constants, and one mutable-array initializer template. |
 
 ## Content-addressed affected-gate loop
 
@@ -45,8 +45,12 @@ works during the large uncommitted reconstruction phase.
 
 For the normal method-admission edit set, changes to the strict Rust body select
 `xlat-rust`, `differential-oracle`, and `method-audit`; oracle-adapter changes
-select the differential; manifest changes select the audit. Corpus, language,
-codec, and unrelated Java-recovery gates remain clean by hash. This is an
+select the differential; manifest changes select both the method audit and Java
+AST authority because the latter reads the former's reviewed-body ratchet.
+Every transitive file read by a validator must be declared in that gate's input
+surface, even when it is not named on the command line; otherwise a method-only
+admission could reuse a stale authority fingerprint. Corpus, language, codec,
+and unrelated Java-recovery gates remain clean by hash. This is an
 iteration accelerator only: milestone and final completion still use
 `just check`, whose last successful step synchronizes every group fingerprint.
 

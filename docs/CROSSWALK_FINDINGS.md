@@ -56,7 +56,7 @@ of the body.
 
 ## A-3 — application, resource, menu, script, and interpreter fields have shaped owners
 
-The 144 mutable fields reached by the reviewed methods—including application timing,
+The 146 mutable fields reached by the reviewed methods—including application timing,
 resource/language/Ink-server state, menu and input state, script/interpreter
 state, and room-object/battle-panel state—live in `ApplicationState`,
 `ResourceRequestState`, `InkEngineState`, `GameCanvasState`, `MenuState`,
@@ -296,14 +296,16 @@ widths, ignored-but-throwing lookups, or early-return fault suppression.
 The naming-reference build's `GameCanvas.keyPressed` and `keyReleased` bodies
 are real `input-timing-policy` variants. In addition to the baseline's loading,
 load-bar, and dissolve guards, that lineage checks logo state and wall-clock
-timing. Treating both JARs as interchangeable made a correct baseline Rust body
-look wrong; simply dropping the second authority would instead have hidden the
-reason for the disagreement.
+timing. Its `Application.repaintCanvasIfPossible` is separately a
+`rendering-policy` variant: it omits `serviceRepaints` and adds key-flag
+behavior. Treating both JARs as interchangeable made correct baseline Rust
+bodies look wrong; simply dropping the second authority would instead have
+hidden the reasons for the disagreements.
 
-The oracle now validates those two exact member signatures against the
-hash-locked source-named variant ledger before excluding only their 6,196
+The oracle now validates those three exact member signatures against the
+hash-locked source-named variant ledger before excluding only their 6,215
 requests from the naming-reference comparison. The recovered baseline,
-canonical Java, and Rust still compare on all 991,338 cases. The
+canonical Java, and Rust still compare on all 991,357 cases. The
 naming-reference JAR still compares on the remaining 985,142 cases, and
 `Application.setKeyStatus` remains a four-authority comparison because its body
 is common. Complete post-state checks prove the sticky new-key latch, current
@@ -1592,16 +1594,47 @@ new field declarations.
 and a following platform primitive; otherwise exception order and identity can
 look correct on ordinary inputs while diverging on hostile states.
 
+## A-60 — a repaint guard does not make synchronous callbacks atomic
+
+`Application.repaintCanvasIfPossible()` reads the mutable `painting` guard and
+returns without touching `canvas` when it is already true. Otherwise it stores
+true before the first canvas read, calls `repaint`, then reads `canvas` again
+before calling `serviceRepaints`. The two reads are deliberately distinct:
+synchronous repaint reentrancy may clear or replace the class field between
+them, so the second call can receive a different canvas identity or fail on a
+newly null reference.
+
+Rust exposes four exact failure boundaries: null before repaint, repaint
+failure, null before service-repaints, and service-repaints failure. Neither
+callback-triggered changes to `painting` nor canvas replacement are restored or
+rechecked by this body. In particular, publishing the guard survives every
+first-call failure, a repaint failure suppresses the second field read, and a
+successful repaint can alter both state fields before the second operation.
+
+Nineteen baseline/canonical/Rust cases cover the pre-set guard, first and second
+nulls, both callback failures, clear/replacement reentrancy, callback guard
+changes, and guarded recursive invocation. The naming-reference result is
+excluded for only this command through its hash-locked baseline-only
+`rendering-policy` row, because that build omits `serviceRepaints` and adds
+key-flag behavior. Exact receiver traces and final guard/canvas state make the
+call schedule observable. All eighteen `javac` and fifty-eight `syn` body nodes
+plus both field declarations are owned exactly once.
+
+**Lesson.** A reentrancy flag is an ordered store, not an atomic section. Preserve
+repeated static reads and every synchronous callback cut point; callback writes
+remain visible unless the Java body explicitly restores them.
+
 ## Verified clean so far
 
-- 158/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
+- 159/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
   and `syn` node ownership.
-- 177/1,075 Java fields have complete declaration-node ownership: 144 map into
+- 179/1,075 Java fields have complete declaration-node ownership: 146 map into
   sixteen hash-locked Rust owner containers, thirty-three map to typed scalar constants,
   and one mutable array also owns a separately inventoried initializer template.
-- The differential currently runs 991,338 cases against the recovered baseline,
+- The differential currently runs 991,357 cases against the recovered baseline,
   canonical Java, and Rust; the naming-reference JAR agrees on all 985,142
-  cases outside its two ledger-reviewed input-timing variants.
+  cases, with 6,215 requests excluded only by its two ledger-reviewed
+  input-timing variants and one ledger-reviewed rendering-policy variant.
 - Exhaustive subdomains include all Java `char` values, every pair of singleton
   unsigned comparator bytes, all 256 signed menu-scroll counter states, and all
   256 Ink command-header bytes against every target command.

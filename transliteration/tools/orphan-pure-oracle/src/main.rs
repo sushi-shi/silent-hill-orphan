@@ -6,8 +6,9 @@ use orphan_game_xlat::{
     action_key_keycode_to_action_key, action_key_unset_all_keys, application_app_start,
     application_clear_all_rms, application_destroy_app, application_free_memory, application_new,
     application_paint, application_pause_app, application_print_array,
-    application_resource_make_subchunk, application_rms_delete, application_room_repaint_run,
-    application_save_chunk_ini, application_set_display, array_copy_string_handles, char_to_string,
+    application_repaint_canvas_if_possible, application_resource_make_subchunk,
+    application_rms_delete, application_room_repaint_run, application_save_chunk_ini,
+    application_set_display, array_copy_string_handles, char_to_string,
     cheat_controller_initialize, cheat_controller_new, coded_string, dir, find,
     game_canvas_key_jad_entry_as_int, game_canvas_key_pressed, game_canvas_key_released,
     game_canvas_new, game_canvas_paint, game_canvas_show_notify, game_language_path,
@@ -45,14 +46,14 @@ use orphan_game_xlat::{
     set_key_status, silent_hill_game_app_init, silent_hill_game_menu_reset_ingame_values,
     silent_hill_game_new, splash_more_exists, text_id_new, text_replace_first, tick_based_time,
     tick_based_time_reset, tick_based_time_update, to_boolean, to_int, write_string,
-    ApplicationResourceMakeSubChunkError, ApplicationRmsDeleteError, ApplicationState,
-    CheatControllerStatics, GameCanvasState, GameResourceState, GameResourceStatics,
-    InkEnginePopupCreateError, InkEngineState, InkInterpreterState, InkInterpreterStatics,
-    InkScriptExecuteEventError, InkScriptGetItemNameError, InkScriptRegistryValue, InkScriptState,
-    InkScriptStatics, InkVariableError, JavaObject, JavaOwnedObject, JavaResourceId, MenuState,
-    MenuStatics, ResourceRequestState, RoomObjectEnterHoverError, RoomObjectState,
-    RoomObjectStatics, RoomObjectStringEventError, SilentHillGameStatics,
-    GAME_CANVAS_INITIAL_TRANSFORM_TABLE,
+    ApplicationRepaintCanvasIfPossibleError, ApplicationResourceMakeSubChunkError,
+    ApplicationRmsDeleteError, ApplicationState, CheatControllerStatics, GameCanvasState,
+    GameResourceState, GameResourceStatics, InkEnginePopupCreateError, InkEngineState,
+    InkInterpreterState, InkInterpreterStatics, InkScriptExecuteEventError,
+    InkScriptGetItemNameError, InkScriptRegistryValue, InkScriptState, InkScriptStatics,
+    InkVariableError, JavaObject, JavaOwnedObject, JavaResourceId, MenuState, MenuStatics,
+    ResourceRequestState, RoomObjectEnterHoverError, RoomObjectState, RoomObjectStatics,
+    RoomObjectStringEventError, SilentHillGameStatics, GAME_CANVAS_INITIAL_TRANSFORM_TABLE,
 };
 
 fn value(parts: &[&str], index: usize) -> i32 {
@@ -354,6 +355,8 @@ fn server_state(variable_token: &str, hint_token: &str, changed: bool) -> Applic
         canvas_width: 0,
         fade_frames: 0,
         demo_frames: 0,
+        painting: false,
+        canvas_instance: None,
         key_last_pressed: 0,
         key_new: false,
         key_pressed: false,
@@ -2051,6 +2054,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2107,6 +2112,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2149,6 +2156,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2181,6 +2190,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2216,6 +2227,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2270,6 +2283,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2306,6 +2321,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2345,6 +2362,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2381,6 +2400,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2516,6 +2537,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2551,6 +2574,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2587,6 +2612,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2622,6 +2649,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2657,6 +2686,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2697,6 +2728,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2745,6 +2778,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -2954,6 +2989,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -3152,6 +3189,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -3184,6 +3223,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -3217,6 +3258,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -3250,6 +3293,8 @@ fn main() {
                     canvas_width: 0,
                     fade_frames: 0,
                     demo_frames: 0,
+                    painting: false,
+                    canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
                     key_pressed: false,
@@ -3526,6 +3571,107 @@ fn main() {
                     );
                 }
                 key_state_output(&application, &engine)
+            }
+            Some("repaint-canvas-if-possible") if parts.len() == 5 => {
+                let repaint_mode = value(&parts, 3);
+                let service_mode = value(&parts, 4);
+                let mut application = server_state("-", "-", false);
+                application.painting = value(&parts, 1) != 0;
+                application.canvas_instance = match parts[2] {
+                    "null" => None,
+                    token => Some(token.parse().expect("canvas token must be u32")),
+                };
+                let calls = std::cell::RefCell::new(Vec::new());
+                let result = application_repaint_canvas_if_possible(
+                    &mut application,
+                    |canvas, state| {
+                        calls.borrow_mut().push(format!("R{canvas}"));
+                        match repaint_mode {
+                            0 => Ok(()),
+                            1 => Err("repaint"),
+                            2 => {
+                                state.canvas_instance = None;
+                                Ok(())
+                            }
+                            3 => {
+                                state.canvas_instance = Some(2);
+                                Ok(())
+                            }
+                            4 => {
+                                state.painting = false;
+                                Ok(())
+                            }
+                            5 => {
+                                state.canvas_instance = Some(2);
+                                state.painting = false;
+                                Ok(())
+                            }
+                            6 => {
+                                let nested = application_repaint_canvas_if_possible(
+                                    state,
+                                    |nested_canvas, _| {
+                                        calls.borrow_mut().push(format!("NR{nested_canvas}"));
+                                        Err::<(), _>("nested-repaint")
+                                    },
+                                    |nested_canvas, _| {
+                                        calls.borrow_mut().push(format!("NS{nested_canvas}"));
+                                        Err::<(), _>("nested-service")
+                                    },
+                                );
+                                if nested.is_ok() {
+                                    Ok(())
+                                } else {
+                                    Err("recursive")
+                                }
+                            }
+                            _ => unreachable!(),
+                        }
+                    },
+                    |canvas, state| {
+                        calls.borrow_mut().push(format!("S{canvas}"));
+                        match service_mode {
+                            0 => Ok(()),
+                            1 => Err("service"),
+                            2 => {
+                                state.canvas_instance = None;
+                                Ok(())
+                            }
+                            3 => {
+                                state.canvas_instance = Some(3);
+                                Ok(())
+                            }
+                            4 => {
+                                state.painting = false;
+                                Ok(())
+                            }
+                            _ => unreachable!(),
+                        }
+                    },
+                );
+                let status = match result {
+                    Ok(()) => "OK",
+                    Err(ApplicationRepaintCanvasIfPossibleError::CanvasNullBeforeRepaint) => {
+                        "NPE-R"
+                    }
+                    Err(ApplicationRepaintCanvasIfPossibleError::Repaint(_)) => "REPAINT",
+                    Err(
+                        ApplicationRepaintCanvasIfPossibleError::CanvasNullBeforeServiceRepaints,
+                    ) => "NPE-S",
+                    Err(ApplicationRepaintCanvasIfPossibleError::ServiceRepaints(_)) => "SERVICE",
+                };
+                let calls = calls.borrow();
+                let trace = if calls.is_empty() {
+                    "-".to_owned()
+                } else {
+                    calls.join(",")
+                };
+                let canvas = application
+                    .canvas_instance
+                    .map_or_else(|| "null".to_owned(), |canvas| canvas.to_string());
+                format!(
+                    "{status}:{trace}:{}:{canvas}",
+                    i32::from(application.painting)
+                )
             }
             Some("canvas-paint") if parts.len() == 4 => {
                 let argument = (value(&parts, 1) != 0).then_some(73_u32);

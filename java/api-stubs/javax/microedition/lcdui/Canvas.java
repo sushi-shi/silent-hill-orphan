@@ -1,10 +1,37 @@
 package javax.microedition.lcdui;
 
 public abstract class Canvas extends Displayable {
+    public interface OracleRepaintApplication {
+        void setCanvas(Canvas canvas);
+
+        void setPainting(boolean painting);
+
+        void repaintCanvasIfPossible();
+    }
+
+    public static final class OracleRepaintFailure extends RuntimeException {
+        public OracleRepaintFailure() {
+            super("injected repaint failure");
+        }
+    }
+
+    public static final class OracleServiceRepaintsFailure extends RuntimeException {
+        public OracleServiceRepaintsFailure() {
+            super("injected serviceRepaints failure");
+        }
+    }
+
     public static Canvas oracleFullScreenReceiver;
     public static int oracleFullScreenCalls;
     public static boolean oracleFullScreenMode;
     public static boolean oracleFailFullScreen;
+    public static Canvas oracleRepaintCanvas1;
+    public static Canvas oracleRepaintCanvas2;
+    public static Canvas oracleRepaintCanvas3;
+    public static int oracleRepaintMode;
+    public static int oracleServiceRepaintsMode;
+    public static StringBuffer oracleRepaintTrace = new StringBuffer();
+    public static OracleRepaintApplication oracleRepaintApplication;
 
     public static final int UP = 1;
     public static final int LEFT = 2;
@@ -54,9 +81,76 @@ public abstract class Canvas extends Displayable {
         return 128;
     }
 
-    public final void repaint() {}
+    private static void oracleRecordRepaintCall(String operation, Canvas receiver) {
+        if (oracleRepaintTrace.length() != 0) {
+            oracleRepaintTrace.append(',');
+        }
+        int id = receiver == oracleRepaintCanvas1 ? 1
+                : receiver == oracleRepaintCanvas2 ? 2
+                : receiver == oracleRepaintCanvas3 ? 3 : -1;
+        oracleRepaintTrace.append(operation).append(id);
+    }
 
-    public final void serviceRepaints() {}
+    public final void repaint() {
+        oracleRecordRepaintCall("R", this);
+        switch (oracleRepaintMode) {
+            case 1:
+                throw new OracleRepaintFailure();
+            case 2:
+                oracleRepaintApplication.setCanvas(null);
+                break;
+            case 3:
+                oracleRepaintApplication.setCanvas(oracleRepaintCanvas2);
+                break;
+            case 4:
+                oracleRepaintApplication.setPainting(false);
+                break;
+            case 5:
+                oracleRepaintApplication.setCanvas(oracleRepaintCanvas2);
+                oracleRepaintApplication.setPainting(false);
+                break;
+            case 6:
+                oracleRepaintApplication.repaintCanvasIfPossible();
+                break;
+            default:
+                break;
+        }
+    }
+
+    public final void serviceRepaints() {
+        oracleRecordRepaintCall("S", this);
+        switch (oracleServiceRepaintsMode) {
+            case 1:
+                throw new OracleServiceRepaintsFailure();
+            case 2:
+                oracleRepaintApplication.setCanvas(null);
+                break;
+            case 3:
+                oracleRepaintApplication.setCanvas(oracleRepaintCanvas3);
+                break;
+            case 4:
+                oracleRepaintApplication.setPainting(false);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static void oracleResetRepaint(
+            Canvas canvas1,
+            Canvas canvas2,
+            Canvas canvas3,
+            int repaintMode,
+            int serviceRepaintsMode,
+            OracleRepaintApplication application) {
+        oracleRepaintCanvas1 = canvas1;
+        oracleRepaintCanvas2 = canvas2;
+        oracleRepaintCanvas3 = canvas3;
+        oracleRepaintMode = repaintMode;
+        oracleServiceRepaintsMode = serviceRepaintsMode;
+        oracleRepaintTrace = new StringBuffer();
+        oracleRepaintApplication = application;
+    }
 
     public void setFullScreenMode(boolean mode) {
         oracleFullScreenCalls++;
