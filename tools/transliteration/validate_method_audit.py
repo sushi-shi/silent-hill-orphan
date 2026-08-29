@@ -5,6 +5,11 @@ Reviewed method bodies and state declarations use the same exhaustive rule:
 every javac and syn node has exactly one semantic owner or a reasoned one-sided
 adaptation.  A reverse syn inventory also prevents functions, value
 declarations, and owner containers from entering the strict crate unreviewed.
+
+Executable bodies additionally pass through the Preservation Kit's generic
+schema-2 verifier.  The game-specific wrapper emits live original-bytecode,
+javac, and syn evidence and translates the combined audit manifest in memory;
+declaration and reverse-ownership checks remain game-specific by design.
 """
 
 from __future__ import annotations
@@ -26,10 +31,12 @@ CLASS_MAP = (
     ROOT / "java" / "reconstruction" / "mappings" / "canonical" / "classes.toml"
 )
 sys.path.insert(0, str(ROOT / "tools" / "corpus"))
+sys.path.insert(0, str(ROOT / "tools" / "ast"))
 sys.path.insert(0, str(ROOT / "tools" / "transliteration"))
 
 import classfile  # noqa: E402
 import corpus  # noqa: E402
+import validate_crosswalk as generic_crosswalk  # noqa: E402
 import validate_ast_authority  # noqa: E402
 
 
@@ -239,6 +246,12 @@ def validate_semantic_crosswalk(
     for index, adaptation in enumerate(entry.get("adaptation", [])):
         context = f"adaptation {index}"
         side = adaptation.get("side")
+        category = adaptation.get("category")
+        if category not in generic_crosswalk.ADAPT_CATEGORIES:
+            errors.append(
+                f"{label}: {context} category must be one of "
+                f"{sorted(generic_crosswalk.ADAPT_CATEGORIES)}"
+            )
         if not adaptation.get("reason"):
             errors.append(f"{label}: {context} needs a reason")
         if side == "java":
@@ -299,6 +312,143 @@ def rust_evidence_facts(target: dict, rust: dict) -> dict:
         "nodes_sha256": digest("\n".join(evidence.nodes)),
         "node_count": len(evidence.nodes),
     }
+
+
+def generic_body_key(entry: dict) -> str:
+    """Return a stable key unique across owners and overloaded Java methods."""
+
+    return f"{entry['java_class']}.{entry['java_name']}{entry['descriptor']}"
+
+
+def generic_crosswalk_documents(
+    data: dict,
+    entries: list[dict],
+    methods: dict,
+    java: dict,
+    rust: dict,
+) -> tuple[dict, dict]:
+    """Translate schema-1 game rows and live evidence to generic schema 2.
+
+    Silent Hill keeps fields, Rust-only declarations, original owner names, and
+    oracle metadata in one game-specific manifest.  The reusable verifier is
+    body-only, so this adapter projects just the executable body decisions while
+    retaining the original tuple as a collision-free evidence key.
+    """
+
+    manifest_bodies = []
+    evidence_bodies = []
+    for entry in entries:
+        key = generic_body_key(entry)
+        operations = []
+        for operation in entry.get("operation", []):
+            converted = {"semantic": operation.get("semantic")}
+            for old, new in (
+                ("java_nodes", "java"),
+                ("java_node_ranges", "java_range"),
+                ("rust_nodes", "rust"),
+                ("rust_node_ranges", "rust_range"),
+                ("shape_note", "shape_note"),
+                ("blanket_ok", "blanket_ok"),
+                ("blanket_reason", "blanket_reason"),
+            ):
+                if old in operation:
+                    converted[new] = operation[old]
+            operations.append(converted)
+
+        adaptations = []
+        for adaptation in entry.get("adaptation", []):
+            converted = {
+                "category": adaptation.get("category"),
+                "reason": adaptation.get("reason"),
+            }
+            if adaptation.get("side") == "java":
+                if "java_nodes" in adaptation:
+                    converted["java"] = adaptation["java_nodes"]
+                if "java_node_ranges" in adaptation:
+                    converted["java_range"] = adaptation["java_node_ranges"]
+            elif adaptation.get("side") == "rust":
+                if "rust_nodes" in adaptation:
+                    converted["rust"] = adaptation["rust_nodes"]
+                if "rust_node_ranges" in adaptation:
+                    converted["rust_range"] = adaptation["rust_node_ranges"]
+            adaptations.append(converted)
+
+        manifest_bodies.append(
+            {
+                "java_item": key,
+                "code_sha256": entry.get("code_sha256"),
+                "opcode_sha256": entry.get("opcode_sha256"),
+                "java_ast_sha256": entry.get("java_ast_sha256"),
+                "java_nodes_sha256": entry.get("java_nodes_sha256"),
+                "java_node_count": entry.get("java_node_count"),
+                "semantic_status": entry.get("semantic_status"),
+                "review": entry.get("semantic_review"),
+                "rust": entry.get("rust", []),
+                "op": operations,
+                "adapt": adaptations,
+            }
+        )
+
+        method = methods.get(
+            (entry.get("java_class"), entry.get("java_name"), entry.get("descriptor"))
+        )
+        java_evidence = java.get((entry.get("canonical_class"), entry.get("java_item")))
+        if method is None or java_evidence is None:
+            continue
+        rust_targets = []
+        for target in entry.get("rust", []):
+            target_evidence = rust.get((target.get("file"), target.get("item")))
+            if target_evidence is None:
+                continue
+            rust_targets.append(
+                {
+                    "file": target.get("file"),
+                    "item": target.get("item"),
+                    "ast_sha256": digest(target_evidence.ast),
+                    "nodes": list(target_evidence.nodes),
+                }
+            )
+        evidence_bodies.append(
+            {
+                "java_item": key,
+                "code_sha256": method.code_sha256,
+                "opcode_sha256": method.opcode_sha256,
+                "java_ast_sha256": digest(java_evidence.ast),
+                "java_nodes": list(java_evidence.nodes),
+                "rust": rust_targets,
+            }
+        )
+
+    manifest = {
+        "schema_version": 2,
+        "total_body_count": data.get("total_body_count"),
+        "reviewed_body_count": len(entries),
+        "crosswalked_body_count": sum(
+            entry.get("semantic_status") == "crosswalked" for entry in entries
+        ),
+        "policy": data.get("crosswalk_policy", {}),
+        "body": manifest_bodies,
+    }
+    return manifest, {"body": evidence_bodies}
+
+
+def generic_crosswalk_report(
+    data: dict,
+    entries: list[dict],
+    methods: dict,
+    java: dict,
+    rust: dict,
+    *,
+    strict: bool,
+) -> generic_crosswalk.Report:
+    manifest, evidence_data = generic_crosswalk_documents(
+        data, entries, methods, java, rust
+    )
+    return generic_crosswalk.validate(
+        manifest,
+        generic_crosswalk.load_evidence(evidence_data),
+        strict=strict,
+    )
 
 
 FIELD_REQUESTS = [
@@ -868,6 +1018,17 @@ def validate(
     if inject_unowned:
         rust[(min(production_files), "const:INJECTED_UNOWNED")] = RustEvidence("", ())
     errors: list[str] = []
+    generic_report = generic_crosswalk_report(
+        data,
+        entries,
+        methods,
+        java,
+        rust,
+        strict=True,
+    )
+    errors.extend(
+        f"generic per-node crosswalk: {error}" for error in generic_report.errors
+    )
     if data.get("total_body_count") != len(methods):
         errors.append(
             f"total_body_count is {data.get('total_body_count')}, baseline has {len(methods)}"
@@ -1177,6 +1338,11 @@ def main() -> int:
     parser.add_argument("--self-test-ownership", action="store_true")
     parser.add_argument("--self-test-crosswalk", action="store_true")
     parser.add_argument("--self-test-declaration-crosswalk", action="store_true")
+    parser.add_argument(
+        "--crosswalk-coverage",
+        action="store_true",
+        help="print the generic schema-2 per-body/node coverage report",
+    )
     arguments = parser.parse_args()
     if arguments.print_entries:
         print_entries()
@@ -1202,6 +1368,28 @@ def main() -> int:
             parser.error(f"unknown Rust AST item {file}::{item}")
         for index, node in enumerate(evidence.nodes):
             print(f"{index}\t{node}")
+        return 0
+    if arguments.crosswalk_coverage:
+        data = tomllib.loads(MANIFEST.read_text(encoding="utf-8"))
+        entries = data.get("body", [])
+        game_source = ROOT / "transliteration" / "crates" / "orphan-game-xlat" / "src"
+        production_files = {
+            str(path.relative_to(ROOT)) for path in sorted(game_source.rglob("*.rs"))
+        }
+        report = generic_crosswalk_report(
+            data,
+            entries,
+            original_methods(),
+            validate_ast_authority.java_asts(),
+            rust_asts(production_files),
+            strict=True,
+        )
+        print(generic_crosswalk.format_coverage(report))
+        if report.errors:
+            print("---", file=sys.stderr)
+            for error in report.errors:
+                print(error, file=sys.stderr)
+            return 1
         return 0
     errors = validate(
         inject_defect=arguments.self_test,

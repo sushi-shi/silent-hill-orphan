@@ -250,6 +250,8 @@ inputs = [
   "java/reconstruction/mappings",
   "java/reconstruction/ast-authority.toml",
   "tools/transliteration/JavaAstAuditDump.java",
+  "tools/ast",
+  "tools/tests/test_crosswalk_validator.py",
   "tools/transliteration/validate_ast_authority.py",
   "tools/transliteration/validate_method_audit.py",
   "transliteration/audits/method-audit.toml",
@@ -260,6 +262,8 @@ commands = [
   ["just", "method-audit-check"],
   ["just", "method-audit-canfail"],
   ["just", "method-crosswalk-canfail"],
+  ["just", "crosswalk-canfail"],
+  ["just", "crosswalk-fixture-canfail"],
   ["just", "declaration-crosswalk-canfail"],
   ["just", "method-ownership-canfail"],
 ]

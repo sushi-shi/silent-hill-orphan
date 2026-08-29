@@ -233,6 +233,26 @@ method-audit-canfail:
 method-crosswalk-canfail:
     python3 tools/transliteration/validate_method_audit.py --self-test-crosswalk
 
+# Run the reusable schema-2 verifier over live Silent Hill bytecode/javac/syn
+# evidence. The game-specific declaration and reverse-inventory checks remain in
+# method-audit-check.
+crosswalk-check:
+    python3 tools/transliteration/validate_method_audit.py --crosswalk-coverage
+
+# Report the reusable schema-2 burn-down over the live Silent Hill evidence.
+crosswalk-coverage:
+    python3 tools/transliteration/validate_method_audit.py --crosswalk-coverage
+
+# Prove the generic per-node gate rejects missing decisions, coarse blankets,
+# digest drift, and the historical Java-divide-vs-Rust-call bug shape.
+crosswalk-canfail:
+    python3 tools/ast/validate_crosswalk.py --self-test
+
+crosswalk-fixture-canfail:
+    python3 -m unittest \
+        tools.tests.test_crosswalk_validator.CrosswalkValidatorTests.test_coarse_blanket_is_rejected \
+        tools.tests.test_crosswalk_validator.CrosswalkValidatorTests.test_operator_parity_catches_div_vs_call
+
 # Prove that Java/Rust state declarations use the same complete node ownership
 # rule as executable bodies.
 declaration-crosswalk-canfail:
@@ -280,6 +300,8 @@ check:
     just method-audit-check
     just method-audit-canfail
     just method-crosswalk-canfail
+    just crosswalk-canfail
+    just crosswalk-fixture-canfail
     just declaration-crosswalk-canfail
     just method-ownership-canfail
     if [ -d tools/tests ]; then python3 -m unittest discover -s tools/tests; fi
