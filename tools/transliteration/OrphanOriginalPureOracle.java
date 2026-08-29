@@ -19,6 +19,7 @@ import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 import javax.microedition.midlet.MIDlet;
+import javax.microedition.rms.RecordStore;
 
 /** Calls package-private static methods on the verified original {@code M}. */
 public final class OrphanOriginalPureOracle {
@@ -849,6 +850,7 @@ public final class OrphanOriginalPureOracle {
         Method clearAllRms = method(application, "clearAllRMS");
         Method freeMemory = method(application, "freeMemory");
         Method setDisplay = method(application, "setDisplay", Displayable.class);
+        Method rmsDelete = method(application, "rmsDelete", String.class);
         Method resetLoad = method(application, "resetLoad");
         Method resourcePathForString = method(application, "loadRequest_getResourcePath",
                 Integer.TYPE, String.class);
@@ -1623,6 +1625,23 @@ public final class OrphanOriginalPureOracle {
                 result = status + ":" + Display.oracleGetDisplayCalls + ":"
                         + Display.oracleSetCurrentCalls + ":" + observedMidlet + ":"
                         + receiver + ":" + current;
+            } else if (parts[0].equals("rms-delete") && parts.length == 3) {
+                String expectedName = utf16(parts[1]);
+                RecordStore.oracleResetDelete(value(parts, 2));
+                String status;
+                try {
+                    status = ((Boolean) rmsDelete.invoke(null, expectedName)).booleanValue()
+                            ? "T" : "F";
+                } catch (InvocationTargetException exception) {
+                    if (!(exception.getCause() instanceof NullPointerException)) {
+                        throw exception;
+                    }
+                    status = "NPE";
+                }
+                String identity = RecordStore.oracleDeleteCalls == 0
+                        ? "-" : RecordStore.oracleDeleteName == expectedName ? "I" : "W";
+                result = status + ":" + RecordStore.oracleDeleteCalls + ":" + identity;
+                RecordStore.oracleResetDelete(0);
             } else if (parts[0].equals("resource-restart-importants") && parts.length == 2) {
                 int oldLength = value(parts, 1);
                 Vector oldValues = oldLength < 0 ? null : new Vector();

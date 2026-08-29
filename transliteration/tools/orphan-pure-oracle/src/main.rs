@@ -5,7 +5,7 @@ use orphan_game_xlat::{
     abs, action_key_get_script_id, action_key_id_convert, action_key_init_system,
     action_key_keycode_to_action_key, action_key_unset_all_keys, application_app_start,
     application_clear_all_rms, application_destroy_app, application_free_memory, application_new,
-    application_paint, application_pause_app, application_print_array,
+    application_paint, application_pause_app, application_print_array, application_rms_delete,
     application_room_repaint_run, application_set_display, array_copy_string_handles,
     char_to_string, cheat_controller_initialize, cheat_controller_new, coded_string, dir, find,
     game_canvas_key_jad_entry_as_int, game_canvas_key_pressed, game_canvas_key_released,
@@ -44,13 +44,13 @@ use orphan_game_xlat::{
     set_key_status, silent_hill_game_app_init, silent_hill_game_menu_reset_ingame_values,
     silent_hill_game_new, splash_more_exists, text_id_new, text_replace_first, tick_based_time,
     tick_based_time_reset, tick_based_time_update, to_boolean, to_int, write_string,
-    ApplicationState, CheatControllerStatics, GameCanvasState, GameResourceState,
-    GameResourceStatics, InkEnginePopupCreateError, InkEngineState, InkInterpreterState,
-    InkInterpreterStatics, InkScriptExecuteEventError, InkScriptGetItemNameError,
-    InkScriptRegistryValue, InkScriptState, InkScriptStatics, InkVariableError, JavaObject,
-    JavaOwnedObject, JavaResourceId, MenuState, MenuStatics, ResourceRequestState,
-    RoomObjectEnterHoverError, RoomObjectState, RoomObjectStatics, RoomObjectStringEventError,
-    SilentHillGameStatics, GAME_CANVAS_INITIAL_TRANSFORM_TABLE,
+    ApplicationRmsDeleteError, ApplicationState, CheatControllerStatics, GameCanvasState,
+    GameResourceState, GameResourceStatics, InkEnginePopupCreateError, InkEngineState,
+    InkInterpreterState, InkInterpreterStatics, InkScriptExecuteEventError,
+    InkScriptGetItemNameError, InkScriptRegistryValue, InkScriptState, InkScriptStatics,
+    InkVariableError, JavaObject, JavaOwnedObject, JavaResourceId, MenuState, MenuStatics,
+    ResourceRequestState, RoomObjectEnterHoverError, RoomObjectState, RoomObjectStatics,
+    RoomObjectStringEventError, SilentHillGameStatics, GAME_CANVAS_INITIAL_TRANSFORM_TABLE,
 };
 
 fn value(parts: &[&str], index: usize) -> i32 {
@@ -1930,6 +1930,39 @@ fn main() {
                     get_calls.get(),
                     set_calls.get()
                 )
+            }
+            Some("rms-delete") if parts.len() == 3 => {
+                let name = utf16(parts[1]);
+                let mode = value(&parts, 2);
+                let calls = core::cell::Cell::new(0);
+                let identity = core::cell::Cell::new("-");
+                let result = application_rms_delete(name.as_deref(), |observed| {
+                    calls.set(calls.get() + 1);
+                    identity.set(match (observed, name.as_deref()) {
+                        (None, None) => "I",
+                        (Some(left), Some(right))
+                            if left.as_ptr() == right.as_ptr() && left.len() == right.len() =>
+                        {
+                            "I"
+                        }
+                        _ => "W",
+                    });
+                    match mode {
+                        0 => Ok(()),
+                        1 => Err(ApplicationRmsDeleteError::NotFound),
+                        2 => Err(ApplicationRmsDeleteError::RecordStore),
+                        3 => Err(ApplicationRmsDeleteError::Uncaught(
+                            orphan_jvm::NullPointerException,
+                        )),
+                        _ => unreachable!(),
+                    }
+                });
+                let status = match result {
+                    Ok(true) => "T",
+                    Ok(false) => "F",
+                    Err(_) => "NPE",
+                };
+                format!("{status}:{}:{}", calls.get(), identity.get())
             }
             Some("resource-restart-importants") if parts.len() == 2 => {
                 let old_length = value(&parts, 1);

@@ -1,17 +1,17 @@
 schema_version = 1
 baseline_sha256 = "ca9a874ce7c7fb11ed444701b65e967919d3d7c0bcf73f80a9fcf825fb6a4be7"
 total_body_count = 350
-reviewed_body_count = 155
-semantic_reviewed_body_count = 155
+reviewed_body_count = 156
+semantic_reviewed_body_count = 156
 total_field_count = 1075
 semantic_reviewed_field_count = 175
-total_rust_function_count = 157
-reviewed_rust_function_count = 157
-total_rust_value_declaration_count = 209
-reviewed_rust_value_declaration_count = 209
-total_rust_container_count = 29
-reviewed_rust_container_count = 29
-total_rust_declaration_count = 395
+total_rust_function_count = 158
+reviewed_rust_function_count = 158
+total_rust_value_declaration_count = 212
+reviewed_rust_value_declaration_count = 212
+total_rust_container_count = 30
+reviewed_rust_container_count = 30
+total_rust_declaration_count = 400
 
 [[field]]
 java_class = "Cheat"
@@ -3908,6 +3908,30 @@ oracle = "pure-method-v1"
 semantic_status = "crosswalked"
 semantic_review = "The existing six applicable canvas-paint cases now execute the admitted GameCanvas.paint and Application.paint Rust bodies compositionally. They cross both sides of the inclusive frame predicate, nullable/non-null Graphics where delegation is reachable, and hostile painting/marker state; Java and Rust agree on skip, exact argument identity, downstream NPE, and mutations. The focused test covers equality explicitly and proves delegated failure propagation. All twelve javac and twenty syn body nodes plus both four-to-two field declaration crosswalks are owned."
 
+[[body]]
+java_class = "M"
+canonical_class = "Application"
+java_name = "rmsDelete"
+descriptor = "(Ljava/lang/String;)Z"
+java_item = "rmsDelete(String)"
+code_sha256 = "20723700e7c2e000f18577f4151abe0ec34cc262fdc19fc0b4ac78864db9cfcd"
+opcode_sha256 = "7fb23f8caa29e5e51dacef8344f02007e036e45750cef1f53de2a0859f9ec06a"
+java_ast_sha256 = "88dedb5cd362cfefc570397bd30fe5bb0b0f89e9731009361ceb0db3d89cda42"
+java_nodes_sha256 = "1700d3c277f85cb2fe153e985214699efd1321ea2bec5e11b89470464b743b73"
+java_node_count = 24
+rust_node_counts = [27]
+operation = [
+  { semantic = "own the complete try/catch body", java_nodes = [0], rust_nodes = ["0:0"] },
+  { semantic = "invoke RecordStore.deleteRecordStore exactly once with the nullable String identity unchanged", java_node_ranges = [[3, 7]], rust_node_ranges = [{ target = 0, start = 2, end = 6 }] },
+  { semantic = "return true after successful deletion or the specifically caught RecordStoreNotFoundException", java_node_ranges = [[1, 2], [8, 16]], rust_nodes = ["0:1"], rust_node_ranges = [{ target = 0, start = 7, end = 13 }] },
+  { semantic = "catch any other RecordStoreException and return false", java_node_ranges = [[17, 23]], rust_node_ranges = [{ target = 0, start = 14, end = 19 }] },
+]
+adaptation = [{ side = "rust", reason = "The explicit Uncaught arm threads any unchecked platform failure that Java's two typed catches do not intercept.", rust_node_ranges = [{ target = 0, start = 20, end = 26 }] }]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:application_rms_delete", ast_sha256 = "a5456e0dd85893230cd224a4078c3c7ae6aa8eb287d17a18dc80496a68ca3ad4", nodes_sha256 = "a18e6bae55439a044262bf780fff612762536a3581fcf15c33cc6a9d2220fad3", node_count = 27 }]
+oracle = "pure-method-v1"
+semantic_status = "crosswalked"
+semantic_review = "Thirty-two hostile-name cases agree across both recovered JARs, canonical Java, and Rust. Null, empty, NUL, isolated-surrogate, noncharacter, ASCII path-like, and multilingual UTF-16 names cross successful deletion, the caught not-found subtype, another caught RecordStoreException, and an uncaught NullPointerException. Every case records one call and exact String identity; the focused Rust test independently proves all four result classes. All twenty-four javac and twenty-seven syn nodes are owned exactly once."
+
 [[field]]
 java_class = "ExtBase"
 canonical_class = "InkEngine"
@@ -5363,6 +5387,38 @@ ast_sha256 = "3c9670c4262c3ffca018e3a08bf92473451798c631272552cc9b575abddd4954"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
 semantic_review = "Rust-only typed boundary retaining the three distinct failure sites in Application.setDisplay without claiming either MIDP callee."
+
+[[rust_value]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "variant:ApplicationRmsDeleteError::NotFound"
+ast_sha256 = "aea3fb0357b0cd5a15ede8836337738b3f348599c3685a2deacfedf6cd40b019"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Rust-only typed representation of the specifically caught RecordStoreNotFoundException branch that treats an already absent store as successful deletion."
+
+[[rust_value]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "variant:ApplicationRmsDeleteError::RecordStore"
+ast_sha256 = "b738c31ec8869f8dbb6e9f4fb3054df0005b04909b6c836dbc8f8c5ba9d0b51f"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Rust-only typed representation of any other caught RecordStoreException branch that reports deletion failure."
+
+[[rust_value]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "variant:ApplicationRmsDeleteError::Uncaught"
+ast_sha256 = "4aa9399ae35f1c4e480b51155aa4a7723cb7e18395e7e8fb510893b21e0822f2"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Rust-only transparent wrapper retaining failures outside the two Java catch types; the oracle exercises this with a NullPointerException."
+
+[[rust_container]]
+file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
+item = "enum:ApplicationRmsDeleteError"
+ast_sha256 = "8bba77d675da80d32f3137eaf97bd151c13efd6035e4a005157542b24c4f88de"
+nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+node_count = 0
+semantic_review = "Rust-only typed catch boundary preserving the subtype ordering and uncaught remainder of Application.rmsDelete."
 
 [[body]]
 java_class = "ExtBase"

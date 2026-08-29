@@ -18,6 +18,7 @@ import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 import javax.microedition.midlet.MIDlet;
+import javax.microedition.rms.RecordStore;
 
 /** Calls the actual canonical Java methods for differential testing. */
 public final class OrphanJavaPureOracle {
@@ -1255,6 +1256,19 @@ public final class OrphanJavaPureOracle {
                 result = status + ":" + Display.oracleGetDisplayCalls + ":"
                         + Display.oracleSetCurrentCalls + ":" + observedMidlet + ":"
                         + receiver + ":" + current;
+            } else if (parts[0].equals("rms-delete") && parts.length == 3) {
+                String expectedName = utf16(parts[1]);
+                RecordStore.oracleResetDelete(value(parts, 2));
+                String status;
+                try {
+                    status = Application.rmsDelete(expectedName) ? "T" : "F";
+                } catch (NullPointerException exception) {
+                    status = "NPE";
+                }
+                String identity = RecordStore.oracleDeleteCalls == 0
+                        ? "-" : RecordStore.oracleDeleteName == expectedName ? "I" : "W";
+                result = status + ":" + RecordStore.oracleDeleteCalls + ":" + identity;
+                RecordStore.oracleResetDelete(0);
             } else if (parts[0].equals("resource-restart-importants") && parts.length == 2) {
                 int oldLength = value(parts, 1);
                 Application.resourceImportants = oldLength < 0 ? null : new Vector();

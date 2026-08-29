@@ -1,6 +1,10 @@
 package javax.microedition.rms;
 
 public class RecordStore {
+    public static String oracleDeleteName;
+    public static int oracleDeleteCalls;
+    public static int oracleDeleteMode;
+
     private RecordStore() {}
 
     public static RecordStore openRecordStore(String name, boolean createIfNecessary)
@@ -9,7 +13,25 @@ public class RecordStore {
     }
 
     public static void deleteRecordStore(String name)
-            throws RecordStoreException, RecordStoreNotFoundException {}
+            throws RecordStoreException, RecordStoreNotFoundException {
+        oracleDeleteCalls++;
+        oracleDeleteName = name;
+        if (oracleDeleteMode == 1) {
+            throw new RecordStoreNotFoundException("injected missing store");
+        }
+        if (oracleDeleteMode == 2) {
+            throw new RecordStoreException("injected record-store failure");
+        }
+        if (oracleDeleteMode == 3) {
+            throw new NullPointerException("injected unchecked failure");
+        }
+    }
+
+    public static void oracleResetDelete(int mode) {
+        oracleDeleteName = null;
+        oracleDeleteCalls = 0;
+        oracleDeleteMode = mode;
+    }
 
     public void closeRecordStore() throws RecordStoreNotOpenException, RecordStoreException {}
 

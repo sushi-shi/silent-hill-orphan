@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare 155 methods across recovered JARs, canonical Java, and Rust."""
+"""Compare 156 methods across recovered JARs, canonical Java, and Rust."""
 
 from __future__ import annotations
 
@@ -403,6 +403,21 @@ def requests() -> list[str]:
         for displayable_present in (0, 1)
         for get_mode in (0, 1, 2)
         for set_mode in (0, 1)
+    )
+    rms_names: tuple[list[int] | None, ...] = (
+        None,
+        [],
+        [0],
+        [0xD800],
+        [0xFFFF],
+        [ord(character) for character in "save"],
+        [ord(character) for character in "a/b"],
+        [0x00E9, 0x4E2D],
+    )
+    result.extend(
+        f"rms-delete {utf16_token(name)} {mode}"
+        for name in rms_names
+        for mode in (0, 1, 2, 3)
     )
 
     path_strings: list[list[int] | None] = [

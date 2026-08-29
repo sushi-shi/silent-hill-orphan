@@ -303,8 +303,8 @@ reason for the disagreement.
 The oracle now validates those two exact member signatures against the
 hash-locked source-named variant ledger before excluding only their 6,196
 requests from the naming-reference comparison. The recovered baseline,
-canonical Java, and Rust still compare on all 991,268 cases. The
-naming-reference JAR still compares on the remaining 985,072 cases, and
+canonical Java, and Rust still compare on all 991,300 cases. The
+naming-reference JAR still compares on the remaining 985,104 cases, and
 `Application.setKeyStatus` remains a four-authority comparison because its body
 is common. Complete post-state checks prove the sticky new-key latch, current
 pressed state, last-key write, and signed-byte scroll reset—not merely the
@@ -1521,15 +1521,35 @@ complete four-to-two declaration crosswalks in the same admission.
 oracle through the real callee body. Runtime composition strengthens the
 evidence while separate manifests preserve exact per-body AST ownership.
 
+## A-57 — catch subtype order is part of a boolean wrapper's contract
+
+`Application.rmsDelete(String)` forwards the nullable UTF-16 name once to
+`RecordStore.deleteRecordStore`. A successful deletion returns true; the first
+catch treats `RecordStoreNotFoundException` as the same successful result,
+while the following `RecordStoreException` catch returns false. Rust represents
+those two caught categories separately and retains an explicit generic arm for
+unchecked failures that Java lets escape.
+
+Thirty-two four-authority cases cross null, empty, NUL, isolated-surrogate,
+noncharacter, ordinary, path-like, and multilingual names with success,
+not-found, generic RMS failure, and an uncaught `NullPointerException`. The Java
+stub records reference identity and call count, and the focused Rust test uses
+pointer identity to prove the same forwarding rather than mere string equality.
+All twenty-four `javac` and twenty-seven `syn` nodes are owned exactly once.
+
+**Lesson.** Do not flatten an exception hierarchy into one host error. Catch
+order can change an ordinary return value, and errors outside the declared
+catches must remain observable rather than being silently converted.
+
 ## Verified clean so far
 
-- 155/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
+- 156/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
   and `syn` node ownership.
 - 175/1,075 Java fields have complete declaration-node ownership: 142 map into
   sixteen hash-locked Rust owner containers, thirty-three map to typed scalar constants,
   and one mutable array also owns a separately inventoried initializer template.
-- The differential currently runs 991,268 cases against the recovered baseline,
-  canonical Java, and Rust; the naming-reference JAR agrees on all 985,072
+- The differential currently runs 991,300 cases against the recovered baseline,
+  canonical Java, and Rust; the naming-reference JAR agrees on all 985,104
   cases outside its two ledger-reviewed input-timing variants.
 - Exhaustive subdomains include all Java `char` values, every pair of singleton
   unsigned comparator bytes, all 256 signed menu-scroll counter states, and all

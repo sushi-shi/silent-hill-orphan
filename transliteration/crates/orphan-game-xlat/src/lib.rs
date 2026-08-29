@@ -70,6 +70,13 @@ pub enum ApplicationSetDisplayError<E> {
     SetCurrent(E),
 }
 
+#[derive(Debug, Eq, PartialEq)]
+pub enum ApplicationRmsDeleteError<E> {
+    NotFound,
+    RecordStore,
+    Uncaught(E),
+}
+
 pub enum GameCanvasNewError<E> {
     SuperConstructor(E),
     SetFullScreen(E),
@@ -260,6 +267,20 @@ where
         paint(graphics)?;
     }
     Ok(())
+}
+
+pub fn application_rms_delete<Name, Delete, E>(
+    name: Name,
+    delete_record_store: Delete,
+) -> Result<bool, E>
+where
+    Delete: FnOnce(Name) -> Result<(), ApplicationRmsDeleteError<E>>,
+{
+    match delete_record_store(name) {
+        Ok(()) | Err(ApplicationRmsDeleteError::NotFound) => Ok(true),
+        Err(ApplicationRmsDeleteError::RecordStore) => Ok(false),
+        Err(ApplicationRmsDeleteError::Uncaught(error)) => Err(error),
+    }
 }
 
 pub fn ink_engine_wrap_string<Text, Font, Output>(
@@ -3352,6 +3373,43 @@ mod tests {
         });
         assert_eq!(skipped, Ok(()));
         assert_eq!(calls, 1);
+    }
+
+    #[test]
+    fn rms_delete_forwards_once_and_distinguishes_the_two_caught_failures() {
+        let name = [0_u16, 0xd800, 65];
+        let calls = core::cell::Cell::new(0);
+        let observe = |observed: Option<&[u16]>| {
+            calls.set(calls.get() + 1);
+            let observed = observed.expect("the hostile name remains nonnull");
+            assert_eq!(observed.as_ptr(), name.as_ptr());
+            assert_eq!(observed.len(), name.len());
+        };
+
+        let success = application_rms_delete(Some(&name[..]), |observed| {
+            observe(observed);
+            Ok::<(), ApplicationRmsDeleteError<&'static str>>(())
+        });
+        assert_eq!(success, Ok(true));
+
+        let absent = application_rms_delete(Some(&name[..]), |observed| {
+            observe(observed);
+            Err(ApplicationRmsDeleteError::<&'static str>::NotFound)
+        });
+        assert_eq!(absent, Ok(true));
+
+        let failed = application_rms_delete(Some(&name[..]), |observed| {
+            observe(observed);
+            Err(ApplicationRmsDeleteError::<&'static str>::RecordStore)
+        });
+        assert_eq!(failed, Ok(false));
+
+        let uncaught = application_rms_delete(Some(&name[..]), |observed| {
+            observe(observed);
+            Err(ApplicationRmsDeleteError::Uncaught("npe"))
+        });
+        assert_eq!(uncaught, Err("npe"));
+        assert_eq!(calls.get(), 4);
     }
 
     #[test]
