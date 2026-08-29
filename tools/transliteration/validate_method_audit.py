@@ -335,6 +335,7 @@ FIELD_REQUESTS = [
     ("M", "Application", "inkServerHint", "Ljava/util/Hashtable;", "ApplicationState", "ink_server_hints"),
     ("M", "Application", "gameChangedSinceLastSave", "Z", "ApplicationState", "game_changed_since_last_save"),
     ("M", "Application", "saveIsPossible", "Z", "ApplicationState", "save_is_possible"),
+    ("M", "Application", "curSoundMode", "Z", "ApplicationState", "cur_sound_mode"),
     ("LoadRequest", "ResourceRequest", "type", "I", "ResourceRequestState", "resource_type"),
     ("LoadRequest", "ResourceRequest", "integerID", "I", "ResourceRequestState", "integer_id"),
     ("LoadRequest", "ResourceRequest", "stringID", "Ljava/lang/String;", "ResourceRequestState", "string_id"),
@@ -365,6 +366,8 @@ FIELD_REQUESTS = [
     ("ExtBase", "InkEngine", "popupText", "[[Ljava/lang/String;", "InkEngineState", "popup_texts"),
     ("ExtBase", "InkEngine", "popupMaxTime", "[I", "InkEngineState", "popup_maximum_times"),
     ("MyCanvas", "GameCanvas", "transformTable", "[I", "GameCanvasState", "transform_table"),
+    ("MyCanvas", "GameCanvas", "soundID", "Ljava/lang/String;", "GameCanvasState", "sound_id"),
+    ("MyCanvas", "GameCanvas", "loopCount", "I", "GameCanvasState", "loop_count"),
     ("MyCanvas", "GameCanvas", "keySoftkeyLeft", "I", "GameCanvasState", "key_softkey_left"),
     ("MyCanvas", "GameCanvas", "keySoftkeyRight", "I", "GameCanvasState", "key_softkey_right"),
     ("MyCanvas", "GameCanvas", "keySend", "I", "GameCanvasState", "key_send"),
@@ -451,6 +454,7 @@ FIELD_REQUESTS = [
 ]
 
 CONST_FIELD_REQUESTS = [
+    ("MyCanvas", "GameCanvas", "KEY_UP", "KEY_UP", "I", "GAME_CANVAS_KEY_UP"),
     (
         "M",
         "Application",
@@ -690,6 +694,7 @@ def print_entries() -> None:
         ("M", "Application", "saveChunkINI", "(Ljava/io/DataInputStream;)V", "saveChunkINI(DataInputStream)", "fn:application_save_chunk_ini"),
         ("M", "Application", "resourceMakeSubChunk", "()[B", "resourceMakeSubChunk()", "fn:application_resource_make_subchunk"),
         ("M", "Application", "repaintCanvasIfPossible", "()V", "repaintCanvasIfPossible()", "fn:application_repaint_canvas_if_possible"),
+        ("MyCanvas", "GameCanvas", "resumeSound", "()V", "resumeSound()", "fn:game_canvas_resume_sound"),
         ("MyCanvas", "GameCanvas", "<init>", "()V", "<init>()", "fn:game_canvas_new"),
         ("MyCanvas", "GameCanvas", "keyJadEntryAsInt", "(Ljava/lang/String;)I", "keyJadEntryAsInt(String)", "fn:game_canvas_key_jad_entry_as_int"),
         ("M", "Application", "resourceRestartImportants", "()V", "resourceRestartImportants()", "fn:resource_restart_importants"),

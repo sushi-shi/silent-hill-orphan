@@ -1976,6 +1976,23 @@ public final class OrphanJavaPureOracle {
                 }
                 result = status + ":" + (Application.hiddenCanvas ? "1:" : "0:")
                         + Integer.toString(GameCanvas.loopCount);
+            } else if (parts[0].equals("canvas-resume-sound") && parts.length == 5) {
+                Application.curSoundMode = value(parts, 1) != 0;
+                GameCanvas.loopCount = value(parts, 2);
+                InkEngine.FirstLoad = value(parts, 3) != 0;
+                GameCanvas.soundID = utf16(parts[4]);
+                GameCanvas.gPlayer = null;
+                String status;
+                try {
+                    GameCanvas.resumeSound();
+                    status = "OK";
+                } catch (NullPointerException exception) {
+                    status = "NPE";
+                }
+                result = status + ":" + (Application.curSoundMode ? "1:" : "0:")
+                        + Integer.toString(GameCanvas.loopCount) + ":"
+                        + utf16Output(GameCanvas.soundID) + ":"
+                        + (InkEngine.FirstLoad ? "1" : "0");
             } else if (parts[0].equals("wrap-default") && parts.length == 4) {
                 InkEngine.currentFont = value(parts, 3) == 0
                         ? null : Font.getDefaultFont();

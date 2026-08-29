@@ -48,8 +48,8 @@ executable code. A separate domain gate requires 229 `TextId`, 72 Ink-command,
 and 105 Ink-event consumers and rejects same-valued constants borrowed from an
 unrelated domain. The corresponding Rust walker uses `syn`; reviewed
 crosswalk coverage is ratcheted by the method audit and currently covers the
-first 159 method bodies plus 179 Java fields they reach. Of those, 146 mutable
-fields map to sixteen instance/static Rust owner structs and thirty-three final
+first 160 method bodies plus 183 Java fields they reach. Of those, 149 mutable
+fields map to sixteen instance/static Rust owner structs and thirty-four final
 fields map to typed Rust constants; one mutable array also owns a separately
 inventoried initializer template. The
 reverse `syn` inventory separately rejects unreviewed functions, value

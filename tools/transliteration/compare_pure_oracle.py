@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare 159 methods across recovered JARs, canonical Java, and Rust."""
+"""Compare 160 methods across recovered JARs, canonical Java, and Rust."""
 
 from __future__ import annotations
 
@@ -1949,6 +1949,22 @@ def requests() -> list[str]:
         for hidden in (0, 1)
         for sound_enabled in (0, 1)
         for loop_count in (-1, 0, 1)
+    )
+    resume_sound_loops = (-(2**31), -2, -1, 0, 1, 2**31 - 1)
+    resume_sound_ids = (
+        None,
+        [],
+        [ord("l"), ord("s")],
+        [ord("l"), ord("S")],
+        [0xD800],
+    )
+    result.extend(
+        "canvas-resume-sound "
+        f"{sound_enabled} {loop_count} {first_load} {utf16_token(sound_id)}"
+        for sound_enabled in (0, 1)
+        for loop_count in resume_sound_loops
+        for first_load in (0, 1)
+        for sound_id in resume_sound_ids
     )
     wrap_texts: list[list[int] | None] = [
         None,

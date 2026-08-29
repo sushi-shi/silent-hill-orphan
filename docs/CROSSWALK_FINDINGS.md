@@ -56,8 +56,8 @@ of the body.
 
 ## A-3 — application, resource, menu, script, and interpreter fields have shaped owners
 
-The 146 mutable fields reached by the reviewed methods—including application timing,
-resource/language/Ink-server state, menu and input state, script/interpreter
+The 149 mutable fields reached by the reviewed methods—including application timing,
+resource/language/Ink-server state, menu, input, and sound state, script/interpreter
 state, and room-object/battle-panel state—live in `ApplicationState`,
 `ResourceRequestState`, `InkEngineState`, `GameCanvasState`, `MenuState`,
 `MenuStatics`, `InkInterpreterState`, `InkInterpreterStatics`, `InkScriptState`,
@@ -305,8 +305,8 @@ hidden the reasons for the disagreements.
 The oracle now validates those three exact member signatures against the
 hash-locked source-named variant ledger before excluding only their 6,215
 requests from the naming-reference comparison. The recovered baseline,
-canonical Java, and Rust still compare on all 991,357 cases. The
-naming-reference JAR still compares on the remaining 985,142 cases, and
+canonical Java, and Rust still compare on all 991,477 cases. The
+naming-reference JAR still compares on the remaining 985,262 cases, and
 `Application.setKeyStatus` remains a four-authority comparison because its body
 is common. Complete post-state checks prove the sticky new-key latch, current
 pressed state, last-key write, and signed-byte scroll reset—not merely the
@@ -1624,15 +1624,47 @@ plus both field declarations are owned exactly once.
 repeated static reads and every synchronous callback cut point; callback writes
 remain visible unless the Java body explicitly restores them.
 
+## A-61 — a short-circuit wrapper can expose a pending callee without claiming it
+
+`GameCanvas.resumeSound()` reads `Application.curSoundMode` first and touches no
+canvas sound state when that guard is false. When enabled, it reads `loopCount`
+for an exact comparison with the GameCanvas-owned `KEY_UP` value minus one. Only
+inside that branch does it read `soundID`, re-read `loopCount`, and call
+`playSound` once. Rust keeps both static reads visible, borrows the nullable
+UTF-16 ID without transcoding or copying, and propagates a callback failure
+because this wrapper has no catch.
+
+The direct oracle invokes the actual canonical and recovered `resumeSound`
+methods. Its 120-case Cartesian matrix crosses both sound modes, six signed loop
+values from `Integer.MIN_VALUE` through minus one to `Integer.MAX_VALUE`, both
+`FirstLoad` states, and null, empty, `ls`, case-near-miss `lS`, plus an isolated
+surrogate ID. The already stable but still-pending `playSound` body supplies
+observable entry markers: its `FirstLoad && id.equals("ls")` branch retains the
+sound fields, null can fault before its internal catch, and its normal path
+publishes null/zero before swallowing later media/resource failures. No naming-
+reference exclusion is needed.
+
+The oracle adapter models those callee-owned final statics separately from the
+wrapper's immutable borrowed input; that borrow proves the argument identity
+without pretending the callee body has entered coverage. A focused Rust test
+independently proves both guard suppressions, null and hostile UTF-16 forwarding,
+one callback, the second loop read, and uncaught failure propagation. All fifteen
+`javac` and thirty-four `syn` body nodes are owned exactly once, together with
+the three mutable fields and the typed, GameCanvas-scoped constant.
+
+**Lesson.** Use stable entry-visible effects of a pending callee to prove a
+wrapper's call edge, but keep the callback boundary and declaration ownership
+explicit so oracle evidence cannot silently promote the callee's AST.
+
 ## Verified clean so far
 
-- 159/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
+- 160/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
   and `syn` node ownership.
-- 179/1,075 Java fields have complete declaration-node ownership: 146 map into
-  sixteen hash-locked Rust owner containers, thirty-three map to typed scalar constants,
+- 183/1,075 Java fields have complete declaration-node ownership: 149 map into
+  sixteen hash-locked Rust owner containers, thirty-four map to typed scalar constants,
   and one mutable array also owns a separately inventoried initializer template.
-- The differential currently runs 991,357 cases against the recovered baseline,
-  canonical Java, and Rust; the naming-reference JAR agrees on all 985,142
+- The differential currently runs 991,477 cases against the recovered baseline,
+  canonical Java, and Rust; the naming-reference JAR agrees on all 985,262
   cases, with 6,215 requests excluded only by its two ledger-reviewed
   input-timing variants and one ledger-reviewed rendering-policy variant.
 - Exhaustive subdomains include all Java `char` values, every pair of singleton

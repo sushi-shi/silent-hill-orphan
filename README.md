@@ -47,14 +47,14 @@ node crosswalks remain game-specific.
 Phases 1–2 are operational and Phase 3 has started: the complete canonical Java
 application, content-proven six-language integration, bounded `no_std` codecs,
 reviewed 115-build family/lineage/content model, exact `javac`/`syn` audit
-pipeline, and the first 159 oracle-verified Rust methods are in-tree.
-The first 179 Java fields also have exhaustive declaration crosswalks: 146 mutable
-state fields in sixteen explicit instance/static owners, thirty-three scalar Rust
+pipeline, and the first 160 oracle-verified Rust methods are in-tree.
+The first 183 Java fields also have exhaustive declaration crosswalks: 149 mutable
+state fields in sixteen explicit instance/static owners, thirty-four scalar Rust
 constants, and one separately inventoried mutable-array initializer template.
 The real MIDP JAR exists as an AST/oracle
 authority but is not the production runtime. The game is not playable yet;
 the strict boundary also has hash-locked typed Java `Object` and variable-error
 representations.
-Coverage is deliberately reported as 159/350 bodies and 179/1,075 fields. See
+Coverage is deliberately reported as 160/350 bodies and 183/1,075 fields. See
 `docs/STATUS.md`, `docs/GATES.md`, `docs/CROSSWALK_FINDINGS.md`, and the provenance authority
 `java/reconstruction/builds.toml`.

@@ -1063,6 +1063,7 @@ public final class OrphanOriginalPureOracle {
         Method setKeyStatus = method(application, "setKeyStatus", Integer.TYPE, Boolean.TYPE);
         Method canvasPaint = method(canvas, "paint", Graphics.class);
         Method canvasShowNotify = method(canvas, "showNotify");
+        Method canvasResumeSound = method(canvas, "resumeSound");
         Method canvasKeyPressed = method(canvas, "keyPressed", Integer.TYPE);
         Method canvasKeyReleased = method(canvas, "keyReleased", Integer.TYPE);
         Method menuGetChoiceNr = method(menuClass, "getChoiceNr");
@@ -2567,6 +2568,27 @@ public final class OrphanOriginalPureOracle {
                 result = status + ":"
                         + (applicationHiddenCanvas.getBoolean(null) ? "1:" : "0:")
                         + Integer.toString(gameCanvasLoopCount.getInt(null));
+            } else if (parts[0].equals("canvas-resume-sound") && parts.length == 5) {
+                applicationCurSoundMode.setBoolean(null, value(parts, 1) != 0);
+                gameCanvasLoopCount.setInt(null, value(parts, 2));
+                firstLoad.setBoolean(null, value(parts, 3) != 0);
+                gameCanvasSoundId.set(null, utf16(parts[4]));
+                gameCanvasPlayer.set(null, null);
+                String status;
+                try {
+                    canvasResumeSound.invoke(null);
+                    status = "OK";
+                } catch (InvocationTargetException exception) {
+                    if (!(exception.getCause() instanceof NullPointerException)) {
+                        throw exception;
+                    }
+                    status = "NPE";
+                }
+                result = status + ":"
+                        + (applicationCurSoundMode.getBoolean(null) ? "1:" : "0:")
+                        + Integer.toString(gameCanvasLoopCount.getInt(null)) + ":"
+                        + utf16Output((String) gameCanvasSoundId.get(null)) + ":"
+                        + (firstLoad.getBoolean(null) ? "1" : "0");
             } else if (parts[0].equals("wrap-default") && parts.length == 4) {
                 currentFont.set(null, value(parts, 3) == 0
                         ? null : Font.getDefaultFont());

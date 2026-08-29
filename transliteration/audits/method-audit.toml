@@ -1,17 +1,17 @@
 schema_version = 1
 baseline_sha256 = "ca9a874ce7c7fb11ed444701b65e967919d3d7c0bcf73f80a9fcf825fb6a4be7"
 total_body_count = 350
-reviewed_body_count = 159
-semantic_reviewed_body_count = 159
+reviewed_body_count = 160
+semantic_reviewed_body_count = 160
 total_field_count = 1075
-semantic_reviewed_field_count = 179
-total_rust_function_count = 161
-reviewed_rust_function_count = 161
-total_rust_value_declaration_count = 222
-reviewed_rust_value_declaration_count = 222
+semantic_reviewed_field_count = 183
+total_rust_function_count = 162
+reviewed_rust_function_count = 162
+total_rust_value_declaration_count = 226
+reviewed_rust_value_declaration_count = 226
 total_rust_container_count = 32
 reviewed_rust_container_count = 32
-total_rust_declaration_count = 415
+total_rust_declaration_count = 420
 
 [[field]]
 java_class = "Cheat"
@@ -1213,7 +1213,7 @@ semantic_review = "Single-owner container for CheatController's reviewed static 
 [[rust_container]]
 file = "transliteration/crates/orphan-game-xlat/src/state.rs"
 item = "struct:ApplicationState"
-ast_sha256 = "5185153a867a0fabed35813d946b1cfda09af1d129bb0f6d976604660e2d3cce"
+ast_sha256 = "a1a445d8a43a0c60198cc8124063204a6d77d112973ba25efc7e09126fa27ce0"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
 semantic_review = "Structural owner for the reviewed Application fields; its complete syn AST is locked while its field nodes are owned by the field crosswalks."
@@ -1237,10 +1237,10 @@ semantic_review = "Structural owner for the reviewed InkEngine fields; its compl
 [[rust_container]]
 file = "transliteration/crates/orphan-game-xlat/src/state.rs"
 item = "struct:GameCanvasState"
-ast_sha256 = "8b7987506bfa6701740266a2eacf418911c99808ee3bd22c7513b99f662d129f"
+ast_sha256 = "9ecea4bcec94be6823ba3ebb6ecfc02f643cb2b4eaf05e385bd5212606f4b653"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
-semantic_review = "Structural owner for the reviewed GameCanvas fields, including the mutable eight-slot transform table; its complete syn AST is locked while its field nodes are owned by the field crosswalks."
+semantic_review = "Structural owner for the reviewed GameCanvas fields, including sound resume state and the mutable eight-slot transform table; its complete syn AST is locked while its field nodes are owned by the field crosswalks."
 
 [[rust_container]]
 file = "transliteration/crates/orphan-game-xlat/src/state.rs"
@@ -6559,6 +6559,95 @@ adaptation = [{ side = "java", reason = "The source initializer one is executed 
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/state.rs", item = "field:RoomObjectStatics::battle_panel_hero_health_id", ast_sha256 = "7b05bf926d2c953cc656eeeb21d32adbab59b43137a6e06c52d8c1c2e62a1dc3", nodes_sha256 = "72c576a0c27924775a4af566e7f580bcf3f8bc036c7e416f277b29b0617da84a", node_count = 2 }]
 semantic_status = "crosswalked"
 semantic_review = "This remains mutable signed state, matching the non-final Java field rather than incorrectly freezing its startup value as a Rust constant."
+
+[[field]]
+java_class = "M"
+canonical_class = "Application"
+java_name = "curSoundMode"
+descriptor = "Z"
+java_item = "<field:curSoundMode>"
+java_ast_sha256 = "1e81383cac576856a2d47a901881fb14fa342ead04fd42a66b34c5c270da0479"
+java_nodes_sha256 = "14e2961ad36631e32f39327d00c0db75f23d21d76434225e067081b732ffd5ae"
+java_node_count = 4
+rust_node_counts = [2]
+operation = [{ semantic = "declare the sole Application-owned mutable sound-enable guard", java_node_ranges = [[0, 2]], rust_node_ranges = [{ target = 0, start = 0, end = 1 }] }]
+adaptation = [{ side = "java", reason = "The source initializer true is executed by the still-pending Application class initializer; explicit Rust construction preserves both the intended startup value and hostile false oracle seeds without claiming that initializer body.", java_nodes = [3] }]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/state.rs", item = "field:ApplicationState::cur_sound_mode", ast_sha256 = "7e9cfe1f3e4eb0d2b91574106227f266de08ef24abe0e7c120790eb0999e305e", nodes_sha256 = "3c7a7427a3516f23e36352e34f1bd1315831223385bceb884f86e2b8ba8571ab", node_count = 2 }]
+semantic_status = "crosswalked"
+semantic_review = "ApplicationState is the sole mutable owner. bool preserves the Java boolean domain and resumeSound reads it first as the short-circuit guard."
+
+[[field]]
+java_class = "MyCanvas"
+canonical_class = "GameCanvas"
+java_name = "soundID"
+descriptor = "Ljava/lang/String;"
+java_item = "<field:soundID>"
+java_ast_sha256 = "ffed01efd7b7eac8a338591b93f53825f6d66791c46c5cdf81004d7c084e5612"
+java_nodes_sha256 = "49e34b82ab5ffee2d61bf9f5aef796dce1dda983535e7a0e5b281e39c483ee76"
+java_node_count = 3
+rust_node_counts = [4]
+operation = [{ semantic = "declare the sole GameCanvas-owned nullable UTF-16 sound identifier", java_node_ranges = [[0, 2]], rust_node_ranges = [{ target = 0, start = 0, end = 3 }] }]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/state.rs", item = "field:GameCanvasState::sound_id", ast_sha256 = "23eef1a2e443f60220d276adef9f0d295aca26928613f2096e907cddf9e762da", nodes_sha256 = "2b24e57151f485904777f410ebe0149a8d5414d7ef9186c735b9d016011a1c41", node_count = 4 }]
+semantic_status = "crosswalked"
+semantic_review = "GameCanvasState is the sole mutable owner. Option preserves Java null and Vec<u16> preserves every String code unit, including isolated surrogates."
+
+[[field]]
+java_class = "MyCanvas"
+canonical_class = "GameCanvas"
+java_name = "loopCount"
+descriptor = "I"
+java_item = "<field:loopCount>"
+java_ast_sha256 = "411c0686848b3005e4a005b52754249b468fb9dd223df2e9a73ace4fb2d07bfa"
+java_nodes_sha256 = "a695acc12d6f8fd70c911ace0bbd587c5b4ddc7f95a3dec6134fc7f30cfe8d9a"
+java_node_count = 3
+rust_node_counts = [2]
+operation = [{ semantic = "declare the sole GameCanvas-owned signed sound-loop counter", java_node_ranges = [[0, 2]], rust_node_ranges = [{ target = 0, start = 0, end = 1 }] }]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/state.rs", item = "field:GameCanvasState::loop_count", ast_sha256 = "23298ac406a41deb0cf2c6ff7a15aeb40731bd6d2f53ddab901ab25e2dd1e6c1", nodes_sha256 = "888086f46f405ba2f989925e3e85836692c8d0558cd99f2e1ead76199731319f", node_count = 2 }]
+semantic_status = "crosswalked"
+semantic_review = "GameCanvasState is the sole mutable owner and i32 preserves the complete JVM int domain, including the minus-one resume sentinel."
+
+[[body]]
+java_class = "MyCanvas"
+canonical_class = "GameCanvas"
+java_name = "resumeSound"
+descriptor = "()V"
+java_item = "resumeSound()"
+code_sha256 = "d92b0ed6f6345339de17b6095e3f83b5850ecdfbce64ee6f3c50ead35839bcfe"
+opcode_sha256 = "9099eaf17dad1148415f8b0e0a5f217f6dd0edcbe910774c143c18865681bbd4"
+java_ast_sha256 = "81a078a289e4d28cc31d5c820c8573b15daec9e065ac5bcacbf50d7db9b41b9e"
+java_nodes_sha256 = "f33ff4da066e3ed90e5c09e24411a3c0d857f0f39422cef922805f63d89c2ebe"
+java_node_count = 15
+rust_node_counts = [34]
+operation = [
+  { semantic = "own the complete guarded resume body", java_nodes = [0], rust_nodes = ["0:0"] },
+  { semantic = "evaluate the conditional-and structure with Java left-to-right short-circuiting", java_node_ranges = [[1, 3]], rust_node_ranges = [{ target = 0, start = 1, end = 2 }] },
+  { semantic = "read Application.curSoundMode first and suppress every GameCanvas read when sound is disabled", java_node_ranges = [[4, 5]], rust_node_ranges = [{ target = 0, start = 3, end = 5 }] },
+  { semantic = "read loopCount for the guard and enter only when it equals the GameCanvas-scoped KEY_UP minus-one constant", java_node_ranges = [[6, 8]], rust_node_ranges = [{ target = 0, start = 6, end = 11 }] },
+  { semantic = "inside the accepted branch, read soundID first and retain its exact nullable UTF-16 borrow as playSound argument zero", java_nodes = [13], rust_node_ranges = [{ target = 0, start = 13, end = 17 }, { target = 0, start = 26, end = 27 }] },
+  { semantic = "re-read loopCount only after soundID and forward that second signed value as playSound argument one", java_nodes = [14], rust_node_ranges = [{ target = 0, start = 18, end = 21 }, { target = 0, start = 28, end = 29 }] },
+  { semantic = "invoke playSound exactly once in the accepted block and propagate any uncaught callee failure", java_node_ranges = [[9, 12]], rust_node_ranges = [{ target = 0, start = 12, end = 12 }, { target = 0, start = 22, end = 25 }] },
+]
+adaptation = [{ side = "rust", reason = "Ok unit represents normal Java void completion after either a skipped guard or a successful playSound return; try exposes the wrapper's uncaught callee failure without admitting the playSound body.", rust_node_ranges = [{ target = 0, start = 30, end = 33 }] }]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:game_canvas_resume_sound", ast_sha256 = "a632adfe588d68cd2625ed7acfd749b632eb3f02ae2c60a4c26886969111580b", nodes_sha256 = "8cebd3f637fc2ae7bc69c516041174a1eea11e123ae25be8680b117cb31d0758", node_count = 34 }]
+oracle = "pure-method-v1"
+semantic_status = "crosswalked"
+semantic_review = "One hundred twenty cases agree across both recovered JARs, canonical Java, and Rust. Sound enabled/disabled, six signed loop values from MIN through the exact minus-one sentinel to MAX, both FirstLoad states, and null, empty, ls, case-near-miss, and isolated-surrogate IDs compare the full post-state and uncaught-null status. The actual Java playSound body remains pending: the adapter claims only its stable entry-visible FirstLoad branch and pre-failure field publications. The focused Rust test independently proves both guard suppressions, exact nullable UTF-16 borrowing, the second loop read, one callback, and failure propagation. All fifteen javac and thirty-four syn body nodes plus four reached declarations are owned exactly once."
+
+[[field]]
+java_class = "MyCanvas"
+canonical_class = "GameCanvas"
+java_name = "KEY_UP"
+canonical_name = "KEY_UP"
+descriptor = "I"
+java_item = "<field:KEY_UP>"
+java_ast_sha256 = "811feae0e9713bc2de6eae86a75f4ff740cb989cb829ab899d6d015a44896061"
+java_nodes_sha256 = "3cab4913fdd1e52659f0273bfaf072915e6b299403ba8a68f877e2ff48b10aa6"
+java_node_count = 4
+rust_node_counts = [2]
+operation = [{ semantic = "declare GameCanvas's exact signed minus-one key/sound-loop sentinel", java_node_ranges = [[0, 3]], rust_node_ranges = [{ target = 0, start = 0, end = 1 }] }]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "const:GAME_CANVAS_KEY_UP", ast_sha256 = "f639cbe0b242755680cbad76eb70367cfd6ae0102abeb4576fbe0b19d556d88b", nodes_sha256 = "2cbd81348b125a454c682576a1ae99c42de269e61c59b7ba18ec88fe540f9c3e", node_count = 2 }]
+semantic_status = "crosswalked"
+semantic_review = "The GameCanvas-scoped Rust name prevents this minus-one value from becoming an untyped sentinel borrowed from an unrelated input domain; the unary sign and literal are both inventoried."
 
 [[field]]
 java_class = "RoomObject"

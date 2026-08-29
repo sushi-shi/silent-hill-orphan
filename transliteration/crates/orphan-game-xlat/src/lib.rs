@@ -113,6 +113,7 @@ pub const CODED_STRING_COLUMN_WIDTH: i32 = 30;
 pub const CODED_STRING_MAX_LINES: i32 = 100;
 pub const GAME_RESOURCE_TYPE_GRAPHICS: i32 = 1;
 pub const GAME_RESOURCE_TYPE_SOUND: i32 = 2;
+pub const GAME_CANVAS_KEY_UP: i32 = -1;
 pub const INK_SCRIPT_GFX_TYPE_NONE: i32 = 0;
 pub const INK_SCRIPT_GFX_TYPE_STRING: i32 = 1;
 pub const INK_SCRIPT_GFX_TYPE_INTEGER: i32 = 2;
@@ -2119,6 +2120,22 @@ where
     resume_sound()
 }
 
+pub fn game_canvas_resume_sound<PlaySound, E>(
+    application: &ApplicationState,
+    canvas: &GameCanvasState,
+    play_sound: PlaySound,
+) -> Result<(), E>
+where
+    PlaySound: FnOnce(Option<&[u16]>, i32) -> Result<(), E>,
+{
+    if application.cur_sound_mode && canvas.loop_count == GAME_CANVAS_KEY_UP {
+        let sound_id = canvas.sound_id.as_deref();
+        let loop_count = canvas.loop_count;
+        play_sound(sound_id, loop_count)?;
+    }
+    Ok(())
+}
+
 pub fn game_canvas_key_pressed(
     application: &mut ApplicationState,
     engine: &mut InkEngineState,
@@ -3199,6 +3216,103 @@ mod tests {
     }
 
     #[test]
+    fn game_canvas_resume_sound_preserves_guards_borrows_and_failure() {
+        let mut application = ApplicationState {
+            tick_based_time_value: 0,
+            canvas_width: 0,
+            fade_frames: 0,
+            demo_frames: 0,
+            painting: false,
+            cur_sound_mode: false,
+            canvas_instance: None,
+            key_last_pressed: 0,
+            key_new: false,
+            key_pressed: false,
+            load_bar_active: false,
+            goto_dissolve_fx_counter: -6,
+            loading_mode: -1,
+            load_thread: None,
+            room_repaint_thread: None,
+            resource_importants: None,
+            resources_to_download: None,
+            game_id: None,
+            game_texts: None,
+            save_is_possible: false,
+            languages: None,
+            resource_heap_sources: None,
+            resource_sc_data: None,
+            resource_sc_current_size: 0,
+            random_instance: None,
+            runtime_instance: None,
+            midlet_instance: None,
+            ink_server_variables: None,
+            ink_server_hints: None,
+            game_changed_since_last_save: false,
+        };
+        let mut canvas = GameCanvasState {
+            transform_table: GAME_CANVAS_INITIAL_TRANSFORM_TABLE,
+            sound_id: None,
+            loop_count: GAME_CANVAS_KEY_UP,
+            key_softkey_left: 0,
+            key_softkey_right: 0,
+            key_send: 0,
+            key_return: 0,
+            key_softkey_center: 0,
+            key_arrow_up: 0,
+            key_arrow_down: 0,
+            key_arrow_left: 0,
+            key_arrow_right: 0,
+            key_erase: 0,
+        };
+
+        let mut calls = 0;
+        assert_eq!(
+            game_canvas_resume_sound(&application, &canvas, |_, _| {
+                calls += 1;
+                Ok::<(), &'static str>(())
+            }),
+            Ok(())
+        );
+        assert_eq!(calls, 0);
+
+        application.cur_sound_mode = true;
+        canvas.loop_count = 0;
+        assert_eq!(
+            game_canvas_resume_sound(&application, &canvas, |_, _| {
+                calls += 1;
+                Ok::<(), &'static str>(())
+            }),
+            Ok(())
+        );
+        assert_eq!(calls, 0);
+
+        canvas.loop_count = GAME_CANVAS_KEY_UP;
+        assert_eq!(
+            game_canvas_resume_sound(&application, &canvas, |sound_id, loop_count| {
+                calls += 1;
+                assert_eq!(sound_id, None);
+                assert_eq!(loop_count, GAME_CANVAS_KEY_UP);
+                Ok::<(), &'static str>(())
+            }),
+            Ok(())
+        );
+        assert_eq!(calls, 1);
+
+        canvas.sound_id = Some(vec![0, 0xd800, 0xffff]);
+        let expected_pointer = canvas.sound_id.as_deref().unwrap().as_ptr();
+        let failure = game_canvas_resume_sound(&application, &canvas, |sound_id, loop_count| {
+            calls += 1;
+            let sound_id = sound_id.expect("nonnull sound ID must be forwarded");
+            assert_eq!(sound_id.as_ptr(), expected_pointer);
+            assert_eq!(sound_id, [0, 0xd800, 0xffff]);
+            assert_eq!(loop_count, GAME_CANVAS_KEY_UP);
+            Err("play-sound")
+        });
+        assert_eq!(failure, Err("play-sound"));
+        assert_eq!(calls, 2);
+    }
+
+    #[test]
     fn ink_engine_wrap_string_forwards_all_three_arguments_once() {
         let mut calls = 0;
         let output = ink_engine_wrap_string(
@@ -3277,6 +3391,7 @@ mod tests {
             fade_frames: 0,
             demo_frames: 0,
             painting: false,
+            cur_sound_mode: false,
             canvas_instance: None,
             key_last_pressed: 0,
             key_new: false,
@@ -3337,6 +3452,7 @@ mod tests {
             fade_frames: 0,
             demo_frames: 0,
             painting: false,
+            cur_sound_mode: false,
             canvas_instance: None,
             key_last_pressed: 0,
             key_new: false,
@@ -3429,6 +3545,7 @@ mod tests {
             fade_frames: 4,
             demo_frames: 4,
             painting: false,
+            cur_sound_mode: false,
             canvas_instance: None,
             key_last_pressed: 0,
             key_new: false,
@@ -3480,6 +3597,7 @@ mod tests {
             fade_frames: 0,
             demo_frames: 0,
             painting: true,
+            cur_sound_mode: false,
             canvas_instance: None,
             key_last_pressed: 0,
             key_new: false,
@@ -3740,6 +3858,7 @@ mod tests {
             fade_frames: 0,
             demo_frames: 0,
             painting: false,
+            cur_sound_mode: false,
             canvas_instance: None,
             key_last_pressed: 0,
             key_new: false,
@@ -3869,6 +3988,7 @@ mod tests {
             fade_frames: 0,
             demo_frames: 0,
             painting: false,
+            cur_sound_mode: false,
             canvas_instance: None,
             key_last_pressed: 0,
             key_new: false,
@@ -3997,6 +4117,7 @@ mod tests {
             fade_frames: 0,
             demo_frames: 0,
             painting: false,
+            cur_sound_mode: false,
             canvas_instance: None,
             key_last_pressed: 0,
             key_new: false,
@@ -4063,6 +4184,7 @@ mod tests {
             fade_frames: 0,
             demo_frames: 0,
             painting: false,
+            cur_sound_mode: false,
             canvas_instance: None,
             key_last_pressed: 0,
             key_new: false,
@@ -4112,6 +4234,8 @@ mod tests {
         assert_eq!(action_key_keycode_to_action_key(&engine, 7), Ok(1));
         let canvas = GameCanvasState {
             transform_table: GAME_CANVAS_INITIAL_TRANSFORM_TABLE,
+            sound_id: None,
+            loop_count: 0,
             key_softkey_left: 0,
             key_softkey_right: 0,
             key_send: 0,

@@ -22,6 +22,7 @@ pub struct ApplicationState {
     pub fade_frames: i32,
     pub demo_frames: i32,
     pub painting: bool,
+    pub cur_sound_mode: bool,
     pub canvas_instance: Option<u32>,
     pub key_last_pressed: i32,
     pub key_new: bool,
@@ -92,6 +93,8 @@ pub struct InkEngineState {
 
 pub struct GameCanvasState {
     pub transform_table: [i32; 8],
+    pub sound_id: Option<Vec<u16>>,
+    pub loop_count: i32,
     pub key_softkey_left: i32,
     pub key_softkey_right: i32,
     pub key_send: i32,

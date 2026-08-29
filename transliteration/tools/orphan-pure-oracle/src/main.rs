@@ -11,9 +11,9 @@ use orphan_game_xlat::{
     application_set_display, array_copy_string_handles, char_to_string,
     cheat_controller_initialize, cheat_controller_new, coded_string, dir, find,
     game_canvas_key_jad_entry_as_int, game_canvas_key_pressed, game_canvas_key_released,
-    game_canvas_new, game_canvas_paint, game_canvas_show_notify, game_language_path,
-    game_resource_equals, game_resource_initialize, game_resource_new, game_resource_paint,
-    game_resource_paint_simple, get_game_text, get_game_text_from_string,
+    game_canvas_new, game_canvas_paint, game_canvas_resume_sound, game_canvas_show_notify,
+    game_language_path, game_resource_equals, game_resource_initialize, game_resource_new,
+    game_resource_paint, game_resource_paint_simple, get_game_text, get_game_text_from_string,
     get_language_selection_position, get_left, get_top, ink_codes_new,
     ink_engine_inventory_equip_unequip_handling, ink_engine_new, ink_engine_popup_create,
     ink_engine_popup_create_with_max_time, ink_engine_popup_set_next, ink_engine_wrap_string,
@@ -63,6 +63,8 @@ fn value(parts: &[&str], index: usize) -> i32 {
 fn game_canvas_state(parts: &[&str], start: usize) -> GameCanvasState {
     GameCanvasState {
         transform_table: GAME_CANVAS_INITIAL_TRANSFORM_TABLE,
+        sound_id: None,
+        loop_count: 0,
         key_softkey_left: value(parts, start),
         key_softkey_right: value(parts, start + 1),
         key_send: value(parts, start + 9),
@@ -356,6 +358,7 @@ fn server_state(variable_token: &str, hint_token: &str, changed: bool) -> Applic
         fade_frames: 0,
         demo_frames: 0,
         painting: false,
+        cur_sound_mode: false,
         canvas_instance: None,
         key_last_pressed: 0,
         key_new: false,
@@ -2055,6 +2058,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -2113,6 +2117,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -2157,6 +2162,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -2191,6 +2197,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -2228,6 +2235,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -2284,6 +2292,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -2322,6 +2331,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -2363,6 +2373,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -2401,6 +2412,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -2538,6 +2550,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -2575,6 +2588,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -2613,6 +2627,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -2650,6 +2665,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -2687,6 +2703,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -2729,6 +2746,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -2779,6 +2797,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -2881,6 +2900,8 @@ fn main() {
                     .expect("paint transform table must contain eight values");
                 let canvas = GameCanvasState {
                     transform_table,
+                    sound_id: None,
+                    loop_count: 0,
                     key_softkey_left: 0,
                     key_softkey_right: 0,
                     key_send: 0,
@@ -2990,6 +3011,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -3190,6 +3212,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -3224,6 +3247,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -3259,6 +3283,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -3294,6 +3319,7 @@ fn main() {
                     fade_frames: 0,
                     demo_frames: 0,
                     painting: false,
+                    cur_sound_mode: false,
                     canvas_instance: None,
                     key_last_pressed: 0,
                     key_new: false,
@@ -3746,6 +3772,59 @@ fn main() {
                 };
                 assert_eq!(phase.get(), 2);
                 format!("{status}:{}:{}", i32::from(hidden.get()), loop_count.get())
+            }
+            Some("canvas-resume-sound") if parts.len() == 5 => {
+                let mut application = server_state("-", "-", false);
+                application.cur_sound_mode = value(&parts, 1) != 0;
+                let initial_sound_id = utf16(parts[4]);
+                let canvas = GameCanvasState {
+                    transform_table: GAME_CANVAS_INITIAL_TRANSFORM_TABLE,
+                    sound_id: initial_sound_id.clone(),
+                    loop_count: value(&parts, 2),
+                    key_softkey_left: 0,
+                    key_softkey_right: 0,
+                    key_send: 0,
+                    key_return: 0,
+                    key_softkey_center: 0,
+                    key_arrow_up: 0,
+                    key_arrow_down: 0,
+                    key_arrow_left: 0,
+                    key_arrow_right: 0,
+                    key_erase: 0,
+                };
+                let final_sound_id = std::cell::RefCell::new(initial_sound_id);
+                let final_loop_count = std::cell::Cell::new(canvas.loop_count);
+                let first_load = std::cell::Cell::new(value(&parts, 3) != 0);
+
+                // resumeSound lends the current ID to playSound. The callee can
+                // nevertheless replace the Java static that held that ID, so
+                // its final static observations live separately from the
+                // wrapper's immutable input borrow in this oracle adapter.
+                let result: Result<(), orphan_jvm::NullPointerException> =
+                    game_canvas_resume_sound(&application, &canvas, |sound_id, loop_count| {
+                        assert_eq!(loop_count, canvas.loop_count);
+                        if first_load.get() {
+                            let sound_id = sound_id.ok_or(orphan_jvm::NullPointerException)?;
+                            if sound_id == [u16::from(b'l'), u16::from(b's')] {
+                                first_load.set(false);
+                                return Ok(());
+                            }
+                        }
+
+                        // playSound publishes these two stores before any of
+                        // its internally caught ID/resource/player failures.
+                        final_sound_id.replace(None);
+                        final_loop_count.set(0);
+                        Ok(())
+                    });
+                let status = if result.is_ok() { "OK" } else { "NPE" };
+                let sound_id = utf16_output(final_sound_id.borrow().as_deref());
+                format!(
+                    "{status}:{}:{}:{sound_id}:{}",
+                    i32::from(application.cur_sound_mode),
+                    final_loop_count.get(),
+                    i32::from(first_load.get())
+                )
             }
             Some("wrap-default") if parts.len() == 4 => {
                 let text = utf16(parts[1]);
