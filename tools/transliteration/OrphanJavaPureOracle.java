@@ -1311,6 +1311,29 @@ public final class OrphanJavaPureOracle {
                                 ? "null" : bytesOutput(RecordStore.oracleSetData)) + ":"
                         + RecordStore.oracleSetOffset + ":" + RecordStore.oracleSetLength;
                 RecordStore.oracleResetWrite(0);
+            } else if (parts[0].equals("resource-make-subchunk") && parts.length == 3) {
+                byte[] source = bytes(parts[1]);
+                Application.resourceSCData = source;
+                Application.resourceSCCurrentSize = value(parts, 2);
+                String status;
+                String returned = "null";
+                String identity = "-";
+                try {
+                    byte[] subchunk = Application.resourceMakeSubChunk();
+                    status = "OK";
+                    returned = bytesOutput(subchunk);
+                    identity = subchunk == source ? "S" : "D";
+                } catch (NegativeArraySizeException exception) {
+                    status = "NASE";
+                } catch (NullPointerException exception) {
+                    status = "NPE";
+                } catch (IndexOutOfBoundsException exception) {
+                    status = "AIOOBE";
+                }
+                result = status + ":" + returned + ":" + identity + ":"
+                        + (Application.resourceSCData == null
+                                ? "null" : bytesOutput(Application.resourceSCData))
+                        + ":" + Application.resourceSCCurrentSize;
             } else if (parts[0].equals("resource-restart-importants") && parts.length == 2) {
                 int oldLength = value(parts, 1);
                 Application.resourceImportants = oldLength < 0 ? null : new Vector();

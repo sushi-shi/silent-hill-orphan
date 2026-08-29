@@ -77,6 +77,12 @@ pub enum ApplicationRmsDeleteError<E> {
     Uncaught(E),
 }
 
+#[derive(Debug, Eq, PartialEq)]
+pub enum ApplicationResourceMakeSubChunkError {
+    NegativeArraySize(orphan_jvm::NegativeArraySizeException),
+    ArrayCopy(orphan_jvm::ArrayCopyException),
+}
+
 pub enum GameCanvasNewError<E> {
     SuperConstructor(E),
     SetFullScreen(E),
@@ -295,6 +301,38 @@ pub fn application_save_chunk_ini<Input, Bytes, GetBytes, SetRms, E>(
         return;
     };
     let _ = set_rms(&[82, 77, 83, 95, 99, 104, 117, 110, 107, 73, 78, 73], bytes);
+}
+
+pub fn application_resource_make_subchunk(
+    state: &ApplicationState,
+) -> Result<alloc::vec::Vec<u8>, ApplicationResourceMakeSubChunkError> {
+    let allocation_length = state.resource_sc_current_size;
+    if allocation_length < 0 {
+        return Err(ApplicationResourceMakeSubChunkError::NegativeArraySize(
+            orphan_jvm::NegativeArraySizeException {
+                length: allocation_length,
+            },
+        ));
+    }
+    let mut subchunk = alloc::vec![0; allocation_length as usize];
+    let source = state.resource_sc_data.as_deref();
+    let copy_length = state.resource_sc_current_size;
+    let source = source.ok_or(ApplicationResourceMakeSubChunkError::ArrayCopy(
+        orphan_jvm::ArrayCopyException::NullPointer,
+    ))?;
+    if copy_length < 0 {
+        return Err(ApplicationResourceMakeSubChunkError::ArrayCopy(
+            orphan_jvm::ArrayCopyException::IndexOutOfBounds,
+        ));
+    }
+    let copy_length = copy_length as usize;
+    if source.len() < copy_length || subchunk.len() < copy_length {
+        return Err(ApplicationResourceMakeSubChunkError::ArrayCopy(
+            orphan_jvm::ArrayCopyException::IndexOutOfBounds,
+        ));
+    }
+    subchunk[..copy_length].copy_from_slice(&source[..copy_length]);
+    Ok(subchunk)
 }
 
 pub fn ink_engine_wrap_string<Text, Font, Output>(
@@ -3220,6 +3258,8 @@ mod tests {
             save_is_possible: false,
             languages: None,
             resource_heap_sources: None,
+            resource_sc_data: None,
+            resource_sc_current_size: 0,
             random_instance: None,
             runtime_instance: Some(37),
             midlet_instance: None,
@@ -3276,6 +3316,8 @@ mod tests {
             save_is_possible: false,
             languages: None,
             resource_heap_sources: None,
+            resource_sc_data: None,
+            resource_sc_current_size: 0,
             random_instance: None,
             runtime_instance: None,
             midlet_instance: Some(11),
@@ -3364,6 +3406,8 @@ mod tests {
             save_is_possible: false,
             languages: None,
             resource_heap_sources: None,
+            resource_sc_data: None,
+            resource_sc_current_size: 0,
             random_instance: None,
             runtime_instance: None,
             midlet_instance: None,
@@ -3479,6 +3523,73 @@ mod tests {
     }
 
     #[test]
+    fn resource_make_subchunk_allocates_then_copies_the_current_prefix() {
+        let mut application = ApplicationState {
+            tick_based_time_value: 0,
+            canvas_width: 0,
+            fade_frames: 0,
+            demo_frames: 0,
+            key_last_pressed: 0,
+            key_new: false,
+            key_pressed: false,
+            load_bar_active: false,
+            goto_dissolve_fx_counter: 0,
+            loading_mode: 0,
+            load_thread: None,
+            room_repaint_thread: None,
+            resource_importants: None,
+            resources_to_download: None,
+            game_id: None,
+            game_texts: None,
+            save_is_possible: false,
+            languages: None,
+            resource_heap_sources: None,
+            resource_sc_data: Some(vec![1, 2, 3, 4]),
+            resource_sc_current_size: 3,
+            random_instance: None,
+            runtime_instance: None,
+            midlet_instance: None,
+            ink_server_variables: None,
+            ink_server_hints: None,
+            game_changed_since_last_save: false,
+        };
+
+        let mut copy = application_resource_make_subchunk(&application).unwrap();
+        assert_eq!(copy, [1, 2, 3]);
+        copy[0] = 9;
+        assert_eq!(
+            application.resource_sc_data.as_deref(),
+            Some(&[1, 2, 3, 4][..])
+        );
+
+        application.resource_sc_current_size = -1;
+        application.resource_sc_data = None;
+        assert_eq!(
+            application_resource_make_subchunk(&application),
+            Err(ApplicationResourceMakeSubChunkError::NegativeArraySize(
+                orphan_jvm::NegativeArraySizeException { length: -1 }
+            ))
+        );
+
+        application.resource_sc_current_size = 0;
+        assert_eq!(
+            application_resource_make_subchunk(&application),
+            Err(ApplicationResourceMakeSubChunkError::ArrayCopy(
+                orphan_jvm::ArrayCopyException::NullPointer
+            ))
+        );
+
+        application.resource_sc_current_size = 5;
+        application.resource_sc_data = Some(vec![1, 2, 3, 4]);
+        assert_eq!(
+            application_resource_make_subchunk(&application),
+            Err(ApplicationResourceMakeSubChunkError::ArrayCopy(
+                orphan_jvm::ArrayCopyException::IndexOutOfBounds
+            ))
+        );
+    }
+
+    #[test]
     fn game_canvas_constructor_calls_super_false_then_full_screen_true() {
         let calls = core::cell::RefCell::new(alloc::vec::Vec::new());
         let success = game_canvas_new(
@@ -3560,6 +3671,8 @@ mod tests {
             save_is_possible: false,
             languages: None,
             resource_heap_sources: None,
+            resource_sc_data: None,
+            resource_sc_current_size: 0,
             random_instance: None,
             runtime_instance: None,
             midlet_instance: None,
@@ -3684,6 +3797,8 @@ mod tests {
             save_is_possible: false,
             languages: None,
             resource_heap_sources: None,
+            resource_sc_data: None,
+            resource_sc_current_size: 0,
             random_instance: None,
             runtime_instance: None,
             midlet_instance: None,
@@ -3745,6 +3860,8 @@ mod tests {
             game_texts: None,
             languages: None,
             resource_heap_sources: None,
+            resource_sc_data: None,
+            resource_sc_current_size: 0,
             random_instance: None,
             runtime_instance: None,
             midlet_instance: None,

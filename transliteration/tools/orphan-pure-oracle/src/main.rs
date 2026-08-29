@@ -5,13 +5,14 @@ use orphan_game_xlat::{
     abs, action_key_get_script_id, action_key_id_convert, action_key_init_system,
     action_key_keycode_to_action_key, action_key_unset_all_keys, application_app_start,
     application_clear_all_rms, application_destroy_app, application_free_memory, application_new,
-    application_paint, application_pause_app, application_print_array, application_rms_delete,
-    application_room_repaint_run, application_save_chunk_ini, application_set_display,
-    array_copy_string_handles, char_to_string, cheat_controller_initialize, cheat_controller_new,
-    coded_string, dir, find, game_canvas_key_jad_entry_as_int, game_canvas_key_pressed,
-    game_canvas_key_released, game_canvas_new, game_canvas_paint, game_canvas_show_notify,
-    game_language_path, game_resource_equals, game_resource_initialize, game_resource_new,
-    game_resource_paint, game_resource_paint_simple, get_game_text, get_game_text_from_string,
+    application_paint, application_pause_app, application_print_array,
+    application_resource_make_subchunk, application_rms_delete, application_room_repaint_run,
+    application_save_chunk_ini, application_set_display, array_copy_string_handles, char_to_string,
+    cheat_controller_initialize, cheat_controller_new, coded_string, dir, find,
+    game_canvas_key_jad_entry_as_int, game_canvas_key_pressed, game_canvas_key_released,
+    game_canvas_new, game_canvas_paint, game_canvas_show_notify, game_language_path,
+    game_resource_equals, game_resource_initialize, game_resource_new, game_resource_paint,
+    game_resource_paint_simple, get_game_text, get_game_text_from_string,
     get_language_selection_position, get_left, get_top, ink_codes_new,
     ink_engine_inventory_equip_unequip_handling, ink_engine_new, ink_engine_popup_create,
     ink_engine_popup_create_with_max_time, ink_engine_popup_set_next, ink_engine_wrap_string,
@@ -44,13 +45,14 @@ use orphan_game_xlat::{
     set_key_status, silent_hill_game_app_init, silent_hill_game_menu_reset_ingame_values,
     silent_hill_game_new, splash_more_exists, text_id_new, text_replace_first, tick_based_time,
     tick_based_time_reset, tick_based_time_update, to_boolean, to_int, write_string,
-    ApplicationRmsDeleteError, ApplicationState, CheatControllerStatics, GameCanvasState,
-    GameResourceState, GameResourceStatics, InkEnginePopupCreateError, InkEngineState,
-    InkInterpreterState, InkInterpreterStatics, InkScriptExecuteEventError,
-    InkScriptGetItemNameError, InkScriptRegistryValue, InkScriptState, InkScriptStatics,
-    InkVariableError, JavaObject, JavaOwnedObject, JavaResourceId, MenuState, MenuStatics,
-    ResourceRequestState, RoomObjectEnterHoverError, RoomObjectState, RoomObjectStatics,
-    RoomObjectStringEventError, SilentHillGameStatics, GAME_CANVAS_INITIAL_TRANSFORM_TABLE,
+    ApplicationResourceMakeSubChunkError, ApplicationRmsDeleteError, ApplicationState,
+    CheatControllerStatics, GameCanvasState, GameResourceState, GameResourceStatics,
+    InkEnginePopupCreateError, InkEngineState, InkInterpreterState, InkInterpreterStatics,
+    InkScriptExecuteEventError, InkScriptGetItemNameError, InkScriptRegistryValue, InkScriptState,
+    InkScriptStatics, InkVariableError, JavaObject, JavaOwnedObject, JavaResourceId, MenuState,
+    MenuStatics, ResourceRequestState, RoomObjectEnterHoverError, RoomObjectState,
+    RoomObjectStatics, RoomObjectStringEventError, SilentHillGameStatics,
+    GAME_CANVAS_INITIAL_TRANSFORM_TABLE,
 };
 
 fn value(parts: &[&str], index: usize) -> i32 {
@@ -366,6 +368,8 @@ fn server_state(variable_token: &str, hint_token: &str, changed: bool) -> Applic
         game_texts: None,
         languages: None,
         resource_heap_sources: None,
+        resource_sc_data: None,
+        resource_sc_current_size: 0,
         random_instance: None,
         runtime_instance: None,
         midlet_instance: None,
@@ -2012,6 +2016,34 @@ fn main() {
                     i32::from(open_create)
                 )
             }
+            Some("resource-make-subchunk") if parts.len() == 3 => {
+                let source = bytes(parts[1]);
+                let size = value(&parts, 2);
+                let mut state = server_state("-", "-", false);
+                state.resource_sc_data = source;
+                state.resource_sc_current_size = size;
+                let (status, returned, identity) = match application_resource_make_subchunk(&state)
+                {
+                    Ok(subchunk) => ("OK", bytes_output(&subchunk), "D"),
+                    Err(ApplicationResourceMakeSubChunkError::NegativeArraySize(_)) => {
+                        ("NASE", "null".to_owned(), "-")
+                    }
+                    Err(ApplicationResourceMakeSubChunkError::ArrayCopy(
+                        orphan_jvm::ArrayCopyException::NullPointer,
+                    )) => ("NPE", "null".to_owned(), "-"),
+                    Err(ApplicationResourceMakeSubChunkError::ArrayCopy(
+                        orphan_jvm::ArrayCopyException::IndexOutOfBounds,
+                    )) => ("AIOOBE", "null".to_owned(), "-"),
+                };
+                let source_after = state
+                    .resource_sc_data
+                    .as_deref()
+                    .map_or_else(|| "null".to_owned(), bytes_output);
+                format!(
+                    "{status}:{returned}:{identity}:{source_after}:{}",
+                    state.resource_sc_current_size
+                )
+            }
             Some("resource-restart-importants") if parts.len() == 2 => {
                 let old_length = value(&parts, 1);
                 let mut state = ApplicationState {
@@ -2037,6 +2069,8 @@ fn main() {
                     game_texts: None,
                     languages: None,
                     resource_heap_sources: None,
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: None,
                     runtime_instance: None,
                     midlet_instance: None,
@@ -2087,6 +2121,8 @@ fn main() {
                     game_texts: None,
                     languages: None,
                     resource_heap_sources: None,
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: None,
                     runtime_instance: None,
                     midlet_instance: None,
@@ -2127,6 +2163,8 @@ fn main() {
                     game_texts: None,
                     languages: None,
                     resource_heap_sources: None,
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: None,
                     runtime_instance: None,
                     midlet_instance: None,
@@ -2157,6 +2195,8 @@ fn main() {
                     game_texts: script_ids(parts[1]),
                     languages: None,
                     resource_heap_sources: None,
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: None,
                     runtime_instance: None,
                     midlet_instance: None,
@@ -2190,6 +2230,8 @@ fn main() {
                     game_texts: script_ids(parts[1]),
                     languages: None,
                     resource_heap_sources: None,
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: None,
                     runtime_instance: None,
                     midlet_instance: None,
@@ -2242,6 +2284,8 @@ fn main() {
                     game_texts: None,
                     languages: script_ids(parts[1]),
                     resource_heap_sources: None,
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: None,
                     runtime_instance: None,
                     midlet_instance: None,
@@ -2276,6 +2320,8 @@ fn main() {
                     game_texts: None,
                     languages: None,
                     resource_heap_sources: ints(parts[2]),
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: None,
                     runtime_instance: None,
                     midlet_instance: None,
@@ -2313,6 +2359,8 @@ fn main() {
                     game_texts: None,
                     languages: None,
                     resource_heap_sources: None,
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: has_random.then_some(1),
                     runtime_instance: None,
                     midlet_instance: None,
@@ -2347,6 +2395,8 @@ fn main() {
                     game_texts: None,
                     languages: None,
                     resource_heap_sources: None,
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: None,
                     runtime_instance: None,
                     midlet_instance: None,
@@ -2480,6 +2530,8 @@ fn main() {
                     game_texts: None,
                     languages: None,
                     resource_heap_sources: None,
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: None,
                     runtime_instance: None,
                     midlet_instance: None,
@@ -2513,6 +2565,8 @@ fn main() {
                     game_texts: None,
                     languages: None,
                     resource_heap_sources: None,
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: None,
                     runtime_instance: None,
                     midlet_instance: None,
@@ -2547,6 +2601,8 @@ fn main() {
                     game_texts: None,
                     languages: None,
                     resource_heap_sources: None,
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: None,
                     runtime_instance: None,
                     midlet_instance: None,
@@ -2580,6 +2636,8 @@ fn main() {
                     game_texts: None,
                     languages: None,
                     resource_heap_sources: None,
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: None,
                     runtime_instance: None,
                     midlet_instance: None,
@@ -2613,6 +2671,8 @@ fn main() {
                     game_texts: None,
                     languages: None,
                     resource_heap_sources: None,
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: None,
                     runtime_instance: None,
                     midlet_instance: None,
@@ -2651,6 +2711,8 @@ fn main() {
                     game_texts: None,
                     languages: None,
                     resource_heap_sources: None,
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: None,
                     runtime_instance: None,
                     midlet_instance: None,
@@ -2697,6 +2759,8 @@ fn main() {
                     game_texts: None,
                     languages: None,
                     resource_heap_sources: None,
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: None,
                     runtime_instance: None,
                     midlet_instance: None,
@@ -2904,6 +2968,8 @@ fn main() {
                     game_texts: script_ids(parts[2]),
                     languages: None,
                     resource_heap_sources: None,
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: None,
                     runtime_instance: None,
                     midlet_instance: None,
@@ -3100,6 +3166,8 @@ fn main() {
                     game_texts: None,
                     languages: None,
                     resource_heap_sources: None,
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: None,
                     runtime_instance: None,
                     midlet_instance: None,
@@ -3130,6 +3198,8 @@ fn main() {
                     game_texts: None,
                     languages: None,
                     resource_heap_sources: None,
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: None,
                     runtime_instance: None,
                     midlet_instance: None,
@@ -3161,6 +3231,8 @@ fn main() {
                     game_texts: None,
                     languages: None,
                     resource_heap_sources: None,
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: None,
                     runtime_instance: None,
                     midlet_instance: None,
@@ -3192,6 +3264,8 @@ fn main() {
                     game_texts: None,
                     languages: None,
                     resource_heap_sources: None,
+                    resource_sc_data: None,
+                    resource_sc_current_size: 0,
                     random_instance: None,
                     runtime_instance: None,
                     midlet_instance: None,

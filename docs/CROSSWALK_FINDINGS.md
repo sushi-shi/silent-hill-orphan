@@ -56,7 +56,7 @@ of the body.
 
 ## A-3 — application, resource, menu, script, and interpreter fields have shaped owners
 
-The 142 mutable fields reached by the reviewed methods—including application timing,
+The 144 mutable fields reached by the reviewed methods—including application timing,
 resource/language/Ink-server state, menu and input state, script/interpreter
 state, and room-object/battle-panel state—live in `ApplicationState`,
 `ResourceRequestState`, `InkEngineState`, `GameCanvasState`, `MenuState`,
@@ -303,8 +303,8 @@ reason for the disagreement.
 The oracle now validates those two exact member signatures against the
 hash-locked source-named variant ledger before excluding only their 6,196
 requests from the naming-reference comparison. The recovered baseline,
-canonical Java, and Rust still compare on all 991,310 cases. The
-naming-reference JAR still compares on the remaining 985,114 cases, and
+canonical Java, and Rust still compare on all 991,338 cases. The
+naming-reference JAR still compares on the remaining 985,142 cases, and
 `Application.setKeyStatus` remains a four-authority comparison because its body
 is common. Complete post-state checks prove the sticky new-key latch, current
 pressed state, last-key write, and signed-byte scroll reset—not merely the
@@ -1564,15 +1564,43 @@ are owned exactly once.
 downstream attempts and partial effects, then use structural evidence for call
 edges whose callee intentionally leaves no external trace.
 
+## A-59 — allocation and array copy have separate failure cut points
+
+`Application.resourceMakeSubChunk()` reads `resourceSCCurrentSize` twice: once
+to allocate a distinct zero-filled destination and again as the final
+`System.arraycopy` argument. A negative first read therefore raises
+`NegativeArraySizeException` before the source is evaluated. After allocation,
+a null `resourceSCData` raises `NullPointerException` even when the copy length
+is zero, while a length outside either array raises
+`IndexOutOfBoundsException`. Success returns only the copied source prefix in a
+new array, with no aliasing or source mutation.
+
+The original bytecode evaluates `resourceSCData` before the second size read,
+then performs the null and bounds checks inside `System.arraycopy`. The Rust
+translation retains that order and copies into `subchunk[..copyLength]`, so an
+interleaved smaller second size leaves the remainder of the allocation zero
+instead of requiring both whole arrays to have equal lengths.
+
+Twenty-eight four-authority cases cross null and differently sized sources with
+negative, zero, in-bounds, exact-bound, and oversized lengths. They distinguish
+all three failures, returned-array identity, copied bytes, and unchanged source
+state. The crosswalk owns all nineteen `javac` and 108 `syn` body nodes exactly
+once, including Rust's explicit JVM allocation-fault adaptation, as well as both
+new field declarations.
+
+**Lesson.** Preserve repeated static reads and the boundary between allocation
+and a following platform primitive; otherwise exception order and identity can
+look correct on ordinary inputs while diverging on hostile states.
+
 ## Verified clean so far
 
-- 157/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
+- 158/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
   and `syn` node ownership.
-- 175/1,075 Java fields have complete declaration-node ownership: 142 map into
+- 177/1,075 Java fields have complete declaration-node ownership: 144 map into
   sixteen hash-locked Rust owner containers, thirty-three map to typed scalar constants,
   and one mutable array also owns a separately inventoried initializer template.
-- The differential currently runs 991,310 cases against the recovered baseline,
-  canonical Java, and Rust; the naming-reference JAR agrees on all 985,114
+- The differential currently runs 991,338 cases against the recovered baseline,
+  canonical Java, and Rust; the naming-reference JAR agrees on all 985,142
   cases outside its two ledger-reviewed input-timing variants.
 - Exhaustive subdomains include all Java `char` values, every pair of singleton
   unsigned comparator bytes, all 256 signed menu-scroll counter states, and all

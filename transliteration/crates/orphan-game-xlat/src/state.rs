@@ -36,6 +36,8 @@ pub struct ApplicationState {
     pub save_is_possible: bool,
     pub languages: Option<Vec<Option<Vec<u16>>>>,
     pub resource_heap_sources: Option<Vec<i32>>,
+    pub resource_sc_data: Option<Vec<u8>>,
+    pub resource_sc_current_size: i32,
     pub random_instance: Option<u32>,
     pub runtime_instance: Option<u32>,
     pub midlet_instance: Option<u32>,

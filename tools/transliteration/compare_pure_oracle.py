@@ -424,6 +424,17 @@ def requests() -> list[str]:
         for stream_mode in (0, 1, 2, 3, 4)
         for open_mode in (0, 1)
     )
+    subchunk_sources: tuple[bytes | None, ...] = (
+        None,
+        b"",
+        bytes((0, 1, 255)),
+        bytes(range(8)),
+    )
+    result.extend(
+        f"resource-make-subchunk {byte_token(source)} {size}"
+        for source in subchunk_sources
+        for size in (-1, 0, 1, 3, 4, 8, 9)
+    )
 
     path_strings: list[list[int] | None] = [
         None,

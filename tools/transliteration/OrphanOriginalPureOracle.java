@@ -871,6 +871,7 @@ public final class OrphanOriginalPureOracle {
         Method setDisplay = method(application, "setDisplay", Displayable.class);
         Method rmsDelete = method(application, "rmsDelete", String.class);
         Method saveChunkIni = method(application, "saveChunkINI", DataInputStream.class);
+        Method resourceMakeSubChunk = method(application, "resourceMakeSubChunk");
         Method resetLoad = method(application, "resetLoad");
         Method resourcePathForString = method(application, "loadRequest_getResourcePath",
                 Integer.TYPE, String.class);
@@ -1685,6 +1686,34 @@ public final class OrphanOriginalPureOracle {
                                 ? "null" : bytesOutput(RecordStore.oracleSetData)) + ":"
                         + RecordStore.oracleSetOffset + ":" + RecordStore.oracleSetLength;
                 RecordStore.oracleResetWrite(0);
+            } else if (parts[0].equals("resource-make-subchunk") && parts.length == 3) {
+                byte[] source = bytes(parts[1]);
+                resourceSubchunkData.set(null, source);
+                resourceSubchunkSize.setInt(null, value(parts, 2));
+                String status;
+                String returned = "null";
+                String identity = "-";
+                try {
+                    byte[] subchunk = (byte[]) resourceMakeSubChunk.invoke(null);
+                    status = "OK";
+                    returned = bytesOutput(subchunk);
+                    identity = subchunk == source ? "S" : "D";
+                } catch (InvocationTargetException exception) {
+                    Throwable cause = exception.getCause();
+                    if (cause instanceof NegativeArraySizeException) {
+                        status = "NASE";
+                    } else if (cause instanceof NullPointerException) {
+                        status = "NPE";
+                    } else if (cause instanceof IndexOutOfBoundsException) {
+                        status = "AIOOBE";
+                    } else {
+                        throw exception;
+                    }
+                }
+                byte[] sourceAfter = (byte[]) resourceSubchunkData.get(null);
+                result = status + ":" + returned + ":" + identity + ":"
+                        + (sourceAfter == null ? "null" : bytesOutput(sourceAfter)) + ":"
+                        + resourceSubchunkSize.getInt(null);
             } else if (parts[0].equals("resource-restart-importants") && parts.length == 2) {
                 int oldLength = value(parts, 1);
                 Vector oldValues = oldLength < 0 ? null : new Vector();
