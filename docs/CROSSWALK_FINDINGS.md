@@ -1775,15 +1775,44 @@ Compose the admitted callee, keep allocation identity observable, and include an
 empty-but-nonnull result in the oracle so `is_some()` cannot regress into
 `!is_empty()`.
 
+## A-66 — a catch does not protect the retry executed by its handler
+
+`Application.exit()` clears `runtime`, clears `appInited`, calls the admitted
+empty `resourceExit`, reads `midlet`, and invokes `notifyDestroyed()` inside one
+region protected by `catch (Exception)`. If that first attempt raises an
+`Exception`, the handler discards it, reads `midlet` again, and invokes the same
+method once more. The handler's retry is outside its own protected range: an
+Exception from the second attempt propagates, while an `Error` from the first
+attempt bypasses the handler and prevents any retry.
+
+Rust owns `appInited` beside the already mapped runtime and MIDlet handles and
+uses a typed three-way exit error: null receiver, catchable notification
+Exception, or uncaught notification failure. Its second receiver is resolved
+from live state after the first callback returns. The 160-case direct oracle
+crosses both initial runtime and initialized states, null/present MIDlet, five
+first/second failure schedules, and hooks that replace or clear the MIDlet or
+restore hostile lifecycle values. It compares both entered receiver identities,
+call count, final MIDlet identity, final lifecycle state, and propagated status.
+This proves first-error suppression, first-Error non-retry, retry propagation,
+and the absence of any post-callback state restoration. The existing
+`destroyApp(boolean)` oracle now composes this admitted body beneath its
+forced-flag-ignoring wrapper. All twenty-seven `javac` and seventy-three `syn`
+nodes have one atomic decision.
+
+**Lesson.** Reconstruct the exception-table interval, not just source indentation.
+Code written inside a catch handler is not recursively covered by that handler,
+and a callback between two static reads can change the retry receiver and every
+state value that the method wrote earlier.
+
 ## Verified clean so far
 
-- 164/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
+- 165/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
   and `syn` node ownership.
-- 184/1,075 Java fields have complete declaration-node ownership: 149 map into
+- 185/1,075 Java fields have complete declaration-node ownership: 150 map into
   sixteen hash-locked Rust owner containers, thirty-five map to typed scalar constants,
   and one mutable array also owns a separately inventoried initializer template.
-- The differential currently runs 997,918 cases against the recovered baseline,
-  canonical Java, and Rust; the naming-reference JAR agrees on all 991,703
+- The differential currently runs 998,078 cases against the recovered baseline,
+  canonical Java, and Rust; the naming-reference JAR agrees on all 991,863
   cases, with 6,215 requests excluded only by its two ledger-reviewed
   input-timing variants and one ledger-reviewed rendering-policy variant.
 - Exhaustive subdomains include all Java `char` values, every pair of singleton

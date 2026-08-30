@@ -1233,6 +1233,7 @@ public final class OrphanOriginalPureOracle {
         Method getTop = method(application, "getTop", Integer.TYPE, Integer.TYPE, Integer.TYPE,
                 Integer.TYPE, Integer.TYPE, Integer.TYPE);
         Method resourceExit = method(application, "resourceExit");
+        Method exit = method(application, "exit");
         Method destroyApp = method(application, "destroyApp", Boolean.TYPE);
         Method pauseApp = method(application, "pauseApp");
         Method appStart = method(application, "appStart");
@@ -1614,11 +1615,84 @@ public final class OrphanOriginalPureOracle {
             } else if (parts[0].equals("resource-exit") && parts.length == 1) {
                 resourceExit.invoke(null);
                 result = "OK";
+            } else if (parts[0].equals("exit") && parts.length == 6) {
+                final Object expectedMidlet = applicationConstructor.newInstance();
+                final Object replacementMidlet = applicationConstructor.newInstance();
+                applicationRuntime.set(
+                        null, value(parts, 1) == 0 ? null : Runtime.getRuntime());
+                applicationInited.setBoolean(null, value(parts, 2) != 0);
+                applicationMidlet.set(null, value(parts, 3) == 0 ? null : expectedMidlet);
+                int hookMode = value(parts, 5);
+                Runnable firstHook = null;
+                if (hookMode == 1) {
+                    firstHook = new Runnable() {
+                        public void run() {
+                            try {
+                                applicationMidlet.set(null, replacementMidlet);
+                            } catch (Exception exception) {
+                                throw new RuntimeException(exception);
+                            }
+                        }
+                    };
+                } else if (hookMode == 2) {
+                    firstHook = new Runnable() {
+                        public void run() {
+                            try {
+                                applicationMidlet.set(null, null);
+                            } catch (Exception exception) {
+                                throw new RuntimeException(exception);
+                            }
+                        }
+                    };
+                } else if (hookMode == 3) {
+                    firstHook = new Runnable() {
+                        public void run() {
+                            try {
+                                applicationRuntime.set(null, Runtime.getRuntime());
+                                applicationInited.setBoolean(null, true);
+                            } catch (Exception exception) {
+                                throw new RuntimeException(exception);
+                            }
+                        }
+                    };
+                }
+                MIDlet.oracleResetNotifyDestroyed(value(parts, 4), firstHook, null);
+                String outcome;
+                try {
+                    exit.invoke(null);
+                    outcome = "OK";
+                } catch (InvocationTargetException exception) {
+                    if (exception.getCause() instanceof NullPointerException) {
+                        outcome = "NPE";
+                    } else if (exception.getCause() instanceof AssertionError) {
+                        outcome = "ERR";
+                    } else {
+                        throw exception;
+                    }
+                }
+                String firstReceiver = MIDlet.oracleNotifyDestroyedCalls == 0
+                        ? "-" : MIDlet.oracleNotifyDestroyedFirstReceiver == expectedMidlet
+                                ? "A" : MIDlet.oracleNotifyDestroyedFirstReceiver == replacementMidlet
+                                        ? "B" : "W";
+                String secondReceiver = MIDlet.oracleNotifyDestroyedCalls < 2
+                        ? "-" : MIDlet.oracleNotifyDestroyedSecondReceiver == expectedMidlet
+                                ? "A" : MIDlet.oracleNotifyDestroyedSecondReceiver == replacementMidlet
+                                        ? "B" : "W";
+                Object finalMidletValue = applicationMidlet.get(null);
+                String finalMidlet = finalMidletValue == null ? "N"
+                        : finalMidletValue == expectedMidlet ? "A"
+                                : finalMidletValue == replacementMidlet ? "B" : "W";
+                result = outcome + ":" + (applicationRuntime.get(null) == null ? "N" : "R")
+                        + ":" + (applicationInited.getBoolean(null) ? "1" : "0") + ":"
+                        + MIDlet.oracleNotifyDestroyedCalls + ":" + firstReceiver + ":"
+                        + secondReceiver + ":" + finalMidlet;
+                MIDlet.oracleResetNotifyDestroyed(0, null, null);
             } else if (parts[0].equals("destroy-app") && parts.length == 3) {
                 Object midlet = applicationConstructor.newInstance();
                 applicationRuntime.set(null, Runtime.getRuntime());
                 applicationInited.setBoolean(null, true);
                 applicationMidlet.set(null, value(parts, 2) == 0 ? null : midlet);
+                MIDlet.oracleResetNotifyDestroyed(0, null, null);
                 String outcome;
                 try {
                     destroyApp.invoke(midlet, Boolean.valueOf(value(parts, 1) != 0));
@@ -1632,6 +1706,7 @@ public final class OrphanOriginalPureOracle {
                 }
                 result = outcome + ":" + (applicationRuntime.get(null) == null ? "N:" : "R:")
                         + (applicationInited.getBoolean(null) ? "1" : "0");
+                MIDlet.oracleResetNotifyDestroyed(0, null, null);
             } else if (parts[0].equals("pause-app") && parts.length == 2) {
                 Object midlet = applicationConstructor.newInstance();
                 applicationMainMenuActive.setBoolean(null, true);

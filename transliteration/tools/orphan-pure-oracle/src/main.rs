@@ -4,8 +4,8 @@ use orphan_formats::Reader;
 use orphan_game_xlat::{
     abs, action_key_get_script_id, action_key_id_convert, action_key_init_system,
     action_key_keycode_to_action_key, action_key_unset_all_keys, application_app_start,
-    application_clear_all_rms, application_destroy_app, application_free_memory, application_new,
-    application_paint, application_pause_app, application_print_array,
+    application_clear_all_rms, application_destroy_app, application_exit, application_free_memory,
+    application_new, application_paint, application_pause_app, application_print_array,
     application_repaint_canvas_if_possible, application_resource_make_subchunk,
     application_rms_delete, application_rms_get, application_room_repaint_run,
     application_save_chunk_ini, application_set_display, array_copy_string_handles, char_to_string,
@@ -48,15 +48,15 @@ use orphan_game_xlat::{
     set_key_status, silent_hill_game_app_init, silent_hill_game_menu_reset_ingame_values,
     silent_hill_game_new, splash_more_exists, text_id_new, text_replace_first, tick_based_time,
     tick_based_time_reset, tick_based_time_update, to_boolean, to_int, write_string,
-    ApplicationRepaintCanvasIfPossibleError, ApplicationResourceMakeSubChunkError,
-    ApplicationRmsDeleteError, ApplicationRmsGetCallError, ApplicationState,
-    CheatControllerStatics, GameCanvasState, GameResourceState, GameResourceStatics,
-    InkEnginePopupCreateError, InkEngineState, InkInterpreterState, InkInterpreterStatics,
-    InkScriptExecuteEventError, InkScriptGetItemNameError, InkScriptRegistryValue, InkScriptState,
-    InkScriptStatics, InkVariableError, JavaObject, JavaOwnedObject, JavaResourceId, MenuState,
-    MenuStatics, ResourceRequestState, RoomObjectEnterHoverError, RoomObjectState,
-    RoomObjectStatics, RoomObjectStringEventError, SilentHillGameStatics,
-    GAME_CANVAS_INITIAL_TRANSFORM_TABLE,
+    ApplicationExitError, ApplicationRepaintCanvasIfPossibleError,
+    ApplicationResourceMakeSubChunkError, ApplicationRmsDeleteError, ApplicationRmsGetCallError,
+    ApplicationState, CheatControllerStatics, GameCanvasState, GameResourceState,
+    GameResourceStatics, InkEnginePopupCreateError, InkEngineState, InkInterpreterState,
+    InkInterpreterStatics, InkScriptExecuteEventError, InkScriptGetItemNameError,
+    InkScriptRegistryValue, InkScriptState, InkScriptStatics, InkVariableError, JavaObject,
+    JavaOwnedObject, JavaResourceId, MenuState, MenuStatics, ResourceRequestState,
+    RoomObjectEnterHoverError, RoomObjectState, RoomObjectStatics, RoomObjectStringEventError,
+    SilentHillGameStatics, GAME_CANVAS_INITIAL_TRANSFORM_TABLE,
 };
 
 fn value(parts: &[&str], index: usize) -> i32 {
@@ -497,6 +497,7 @@ fn string_table_output(values: Option<&[(Vec<u16>, Vec<u16>)]>) -> String {
 
 fn server_state(variable_token: &str, hint_token: &str, changed: bool) -> ApplicationState {
     ApplicationState {
+        app_inited: false,
         tick_based_time_value: 0,
         canvas_width: 0,
         fade_frames: 0,
@@ -1428,24 +1429,92 @@ fn main() {
                 resource_exit();
                 "OK".to_owned()
             }
-            Some("destroy-app") if parts.len() == 3 => {
-                let mut runtime_present = true;
-                let mut app_inited = true;
-                let result: Result<(), orphan_jvm::NullPointerException> =
-                    application_destroy_app(value(&parts, 1) != 0, || {
-                        runtime_present = false;
-                        app_inited = false;
-                        if value(&parts, 2) == 0 {
-                            Err(orphan_jvm::NullPointerException)
-                        } else {
-                            Ok(())
+            Some("exit") if parts.len() == 6 => {
+                let mut state = server_state("-", "-", false);
+                state.runtime_instance = (value(&parts, 1) != 0).then_some(1);
+                state.app_inited = value(&parts, 2) != 0;
+                state.midlet_instance = (value(&parts, 3) != 0).then_some(2);
+                let notify_mode = value(&parts, 4);
+                let hook_mode = value(&parts, 5);
+                let mut calls = 0;
+                let mut first_receiver = "-";
+                let mut second_receiver = "-";
+                let result = application_exit(&mut state, |midlet, state| {
+                    calls += 1;
+                    let receiver = match midlet {
+                        2 => "A",
+                        9 => "B",
+                        _ => "W",
+                    };
+                    if calls == 1 {
+                        first_receiver = receiver;
+                        match hook_mode {
+                            0 => {}
+                            1 => state.midlet_instance = Some(9),
+                            2 => state.midlet_instance = None,
+                            3 => {
+                                state.runtime_instance = Some(8);
+                                state.app_inited = true;
+                            }
+                            _ => unreachable!(),
                         }
-                    });
+                    } else {
+                        second_receiver = receiver;
+                    }
+                    match notify_mode {
+                        0 => Ok(()),
+                        1 => Err(ApplicationExitError::NotifyException(1)),
+                        2 if calls == 1 => Err(ApplicationExitError::NotifyException(1)),
+                        2 => Ok(()),
+                        3 if calls == 1 => Err(ApplicationExitError::NotifyUncaught(2)),
+                        3 => Ok(()),
+                        4 if calls == 1 => Err(ApplicationExitError::NotifyException(1)),
+                        4 => Err(ApplicationExitError::NotifyUncaught(2)),
+                        _ => unreachable!(),
+                    }
+                });
+                let status = match result {
+                    Ok(()) => "OK",
+                    Err(ApplicationExitError::MidletNull)
+                    | Err(ApplicationExitError::NotifyException(1)) => "NPE",
+                    Err(ApplicationExitError::NotifyUncaught(2)) => "ERR",
+                    Err(_) => unreachable!(),
+                };
+                let final_midlet = match state.midlet_instance {
+                    None => "N",
+                    Some(2) => "A",
+                    Some(9) => "B",
+                    Some(_) => "W",
+                };
+                format!(
+                    "{status}:{}:{}:{calls}:{first_receiver}:{second_receiver}:{final_midlet}",
+                    if state.runtime_instance.is_none() {
+                        "N"
+                    } else {
+                        "R"
+                    },
+                    i32::from(state.app_inited)
+                )
+            }
+            Some("destroy-app") if parts.len() == 3 => {
+                let mut state = server_state("-", "-", false);
+                state.runtime_instance = Some(1);
+                state.app_inited = true;
+                state.midlet_instance = (value(&parts, 2) != 0).then_some(2);
+                let result = application_destroy_app(value(&parts, 1) != 0, || {
+                    application_exit(&mut state, |_, _| {
+                        Ok::<(), ApplicationExitError<orphan_jvm::NullPointerException>>(())
+                    })
+                });
                 format!(
                     "{}:{}:{}",
                     if result.is_ok() { "OK" } else { "NPE" },
-                    if runtime_present { "R" } else { "N" },
-                    i32::from(app_inited)
+                    if state.runtime_instance.is_some() {
+                        "R"
+                    } else {
+                        "N"
+                    },
+                    i32::from(state.app_inited)
                 )
             }
             Some("pause-app") if parts.len() == 2 => {
@@ -2416,6 +2485,7 @@ fn main() {
             Some("resource-restart-importants") if parts.len() == 2 => {
                 let old_length = value(&parts, 1);
                 let mut state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: 0,
                     canvas_width: 0,
                     fade_frames: 0,
@@ -2475,6 +2545,7 @@ fn main() {
             }
             Some("resource-path") if parts.len() == 6 => {
                 let state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: 0,
                     canvas_width: 0,
                     fade_frames: 0,
@@ -2520,6 +2591,7 @@ fn main() {
             }
             Some("game-language-path") if parts.len() == 2 => {
                 let state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: 0,
                     canvas_width: 0,
                     fade_frames: 0,
@@ -2555,6 +2627,7 @@ fn main() {
             }
             Some("game-text") if parts.len() == 3 => {
                 let state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: 0,
                     canvas_width: 0,
                     fade_frames: 0,
@@ -2593,6 +2666,7 @@ fn main() {
             }
             Some("game-text-string") if parts.len() == 3 => {
                 let state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: 0,
                     canvas_width: 0,
                     fade_frames: 0,
@@ -2650,6 +2724,7 @@ fn main() {
             }
             Some("language-position") if parts.len() == 3 => {
                 let state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: 0,
                     canvas_width: 0,
                     fade_frames: 0,
@@ -2689,6 +2764,7 @@ fn main() {
             }
             Some("resource-heap-index") if parts.len() == 3 => {
                 let state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: 0,
                     canvas_width: 0,
                     fade_frames: 0,
@@ -2731,6 +2807,7 @@ fn main() {
             Some("random-scaled") if parts.len() == 4 => {
                 let has_random = parts[1] == "fixed";
                 let state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: 0,
                     canvas_width: 0,
                     fade_frames: 0,
@@ -2770,6 +2847,7 @@ fn main() {
             Some("ink-get") if parts.len() == 4 => {
                 let table = string_table(parts[2]);
                 let state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: 0,
                     canvas_width: 0,
                     fade_frames: 0,
@@ -2908,6 +2986,7 @@ fn main() {
             }
             Some("room-history-size") if parts.len() == 2 => {
                 let state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: 0,
                     canvas_width: 0,
                     fade_frames: 0,
@@ -2946,6 +3025,7 @@ fn main() {
             }
             Some("inventory-size") if parts.len() == 3 => {
                 let state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: 0,
                     canvas_width: 0,
                     fade_frames: 0,
@@ -2985,6 +3065,7 @@ fn main() {
             }
             Some("room-current") if parts.len() == 2 => {
                 let state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: 0,
                     canvas_width: 0,
                     fade_frames: 0,
@@ -3023,6 +3104,7 @@ fn main() {
             }
             Some("room-last") if parts.len() == 2 => {
                 let state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: 0,
                     canvas_width: 0,
                     fade_frames: 0,
@@ -3061,6 +3143,7 @@ fn main() {
             }
             Some("resource-path-string") if parts.len() == 4 => {
                 let state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: 0,
                     canvas_width: 0,
                     fade_frames: 0,
@@ -3104,6 +3187,7 @@ fn main() {
             }
             Some("resource-path-object") if parts.len() == 6 => {
                 let state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: 0,
                     canvas_width: 0,
                     fade_frames: 0,
@@ -3155,6 +3239,7 @@ fn main() {
             }
             Some("request-resource-path") if parts.len() == 6 => {
                 let state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: 0,
                     canvas_width: 0,
                     fade_frames: 0,
@@ -3369,6 +3454,7 @@ fn main() {
             },
             Some("read-string-list") if parts.len() == 5 => {
                 let mut state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: 0,
                     canvas_width: 0,
                     fade_frames: 0,
@@ -3570,6 +3656,7 @@ fn main() {
             }
             Some("tick-get") if parts.len() == 2 => {
                 let state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: value(&parts, 1),
                     canvas_width: 0,
                     fade_frames: 0,
@@ -3605,6 +3692,7 @@ fn main() {
             }
             Some("tick-update") if parts.len() == 2 => {
                 let mut state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: value(&parts, 1),
                     canvas_width: 0,
                     fade_frames: 0,
@@ -3641,6 +3729,7 @@ fn main() {
             }
             Some("tick-reset") if parts.len() == 2 => {
                 let mut state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: value(&parts, 1),
                     canvas_width: 0,
                     fade_frames: 0,
@@ -3677,6 +3766,7 @@ fn main() {
             }
             Some("loading") if parts.len() == 2 => {
                 let state = ApplicationState {
+                    app_inited: false,
                     tick_based_time_value: 0,
                     canvas_width: 0,
                     fade_frames: 0,

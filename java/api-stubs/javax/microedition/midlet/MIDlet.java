@@ -6,6 +6,12 @@ public abstract class MIDlet {
     public static String oraclePropertyValue;
     public static int oraclePropertyCalls;
     public static boolean oraclePropertyFails;
+    public static MIDlet oracleNotifyDestroyedFirstReceiver;
+    public static MIDlet oracleNotifyDestroyedSecondReceiver;
+    public static int oracleNotifyDestroyedCalls;
+    public static int oracleNotifyDestroyedMode;
+    public static Runnable oracleNotifyDestroyedFirstHook;
+    public static Runnable oracleNotifyDestroyedSecondHook;
 
     protected MIDlet() {}
 
@@ -33,7 +39,45 @@ public abstract class MIDlet {
         oraclePropertyFails = fails;
     }
 
-    public final void notifyDestroyed() {}
+    public final void notifyDestroyed() {
+        oracleNotifyDestroyedCalls++;
+        if (oracleNotifyDestroyedCalls == 1) {
+            oracleNotifyDestroyedFirstReceiver = this;
+            if (oracleNotifyDestroyedFirstHook != null) {
+                oracleNotifyDestroyedFirstHook.run();
+            }
+        } else {
+            oracleNotifyDestroyedSecondReceiver = this;
+            if (oracleNotifyDestroyedSecondHook != null) {
+                oracleNotifyDestroyedSecondHook.run();
+            }
+        }
+        if (oracleNotifyDestroyedMode == 1) {
+            throw new NullPointerException("injected notifyDestroyed exception");
+        }
+        if (oracleNotifyDestroyedMode == 2 && oracleNotifyDestroyedCalls == 1) {
+            throw new NullPointerException("injected first notifyDestroyed exception");
+        }
+        if (oracleNotifyDestroyedMode == 3 && oracleNotifyDestroyedCalls == 1) {
+            throw new AssertionError("injected first notifyDestroyed error");
+        }
+        if (oracleNotifyDestroyedMode == 4) {
+            if (oracleNotifyDestroyedCalls == 1) {
+                throw new NullPointerException("injected first notifyDestroyed exception");
+            }
+            throw new AssertionError("injected second notifyDestroyed error");
+        }
+    }
+
+    public static void oracleResetNotifyDestroyed(
+            int mode, Runnable firstHook, Runnable secondHook) {
+        oracleNotifyDestroyedFirstReceiver = null;
+        oracleNotifyDestroyedSecondReceiver = null;
+        oracleNotifyDestroyedCalls = 0;
+        oracleNotifyDestroyedMode = mode;
+        oracleNotifyDestroyedFirstHook = firstHook;
+        oracleNotifyDestroyedSecondHook = secondHook;
+    }
 
     public final void notifyPaused() {}
 

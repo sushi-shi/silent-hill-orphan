@@ -71,6 +71,13 @@ pub enum ApplicationSetDisplayError<E> {
 }
 
 #[derive(Debug, Eq, PartialEq)]
+pub enum ApplicationExitError<E> {
+    MidletNull,
+    NotifyException(E),
+    NotifyUncaught(E),
+}
+
+#[derive(Debug, Eq, PartialEq)]
 pub enum ApplicationRepaintCanvasIfPossibleError<E> {
     CanvasNullBeforeRepaint,
     Repaint(E),
@@ -189,6 +196,34 @@ pub fn dir(value: i32) -> i32 {
 }
 
 pub fn resource_exit() {}
+
+pub fn application_exit<NotifyDestroyed, E>(
+    state: &mut ApplicationState,
+    mut notify_destroyed: NotifyDestroyed,
+) -> Result<(), ApplicationExitError<E>>
+where
+    NotifyDestroyed: FnMut(u32, &mut ApplicationState) -> Result<(), ApplicationExitError<E>>,
+{
+    state.runtime_instance = None;
+    state.app_inited = false;
+    resource_exit();
+    let first = match state.midlet_instance {
+        Some(midlet) => notify_destroyed(midlet, state),
+        None => Err(ApplicationExitError::MidletNull),
+    };
+    match first {
+        Ok(()) => Ok(()),
+        Err(ApplicationExitError::NotifyUncaught(error)) => {
+            Err(ApplicationExitError::NotifyUncaught(error))
+        }
+        Err(ApplicationExitError::MidletNull | ApplicationExitError::NotifyException(_)) => {
+            let midlet = state
+                .midlet_instance
+                .ok_or(ApplicationExitError::MidletNull)?;
+            notify_destroyed(midlet, state)
+        }
+    }
+}
 
 pub fn application_destroy_app<Exit, E>(_forced: bool, exit: Exit) -> Result<(), E>
 where
@@ -3274,6 +3309,87 @@ mod tests {
     }
 
     #[test]
+    fn application_exit_stores_then_retries_only_a_caught_exception() {
+        let mut state = ApplicationState {
+            app_inited: true,
+            tick_based_time_value: 0,
+            canvas_width: 0,
+            fade_frames: 0,
+            demo_frames: 0,
+            painting: false,
+            cur_sound_mode: false,
+            canvas_instance: None,
+            key_last_pressed: 0,
+            key_new: false,
+            key_pressed: false,
+            load_bar_active: false,
+            goto_dissolve_fx_counter: 0,
+            loading_mode: 0,
+            load_thread: None,
+            room_repaint_thread: None,
+            resource_importants: None,
+            resources_to_download: None,
+            game_id: None,
+            game_texts: None,
+            save_is_possible: false,
+            languages: None,
+            resource_heap_sources: None,
+            resource_sc_data: None,
+            resource_sc_current_size: 0,
+            random_instance: None,
+            runtime_instance: Some(1),
+            midlet_instance: Some(2),
+            ink_server_variables: None,
+            ink_server_hints: None,
+            game_changed_since_last_save: false,
+        };
+        let mut calls = 0;
+        let recovered = application_exit(&mut state, |midlet, state| {
+            calls += 1;
+            assert_eq!(
+                state.runtime_instance,
+                if calls == 1 { None } else { Some(8) }
+            );
+            assert_eq!(state.app_inited, calls != 1);
+            if calls == 1 {
+                assert_eq!(midlet, 2);
+                state.runtime_instance = Some(8);
+                state.app_inited = true;
+                state.midlet_instance = Some(9);
+                Err(ApplicationExitError::NotifyException("first"))
+            } else {
+                assert_eq!(midlet, 9);
+                Ok(())
+            }
+        });
+        assert_eq!(recovered, Ok(()));
+        assert_eq!(calls, 2);
+        assert_eq!(state.runtime_instance, Some(8));
+        assert!(state.app_inited);
+
+        state.runtime_instance = Some(3);
+        state.app_inited = true;
+        let mut calls = 0;
+        let uncaught = application_exit(&mut state, |_, _| {
+            calls += 1;
+            Err(ApplicationExitError::NotifyUncaught("error"))
+        });
+        assert_eq!(uncaught, Err(ApplicationExitError::NotifyUncaught("error")));
+        assert_eq!(calls, 1);
+        assert_eq!(state.runtime_instance, None);
+        assert!(!state.app_inited);
+
+        state.midlet_instance = None;
+        let mut calls = 0;
+        let second_exception = application_exit(&mut state, |_, _| {
+            calls += 1;
+            Ok::<(), ApplicationExitError<&'static str>>(())
+        });
+        assert_eq!(second_exception, Err(ApplicationExitError::MidletNull));
+        assert_eq!(calls, 0);
+    }
+
+    #[test]
     fn menu_paint_current_ingame_suppresses_later_reads_for_nonpositive_sizes() {
         for reported_size in [i32::MIN, -1, 0] {
             let mut statics = MenuStatics {
@@ -3439,6 +3555,7 @@ mod tests {
     #[test]
     fn game_canvas_resume_sound_preserves_guards_borrows_and_failure() {
         let mut application = ApplicationState {
+            app_inited: false,
             tick_based_time_value: 0,
             canvas_width: 0,
             fade_frames: 0,
@@ -3815,6 +3932,7 @@ mod tests {
     #[test]
     fn free_memory_collects_before_resolving_and_sampling_the_runtime() {
         let mut application = ApplicationState {
+            app_inited: false,
             tick_based_time_value: 0,
             canvas_width: 0,
             fade_frames: 0,
@@ -3876,6 +3994,7 @@ mod tests {
     #[test]
     fn set_display_forwards_midlet_display_and_displayable_in_order() {
         let mut application = ApplicationState {
+            app_inited: false,
             tick_based_time_value: 0,
             canvas_width: 0,
             fade_frames: 0,
@@ -3969,6 +4088,7 @@ mod tests {
     #[test]
     fn application_paint_delegates_only_at_or_below_the_demo_frame() {
         let mut application = ApplicationState {
+            app_inited: false,
             tick_based_time_value: 0,
             canvas_width: 0,
             fade_frames: 4,
@@ -4021,6 +4141,7 @@ mod tests {
     #[test]
     fn repaint_canvas_if_possible_preserves_guard_rereads_and_failure_boundaries() {
         let mut application = ApplicationState {
+            app_inited: false,
             tick_based_time_value: 0,
             canvas_width: 0,
             fade_frames: 0,
@@ -4282,6 +4403,7 @@ mod tests {
     #[test]
     fn resource_make_subchunk_allocates_then_copies_the_current_prefix() {
         let mut application = ApplicationState {
+            app_inited: false,
             tick_based_time_value: 0,
             canvas_width: 0,
             fade_frames: 0,
@@ -4412,6 +4534,7 @@ mod tests {
     #[test]
     fn key_jad_entry_catches_lookup_and_decimal_parse_failures() {
         let mut application = ApplicationState {
+            app_inited: false,
             tick_based_time_value: 0,
             canvas_width: 0,
             fade_frames: 0,
@@ -4541,6 +4664,7 @@ mod tests {
     #[test]
     fn room_repaint_run_clears_the_thread_only_after_success() {
         let mut application = ApplicationState {
+            app_inited: false,
             tick_based_time_value: 0,
             canvas_width: 0,
             fade_frames: 0,
@@ -4608,6 +4732,7 @@ mod tests {
             Err(orphan_jvm::NullPointerException)
         );
         let mut application = ApplicationState {
+            app_inited: false,
             tick_based_time_value: i32::MAX,
             canvas_width: 0,
             fade_frames: 0,

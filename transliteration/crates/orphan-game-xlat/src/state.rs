@@ -43,6 +43,7 @@ pub struct ApplicationState {
     pub resource_sc_current_size: i32,
     pub random_instance: Option<u32>,
     pub runtime_instance: Option<u32>,
+    pub app_inited: bool,
     pub midlet_instance: Option<u32>,
     pub ink_server_variables: Option<Vec<(Vec<u16>, Vec<u16>)>>,
     pub ink_server_hints: Option<Vec<(Vec<u16>, Vec<u16>)>>,

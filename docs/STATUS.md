@@ -21,9 +21,9 @@ Living record of what is recovered and verified. Newest first.
   `orphan-me` starts the deterministic MIDP subset with a clipped CPU ARGB
   framebuffer. These are device/runtime implementations, not transliterated
   game bodies.
-- The first 164/350 game methods (`M.min`, `max`, `abs`, `dir`, `toInt`,
+- The first 165/350 game methods (`M.min`, `max`, `abs`, `dir`, `toInt`,
   `toBoolean`, `getLeft`,
-  `getTop`, `resourceExit`, `destroyApp`, `pauseApp`, `appStart`, `resourceURLEncode`, `codedString`, `charToString`,
+  `getTop`, `resourceExit`, `exit`, `destroyApp`, `pauseApp`, `appStart`, `resourceURLEncode`, `codedString`, `charToString`,
   the default constructors for `Application`, `CheatController`, `SilentHillGame`,
   `InkEngine`, `InkCodes`, and `TextId`, `SilentHillGame.menuResetIngameValues`, `appInit`,
   `CheatController.<clinit>`,
@@ -58,14 +58,14 @@ Living record of what is recovered and verified. Newest first.
   `getMoveDir`, and `enterHover`) are strict
   Rust translations. Each is hash-bound to original
   bytecode and opcode streams, complete `javac` and `syn` ASTs, a written
-  per-node semantic crosswalk, and a live 997,918-case oracle in which the
+  per-node semantic crosswalk, and a live 998,078-case oracle in which the
   recovered baseline, canonical Java, and Rust agree. The naming-reference JAR
-  agrees on all 991,703 non-variant cases; its 6,215 excluded requests cover two
+  agrees on all 991,863 non-variant cases; its 6,215 excluded requests cover two
   input-timing policies and one rendering policy scoped by live validation of
   the variant ledger.
-  Coverage stays an explicit ratchet; the other 186 bodies are not claimed.
-- The 184 Java fields reached by those methods are exhaustively mapped: 149 mutable
-  fields become 149 Rust fields in `CheatControllerStatics`, `SilentHillGameStatics`, `ApplicationState`, `ResourceRequestState`, `GameResourceState`, `GameResourceStatics`, `InkEngineState`, `GameCanvasState`,
+  Coverage stays an explicit ratchet; the other 185 bodies are not claimed.
+- The 185 Java fields reached by those methods are exhaustively mapped: 150 mutable
+  fields become 150 Rust fields in `CheatControllerStatics`, `SilentHillGameStatics`, `ApplicationState`, `ResourceRequestState`, `GameResourceState`, `GameResourceStatics`, `InkEngineState`, `GameCanvasState`,
   `MenuState`, `MenuStatics`, `InkInterpreterState`, `InkInterpreterStatics`,
   `InkScriptState`, `InkScriptStatics`, `RoomObjectState`, and `RoomObjectStatics`; thirty-five final
   coded-string/Ink constants become typed Rust constants, and the mutable transform
@@ -74,12 +74,12 @@ Living record of what is recovered and verified. Newest first.
   hash-locked. Typed `JavaObject`, `JavaOwnedObject`, `JavaResourceId`,
   `InkVariableError`, `InkScriptRegistryValue`, `InkScriptExecuteEventError`,
   `InkScriptGetItemNameError`, `InkEnginePopupCreateError`, `ApplicationSetDisplayError`,
-  `ApplicationRepaintCanvasIfPossibleError`, `ApplicationResourceMakeSubChunkError`, and
+  `ApplicationExitError`, `ApplicationRepaintCanvasIfPossibleError`, `ApplicationResourceMakeSubChunkError`, and
   `RoomObjectStringEventError` and `RoomObjectEnterHoverError` enums and their variants are independently claimed
   as Rust-only adaptations.
-  The reverse `syn` inventory permits only the 166 reviewed functions, 231
-  reviewed value declarations, and 33 reviewed containers (430 total
-  declarations). Twenty-six focused Rust tests exercise the admitted bodies, and the
+  The reverse `syn` inventory permits only the 167 reviewed functions, 235
+  reviewed value declarations, and 34 reviewed containers (436 total
+  declarations). Twenty-seven focused Rust tests exercise the admitted bodies, and the
   injected unowned-constant proof goes red.
 
 ## Phase 2 — canonical Java application and AST authority

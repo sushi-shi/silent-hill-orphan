@@ -1238,11 +1238,66 @@ public final class OrphanJavaPureOracle {
             } else if (parts[0].equals("resource-exit") && parts.length == 1) {
                 Application.resourceExit();
                 result = "OK";
+            } else if (parts[0].equals("exit") && parts.length == 6) {
+                final Application expectedMidlet = new Application();
+                final Application replacementMidlet = new Application();
+                Application.runtime = value(parts, 1) == 0 ? null : Runtime.getRuntime();
+                Application.appInited = value(parts, 2) != 0;
+                Application.midlet = value(parts, 3) == 0 ? null : expectedMidlet;
+                int hookMode = value(parts, 5);
+                Runnable firstHook = null;
+                if (hookMode == 1) {
+                    firstHook = new Runnable() {
+                        public void run() {
+                            Application.midlet = replacementMidlet;
+                        }
+                    };
+                } else if (hookMode == 2) {
+                    firstHook = new Runnable() {
+                        public void run() {
+                            Application.midlet = null;
+                        }
+                    };
+                } else if (hookMode == 3) {
+                    firstHook = new Runnable() {
+                        public void run() {
+                            Application.runtime = Runtime.getRuntime();
+                            Application.appInited = true;
+                        }
+                    };
+                }
+                MIDlet.oracleResetNotifyDestroyed(value(parts, 4), firstHook, null);
+                String outcome;
+                try {
+                    Application.exit();
+                    outcome = "OK";
+                } catch (NullPointerException exception) {
+                    outcome = "NPE";
+                } catch (AssertionError error) {
+                    outcome = "ERR";
+                }
+                String firstReceiver = MIDlet.oracleNotifyDestroyedCalls == 0
+                        ? "-" : MIDlet.oracleNotifyDestroyedFirstReceiver == expectedMidlet
+                                ? "A" : MIDlet.oracleNotifyDestroyedFirstReceiver == replacementMidlet
+                                        ? "B" : "W";
+                String secondReceiver = MIDlet.oracleNotifyDestroyedCalls < 2
+                        ? "-" : MIDlet.oracleNotifyDestroyedSecondReceiver == expectedMidlet
+                                ? "A" : MIDlet.oracleNotifyDestroyedSecondReceiver == replacementMidlet
+                                        ? "B" : "W";
+                String finalMidlet = Application.midlet == null ? "N"
+                        : Application.midlet == expectedMidlet ? "A"
+                                : Application.midlet == replacementMidlet ? "B" : "W";
+                result = outcome + ":" + (Application.runtime == null ? "N" : "R")
+                        + ":" + (Application.appInited ? "1" : "0") + ":"
+                        + MIDlet.oracleNotifyDestroyedCalls + ":" + firstReceiver + ":"
+                        + secondReceiver + ":" + finalMidlet;
+                MIDlet.oracleResetNotifyDestroyed(0, null, null);
             } else if (parts[0].equals("destroy-app") && parts.length == 3) {
                 Application midlet = new Application();
                 Application.runtime = Runtime.getRuntime();
                 Application.appInited = true;
                 Application.midlet = value(parts, 2) == 0 ? null : midlet;
+                MIDlet.oracleResetNotifyDestroyed(0, null, null);
                 String outcome;
                 try {
                     midlet.destroyApp(value(parts, 1) != 0);
@@ -1252,6 +1307,7 @@ public final class OrphanJavaPureOracle {
                 }
                 result = outcome + ":" + (Application.runtime == null ? "N:" : "R:")
                         + (Application.appInited ? "1" : "0");
+                MIDlet.oracleResetNotifyDestroyed(0, null, null);
             } else if (parts[0].equals("pause-app") && parts.length == 2) {
                 Application midlet = new Application();
                 Application.mainMenuActive = true;

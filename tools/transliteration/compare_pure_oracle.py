@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare 164 methods across recovered JARs, canonical Java, and Rust."""
+"""Compare 165 methods across recovered JARs, canonical Java, and Rust."""
 
 from __future__ import annotations
 
@@ -100,6 +100,14 @@ def requests() -> list[str]:
         result.append(f"top {arguments}")
 
     result.extend(["resource-exit", "description"])
+    result.extend(
+        f"exit {runtime_present} {app_inited} {midlet_present} {notify_mode} {hook_mode}"
+        for runtime_present in (0, 1)
+        for app_inited in (0, 1)
+        for midlet_present in (0, 1)
+        for notify_mode in range(5)
+        for hook_mode in range(4)
+    )
     result.extend(
         f"destroy-app {forced} {midlet_present}"
         for forced in (0, 1)
