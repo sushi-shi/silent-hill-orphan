@@ -349,6 +349,7 @@ def generic_crosswalk_documents(
                 ("rust_node_ranges", "rust_range"),
                 ("shape_note", "shape_note"),
                 ("literal_note", "literal_note"),
+                ("literal_delta", "literal_delta"),
                 ("blanket_ok", "blanket_ok"),
                 ("blanket_reason", "blanket_reason"),
             ):

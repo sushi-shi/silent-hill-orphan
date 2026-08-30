@@ -255,13 +255,16 @@ crosswalk-canfail:
     python3 tools/ast/validate_crosswalk.py --self-test
 
 # Prove the fixture bug rows go red as recorded: coarse blanket, div-vs-sm() call
-# (operator parity), entity_row[13]-vs-[10] (literal/index parity), and A-B-A-B
-# ownership whose exact interleave owner group was removed.
+# (operator parity), entity_row[13]-vs-[10] (literal/index parity), wrong/stale
+# literal-delta locks, and A-B-A-B ownership whose exact interleave owner group
+# was removed.
 crosswalk-fixture-canfail:
     python3 -m unittest \
         tools.tests.test_crosswalk_validator.CrosswalkValidatorTests.test_coarse_blanket_is_rejected \
         tools.tests.test_crosswalk_validator.CrosswalkValidatorTests.test_operator_parity_catches_div_vs_call \
         tools.tests.test_crosswalk_validator.CrosswalkValidatorTests.test_literal_index_parity_catches_wrong_column \
+        tools.tests.test_crosswalk_validator.CrosswalkValidatorTests.test_literal_delta_must_match_the_exact_multiset \
+        tools.tests.test_crosswalk_validator.CrosswalkValidatorTests.test_stale_literal_delta_is_rejected \
         tools.tests.test_crosswalk_validator.CrosswalkValidatorTests.test_temporal_interleave_waiver_removal_is_rejected
 
 # Prove that Java/Rust state declarations use the same complete node ownership

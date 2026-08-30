@@ -596,7 +596,7 @@ rust_node_counts = [3]
 operation = [{ semantic = "declare the nullable Application-owned loading-thread handle", java_node_ranges = [[0, 2]], rust_node_ranges = [{ target = 0, start = 0, end = 2 }] }]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/state.rs", item = "field:ApplicationState::load_thread", ast_sha256 = "93e6cb1b2423d7eae5dc2a85a390cf68c9922064007e77a4aa97cdf0eb63034c", nodes_sha256 = "954b9427682da0e4df53651916552dc517a384682a2d8ce17619e257485e1f4a", node_count = 3 }]
 semantic_status = "crosswalked"
-semantic_review = "ApplicationState is the sole owner. Option preserves Java nullness and the opaque u32 handle preserves identity without pulling host threading into the no_std game crate; loading observes only null versus non-null."
+semantic_review = "ApplicationState is the sole owner. Option preserves Java nullness and the opaque u32 handle preserves identity without pulling host threading into the game-state crate; loading observes only null versus non-null."
 
 [[field]]
 java_class = "M"
@@ -626,7 +626,7 @@ rust_node_counts = [6]
 operation = [{ semantic = "declare the nullable InkEngine-owned array of nullable UTF-16 script identifiers", java_node_ranges = [[0, 3]], rust_node_ranges = [{ target = 0, start = 0, end = 5 }] }]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/state.rs", item = "field:InkEngineState::action_key_script_ids", ast_sha256 = "e18fc530300e3742d734a18090ec388e91b1b87e25f22df2023a8d7057660237", nodes_sha256 = "3dede79a1ab4e83112561f179be3eac9f8cd162bbfa17947328bf90adafe54d2", node_count = 6 }]
 semantic_status = "crosswalked"
-semantic_review = "Both array nullness and per-element String nullness are explicit. Vec supplies variable-length owned storage and each Java UTF-16 code unit is retained as u16 in the no_std owner."
+semantic_review = "Both array nullness and per-element String nullness are explicit. Vec supplies variable-length owned storage and each Java UTF-16 code unit is retained as u16 in the explicit owner."
 
 [[field]]
 java_class = "Menu"
@@ -1203,7 +1203,7 @@ item = "enum:JavaObject"
 ast_sha256 = "558128675c7891e09de2b71da93ffb35c76d4272abd520acbbdb813c7e8c7f03"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
-semantic_review = "Typed no_std boundary for the four Java Object categories observed by conversion helpers; every variant is separately reverse-inventory claimed."
+semantic_review = "Typed Rust boundary for the four Java Object categories observed by conversion helpers; every variant is separately reverse-inventory claimed."
 
 [[rust_container]]
 file = "transliteration/crates/orphan-game-xlat/src/state.rs"
@@ -1315,10 +1315,10 @@ java_node_count = 65
 rust_node_counts = [42]
 operation = [
   { semantic = "dispatch on the exact transform code", java_node_ranges = [[0, 3]], rust_node_ranges = [{ target = 0, start = 0, end = 3 }] },
-  { semantic = "subtract the width-adjusted horizontal registration point for transforms 1 and 4", java_node_ranges = [[11, 19], [38, 46]], rust_node_ranges = [{ target = 0, start = 4, end = 15 }], literal_note = "Java repeats case labels 1 and 4 beside their two identical returns; Rust coalesces those exact discriminants into the single `1 | 4` match arm, whose pattern literals are not emitted as semantic syn nodes." },
-  { semantic = "subtract the height-adjusted vertical registration point for transforms 2 and 3", java_node_ranges = [[20, 28], [29, 37]], rust_node_ranges = [{ target = 0, start = 16, end = 27 }], literal_note = "Java repeats case labels 2 and 3 beside their two identical returns; Rust coalesces those exact discriminants into the single `2 | 3` match arm, whose pattern literals are not emitted as semantic syn nodes." },
-  { semantic = "subtract the vertical registration point for transforms 6 and 7", java_node_ranges = [[53, 64]], rust_node_ranges = [{ target = 0, start = 28, end = 34 }], literal_note = "Java case labels 6 and 7 are represented by the coalesced Rust `6 | 7` match pattern; the syn semantic-node stream does not emit literals inside arm patterns." },
-  { semantic = "subtract the horizontal registration point for transforms 0, 5, and the default", java_node_ranges = [[4, 10], [47, 52]], rust_node_ranges = [{ target = 0, start = 35, end = 41 }], literal_note = "Java case labels 0 and 5 plus switch fallthrough share one result; Rust represents the same set as the `0 | 5 | _` match arm, and the syn walker omits its pattern literals." },
+  { semantic = "subtract the width-adjusted horizontal registration point for transforms 1 and 4", java_node_ranges = [[11, 19], [38, 46]], rust_node_ranges = [{ target = 0, start = 4, end = 15 }], literal_note = "Java repeats case labels 1 and 4 beside their two identical returns; Rust coalesces those exact discriminants into the single `1 | 4` match arm, whose pattern literals are not emitted as semantic syn nodes.", literal_delta = { java_only = [1, 4], rust_only = [] }},
+  { semantic = "subtract the height-adjusted vertical registration point for transforms 2 and 3", java_node_ranges = [[20, 28], [29, 37]], rust_node_ranges = [{ target = 0, start = 16, end = 27 }], literal_note = "Java repeats case labels 2 and 3 beside their two identical returns; Rust coalesces those exact discriminants into the single `2 | 3` match arm, whose pattern literals are not emitted as semantic syn nodes.", literal_delta = { java_only = [2, 3], rust_only = [] }},
+  { semantic = "subtract the vertical registration point for transforms 6 and 7", java_node_ranges = [[53, 64]], rust_node_ranges = [{ target = 0, start = 28, end = 34 }], literal_note = "Java case labels 6 and 7 are represented by the coalesced Rust `6 | 7` match pattern; the syn semantic-node stream does not emit literals inside arm patterns.", literal_delta = { java_only = [6, 7], rust_only = [] }},
+  { semantic = "subtract the horizontal registration point for transforms 0, 5, and the default", java_node_ranges = [[4, 10], [47, 52]], rust_node_ranges = [{ target = 0, start = 35, end = 41 }], literal_note = "Java inventories explicit case labels 0 and 5 before its default; after the preceding arms, Rust's plain `_` arm covers those two codes and every other default value, so it has no pattern literals.", literal_delta = { java_only = [0, 5], rust_only = [] }},
 ]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:get_left", ast_sha256 = "d017b309e00bf891f91a489a31e5408311f1da77d1f5893862e4bfa414fc0d71", nodes_sha256 = "c5239114e36292140f7843242424de4fbe5dc026f71e5d98047b992dce5fbfc1", node_count = 42 }]
 oracle = "pure-method-v1"
@@ -1339,10 +1339,10 @@ java_node_count = 65
 rust_node_counts = [42]
 operation = [
   { semantic = "dispatch on the exact transform code", java_node_ranges = [[0, 3]], rust_node_ranges = [{ target = 0, start = 0, end = 3 }] },
-  { semantic = "subtract the horizontal registration point for transforms 2 and 7", java_node_ranges = [[17, 22], [59, 64]], rust_node_ranges = [{ target = 0, start = 4, end = 10 }], literal_note = "Java case labels 2 and 7 are represented by the coalesced Rust `2 | 7` match pattern; the syn semantic-node stream does not emit literals inside arm patterns." },
-  { semantic = "subtract the width-adjusted horizontal registration point for transforms 3 and 6", java_node_ranges = [[23, 31], [50, 58]], rust_node_ranges = [{ target = 0, start = 11, end = 22 }], literal_note = "Java repeats case labels 3 and 6 beside identical returns; Rust coalesces those exact discriminants into `3 | 6`, whose pattern literals are omitted by the syn walker." },
-  { semantic = "subtract the height-adjusted vertical registration point for transforms 4 and 5", java_node_ranges = [[32, 40], [41, 49]], rust_node_ranges = [{ target = 0, start = 23, end = 34 }], literal_note = "Java repeats case labels 4 and 5 beside identical returns; Rust coalesces those exact discriminants into `4 | 5`, whose pattern literals are omitted by the syn walker." },
-  { semantic = "subtract the vertical registration point for transforms 0, 1, and the default", java_node_ranges = [[4, 16]], rust_node_ranges = [{ target = 0, start = 35, end = 41 }], literal_note = "Java case labels 0 and 1 plus switch fallthrough share one result; Rust represents the same set as the `0 | 1 | _` match arm, and the syn walker omits its pattern literals." },
+  { semantic = "subtract the horizontal registration point for transforms 2 and 7", java_node_ranges = [[17, 22], [59, 64]], rust_node_ranges = [{ target = 0, start = 4, end = 10 }], literal_note = "Java case labels 2 and 7 are represented by the coalesced Rust `2 | 7` match pattern; the syn semantic-node stream does not emit literals inside arm patterns.", literal_delta = { java_only = [2, 7], rust_only = [] }},
+  { semantic = "subtract the width-adjusted horizontal registration point for transforms 3 and 6", java_node_ranges = [[23, 31], [50, 58]], rust_node_ranges = [{ target = 0, start = 11, end = 22 }], literal_note = "Java repeats case labels 3 and 6 beside identical returns; Rust coalesces those exact discriminants into `3 | 6`, whose pattern literals are omitted by the syn walker.", literal_delta = { java_only = [3, 6], rust_only = [] }},
+  { semantic = "subtract the height-adjusted vertical registration point for transforms 4 and 5", java_node_ranges = [[32, 40], [41, 49]], rust_node_ranges = [{ target = 0, start = 23, end = 34 }], literal_note = "Java repeats case labels 4 and 5 beside identical returns; Rust coalesces those exact discriminants into `4 | 5`, whose pattern literals are omitted by the syn walker.", literal_delta = { java_only = [4, 5], rust_only = [] }},
+  { semantic = "subtract the vertical registration point for transforms 0, 1, and the default", java_node_ranges = [[4, 16]], rust_node_ranges = [{ target = 0, start = 35, end = 41 }], literal_note = "Java inventories explicit case labels 0 and 1 before its default; after the preceding arms, Rust's plain `_` arm covers those two codes and every other default value, so it has no pattern literals.", literal_delta = { java_only = [0, 1], rust_only = [] }},
 ]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:get_top", ast_sha256 = "a7efebc4342d5367a7b05e368a3d5eb0f42a89a17833721f8ce8796bb88b73a0", nodes_sha256 = "19487a7163a69b7c03effe068ab3e7deb4f8eb5fcda6181729f90d0b084460cd", node_count = 42 }]
 oracle = "pure-method-v1"
@@ -1487,7 +1487,7 @@ operation = [
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:char_to_string", ast_sha256 = "e5b4b49ae251fc74f3aa3ab7a13353939be41273ee49772663c06dca582fba28", nodes_sha256 = "97521ce39f92f81446cf5c688713cdae34e7a77b6024d35ec10a645492ff779c", node_count = 4 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "Java char is exactly one unsigned UTF-16 code unit, not a Unicode scalar. Returning [u16; 1] preserves all 65,536 inputs including isolated surrogates while avoiding allocation in no_std."
+semantic_review = "Java char is exactly one unsigned UTF-16 code unit, not a Unicode scalar. Returning [u16; 1] preserves all 65,536 inputs including isolated surrogates while avoiding allocation."
 
 [[body]]
 java_class = "M"
@@ -1504,8 +1504,8 @@ rust_node_counts = [74]
 operation = [
   { semantic = "own the complete comparator body", java_node_ranges = [[0, 0]], rust_node_ranges = [{ target = 0, start = 0, end = 0 }] },
   { semantic = "iterate over the shorter array length", java_node_ranges = [[1, 18]], rust_node_ranges = [{ target = 0, start = 15, end = 27 }] },
-  { semantic = "read the left byte as an unsigned 0-through-255 value", java_node_ranges = [[19, 26]], rust_node_ranges = [{ target = 0, start = 28, end = 33 }], literal_note = "Java widens signed byte `a[i]` and masks it with 255; Rust stores the same input byte as u8, so reading it already realizes the exact 0-through-255 value without a mask literal." },
-  { semantic = "read the right byte as an unsigned 0-through-255 value", java_node_ranges = [[27, 34]], rust_node_ranges = [{ target = 0, start = 34, end = 39 }], literal_note = "Java widens signed byte `b[i]` and masks it with 255; Rust stores the same input byte as u8, so reading it already realizes the exact 0-through-255 value without a mask literal." },
+  { semantic = "read the left byte as an unsigned 0-through-255 value", java_node_ranges = [[19, 26]], rust_node_ranges = [{ target = 0, start = 28, end = 33 }], literal_note = "Java widens signed byte `a[i]` and masks it with 255; Rust stores the same input byte as u8, so reading it already realizes the exact 0-through-255 value without a mask literal.", literal_delta = { java_only = [255], rust_only = [] }},
+  { semantic = "read the right byte as an unsigned 0-through-255 value", java_node_ranges = [[27, 34]], rust_node_ranges = [{ target = 0, start = 34, end = 39 }], literal_note = "Java widens signed byte `b[i]` and masks it with 255; Rust stores the same input byte as u8, so reading it already realizes the exact 0-through-255 value without a mask literal.", literal_delta = { java_only = [255], rust_only = [] }},
   { semantic = "return true at the first lexicographically lesser byte", java_node_ranges = [[35, 42]], rust_node_ranges = [{ target = 0, start = 40, end = 51 }] },
   { semantic = "return false at the first lexicographically greater byte", java_node_ranges = [[43, 50]], rust_node_ranges = [{ target = 0, start = 52, end = 63 }] },
   { semantic = "break an equal-prefix tie by strict array length", java_node_ranges = [[51, 56]], rust_node_ranges = [{ target = 0, start = 64, end = 73 }] },
@@ -1535,7 +1535,7 @@ operation = [
   { semantic = "map actionkey_star to action index zero", java_node_ranges = [[1, 9]], rust_node_ranges = [{ target = 0, start = 39, end = 49 }] },
   { semantic = "map actionkey_pound to action index one", java_node_ranges = [[10, 18]], rust_node_ranges = [{ target = 0, start = 50, end = 60 }] },
   { semantic = "iterate over the ten numeric action-key suffixes", java_node_ranges = [[19, 30]], rust_node_ranges = [{ target = 0, start = 63, end = 67 }] },
-  { semantic = "construct and compare the actionkey_num plus one-digit candidate, beginning with its exact required UTF-16 length", literal_note = "Rust's allocation-free comparison spells +1 for the one UTF-16 suffix code unit; Java materializes that digit through StringBuffer.append(i), so the paired javac nodes carry no literal one. The enclosing loop restricts i to the ten one-digit values zero through nine.", java_node_ranges = [[31, 45]], rust_node_ranges = [{ target = 0, start = 61, end = 62 }, { target = 0, start = 68, end = 79 }] },
+  { semantic = "construct and compare the actionkey_num plus one-digit candidate, beginning with its exact required UTF-16 length", literal_note = "Rust's allocation-free comparison spells +1 for the one UTF-16 suffix code unit; Java materializes that digit through StringBuffer.append(i), so the paired javac nodes carry no literal one. The enclosing loop restricts i to the ten one-digit values zero through nine.", java_node_ranges = [[31, 45]], rust_node_ranges = [{ target = 0, start = 61, end = 62 }, { target = 0, start = 68, end = 79 }] , literal_delta = { java_only = [], rust_only = [1] }},
   { semantic = "return two plus the matching numeric suffix", java_node_ranges = [[46, 50]], rust_node_ranges = [{ target = 0, start = 119, end = 127 }] },
   { semantic = "return minus one when no action-key identifier matches", java_node_ranges = [[51, 52]], rust_node_ranges = [{ target = 0, start = 128, end = 132 }] },
 ]
@@ -1675,15 +1675,15 @@ rust_node_counts = [203]
 operation = [
   { semantic = "own the complete ordered configurable and hard-coded J2ME key mapping body", java_nodes = [0], rust_nodes = ["0:0"] },
   { semantic = "return zero for the literal zero key before reading configurable bindings", java_node_ranges = [[1, 8]], rust_node_ranges = [{ target = 0, start = 1, end = 8 }] },
-  { semantic = "map the configurable left softkey to minus six", literal_note = "Java returns the named compile-time constant KEY_LEFT_SOFT, whose canonical declaration fixes -6, so this operation has an identifier rather than a javac literal; Rust inlines that exact signed value.", java_node_ranges = [[9, 16]], rust_node_ranges = [{ target = 0, start = 9, end = 19 }] },
-  { semantic = "map the configurable right softkey to minus seven", literal_note = "Java returns the named compile-time constant KEY_RIGHT_SOFT, whose canonical declaration fixes -7, so this operation has an identifier rather than a javac literal; Rust inlines that exact signed value.", java_node_ranges = [[17, 24]], rust_node_ranges = [{ target = 0, start = 20, end = 30 }] },
-  { semantic = "map the configurable center softkey or literal 53 to minus five", literal_note = "Java returns the named compile-time constant KEY_MIDDLE_SOFT, whose canonical declaration fixes -5, so only the shared keycode 53 is a javac literal here; Rust additionally inlines the exact -5 result.", java_node_ranges = [[25, 36]], rust_node_ranges = [{ target = 0, start = 31, end = 46 }] },
-  { semantic = "map the configurable up key or literals 121, 116, and 50 to minus one", literal_note = "Java returns the named compile-time constant KEY_UP, whose canonical declaration fixes -1, so only the three shared keycode aliases are javac literals here; Rust additionally inlines the exact -1 result.", java_node_ranges = [[37, 56]], rust_node_ranges = [{ target = 0, start = 47, end = 72 }] },
-  { semantic = "map the configurable down key or literals 98, 118, and 56 to minus two", literal_note = "Java returns the named compile-time constant KEY_DOWN, whose canonical declaration fixes -2, so only the three shared keycode aliases are javac literals here; Rust additionally inlines the exact -2 result.", java_node_ranges = [[57, 76]], rust_node_ranges = [{ target = 0, start = 73, end = 98 }] },
-  { semantic = "map the configurable left key or literals 102, 100, and 52 to minus three", literal_note = "Java returns the named compile-time constant KEY_LEFT, whose canonical declaration fixes -3, so only the three shared keycode aliases are javac literals here; Rust additionally inlines the exact -3 result.", java_node_ranges = [[77, 96]], rust_node_ranges = [{ target = 0, start = 99, end = 124 }] },
-  { semantic = "map the configurable right key or literals 106, 107, and 54 to minus four", literal_note = "Java returns the named compile-time constant KEY_RIGHT, whose canonical declaration fixes -4, so only the three shared keycode aliases are javac literals here; Rust additionally inlines the exact -4 result.", java_node_ranges = [[97, 116]], rust_node_ranges = [{ target = 0, start = 125, end = 150 }] },
+  { semantic = "map the configurable left softkey to minus six", literal_note = "Java returns the named compile-time constant KEY_LEFT_SOFT, whose canonical declaration fixes -6, so this operation has an identifier rather than a javac literal; Rust inlines that exact signed value.", java_node_ranges = [[9, 16]], rust_node_ranges = [{ target = 0, start = 9, end = 19 }] , literal_delta = { java_only = [], rust_only = [-6] }},
+  { semantic = "map the configurable right softkey to minus seven", literal_note = "Java returns the named compile-time constant KEY_RIGHT_SOFT, whose canonical declaration fixes -7, so this operation has an identifier rather than a javac literal; Rust inlines that exact signed value.", java_node_ranges = [[17, 24]], rust_node_ranges = [{ target = 0, start = 20, end = 30 }] , literal_delta = { java_only = [], rust_only = [-7] }},
+  { semantic = "map the configurable center softkey or literal 53 to minus five", literal_note = "Java returns the named compile-time constant KEY_MIDDLE_SOFT, whose canonical declaration fixes -5, so only the shared keycode 53 is a javac literal here; Rust additionally inlines the exact -5 result.", java_node_ranges = [[25, 36]], rust_node_ranges = [{ target = 0, start = 31, end = 46 }] , literal_delta = { java_only = [], rust_only = [-5] }},
+  { semantic = "map the configurable up key or literals 121, 116, and 50 to minus one", literal_note = "Java returns the named compile-time constant KEY_UP, whose canonical declaration fixes -1, so only the three shared keycode aliases are javac literals here; Rust additionally inlines the exact -1 result.", java_node_ranges = [[37, 56]], rust_node_ranges = [{ target = 0, start = 47, end = 72 }] , literal_delta = { java_only = [], rust_only = [-1] }},
+  { semantic = "map the configurable down key or literals 98, 118, and 56 to minus two", literal_note = "Java returns the named compile-time constant KEY_DOWN, whose canonical declaration fixes -2, so only the three shared keycode aliases are javac literals here; Rust additionally inlines the exact -2 result.", java_node_ranges = [[57, 76]], rust_node_ranges = [{ target = 0, start = 73, end = 98 }] , literal_delta = { java_only = [], rust_only = [-2] }},
+  { semantic = "map the configurable left key or literals 102, 100, and 52 to minus three", literal_note = "Java returns the named compile-time constant KEY_LEFT, whose canonical declaration fixes -3, so only the three shared keycode aliases are javac literals here; Rust additionally inlines the exact -3 result.", java_node_ranges = [[77, 96]], rust_node_ranges = [{ target = 0, start = 99, end = 124 }] , literal_delta = { java_only = [], rust_only = [-3] }},
+  { semantic = "map the configurable right key or literals 106, 107, and 54 to minus four", literal_note = "Java returns the named compile-time constant KEY_RIGHT, whose canonical declaration fixes -4, so only the three shared keycode aliases are javac literals here; Rust additionally inlines the exact -4 result.", java_node_ranges = [[97, 116]], rust_node_ranges = [{ target = 0, start = 125, end = 150 }] , literal_delta = { java_only = [], rust_only = [-4] }},
   { semantic = "map either configurable return or erase key to zero", java_node_ranges = [[117, 128]], rust_node_ranges = [{ target = 0, start = 151, end = 167 }] },
-  { semantic = "map the configurable send key to minus ten", literal_note = "Java returns the named compile-time constant KEY_SEND, whose canonical declaration fixes -10, so this operation has an identifier rather than a javac literal; Rust inlines that exact signed value.", java_node_ranges = [[129, 136]], rust_node_ranges = [{ target = 0, start = 168, end = 178 }] },
+  { semantic = "map the configurable send key to minus ten", literal_note = "Java returns the named compile-time constant KEY_SEND, whose canonical declaration fixes -10, so this operation has an identifier rather than a javac literal; Rust inlines that exact signed value.", java_node_ranges = [[129, 136]], rust_node_ranges = [{ target = 0, start = 168, end = 178 }] , literal_delta = { java_only = [], rust_only = [-10] }},
   { semantic = "return digit, star, and pound keycodes unchanged", java_node_ranges = [[137, 157]], rust_node_ranges = [{ target = 0, start = 179, end = 201 }] },
   { semantic = "return zero for every unmatched keycode", java_node_ranges = [[158, 159]], rust_nodes = ["0:202"] },
 ]
@@ -1920,7 +1920,7 @@ operation = [
 ]
 adaptation = [
   { side = "rust", category = "representation-adapter", reason = "The injected command boundary returns Result so Java's implicit executeCommand exception propagation is explicit without changing when status, result, offset, or pausedThread mutations occur.", rust_node_ranges = [{ target = 0, start = 28, end = 28 }] },
-  { side = "rust", category = "representation-adapter", reason = "Ok makes Java's normal Object return explicit at the no_std runtime boundary; the returned nullable owned value is unchanged.", rust_node_ranges = [{ target = 0, start = 56, end = 58 }] },
+  { side = "rust", category = "representation-adapter", reason = "Ok makes Java's normal Object return explicit at the typed Rust runtime boundary; the returned nullable owned value is unchanged.", rust_node_ranges = [{ target = 0, start = 56, end = 58 }] },
 ]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:ink_interpreter_execute", ast_sha256 = "18af1f2e5ec562dc29094bb88f1750bb9b2fa9eb70f3e598f3395270374b9bbb", nodes_sha256 = "4c9489095175a301e3bb3825832c67752805ebb842b139506677717cdf02db4d", node_count = 61 }]
 oracle = "pure-method-v1"
@@ -1966,7 +1966,7 @@ operation = [
   { semantic = "dereference the nullable script handle and load its nullable data-array reference before touching the cursor", java_node_ranges = [[1, 7]], rust_node_ranges = [{ target = 0, start = 1, end = 16 }] },
   { semantic = "snapshot the current signed cursor", java_node_ranges = [[8, 12]], rust_node_ranges = [{ target = 0, start = 17, end = 20 }] },
   { semantic = "store the JVM-wrapping cursor increment before the array access", java_node_ranges = [[13, 19]], rust_node_ranges = [{ target = 0, start = 21, end = 30 }] },
-  { semantic = "read at the old cursor with JVM null and bounds faults, widen the byte unsigned, and return it", java_node_ranges = [[20, 25]], rust_node_ranges = [{ target = 0, start = 31, end = 48 }], literal_note = "Java spells unsigned byte widening as an explicit & 255 mask; Rust's u8-to-i32 conversion carries the same 0-through-255 domain without a numeric mask literal." },
+  { semantic = "read at the old cursor with JVM null and bounds faults, widen the byte unsigned, and return it", java_node_ranges = [[20, 25]], rust_node_ranges = [{ target = 0, start = 31, end = 48 }], literal_note = "Java spells unsigned byte widening as an explicit & 255 mask; Rust's u8-to-i32 conversion carries the same 0-through-255 domain without a numeric mask literal.", literal_delta = { java_only = [255], rust_only = [] }},
 ]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:ink_interpreter_read", ast_sha256 = "d54533790af524872db1825a87ccd0ca93290c053f4b4bfbcd003d0028104d32", nodes_sha256 = "3c2eadc0d0894df85cffe68623a603a630626b25483c1b48c4a504c4cd1a390a", node_count = 49 }]
 oracle = "pure-method-v1"
@@ -1988,7 +1988,7 @@ rust_node_counts = [46]
 operation = [
   { semantic = "own the complete multi-byte interpreter read body", java_node_ranges = [[0, 0]], rust_node_ranges = [{ target = 0, start = 0, end = 0 }] },
   { semantic = "initialize the signed accumulator to zero", java_node_ranges = [[1, 4]], rust_node_ranges = [{ target = 0, start = 1, end = 2 }] },
-  { semantic = "initialize, test, and JVM-wrapping-increment the byte counter around the ordered loop body", java_node_ranges = [[5, 16]], rust_node_ranges = [{ target = 0, start = 3, end = 11 }, { target = 0, start = 32, end = 40 }], literal_note = "javac represents i++ as an increment operator with no numeric child; Rust makes the identical increment explicit as i32_add(i, 1)." },
+  { semantic = "initialize, test, and JVM-wrapping-increment the byte counter around the ordered loop body", java_node_ranges = [[5, 16]], rust_node_ranges = [{ target = 0, start = 3, end = 11 }, { target = 0, start = 32, end = 40 }], literal_note = "javac represents i++ as an increment operator with no numeric child; Rust makes the identical increment explicit as i32_add(i, 1).", literal_delta = { java_only = [], rust_only = [1] }},
   { semantic = "shift the accumulator eight bits, read the next unsigned byte, and add with JVM wrapping", java_node_ranges = [[17, 26]], rust_node_ranges = [{ target = 0, start = 12, end = 31 }] },
   { semantic = "return the accumulated signed 32-bit value", java_node_ranges = [[27, 28]], rust_node_ranges = [{ target = 0, start = 41, end = 45 }] },
 ]
@@ -2143,7 +2143,7 @@ operation = [
   { semantic = "invoke resume on the retained nonnull interpreter identity, discard its Object result, and propagate failure", java_node_ranges = [[8, 10]], rust_node_ranges = [{ target = 0, start = 9, end = 15 }] },
 ]
 adaptation = [
-  { side = "java", category = "erased", reason = "The JVM reloads pausedThread for the invokevirtual receiver after its null test. The explicit no_std state is exclusively borrowed across those adjacent operations, so Rust binds the identical opaque handle during the Option test and passes that retained identity to the callback.", java_node_ranges = [[11, 12]] },
+  { side = "java", category = "erased", reason = "The JVM reloads pausedThread for the invokevirtual receiver after its null test. The explicit Rust state is exclusively borrowed across those adjacent operations, so Rust binds the identical opaque handle during the Option test and passes that retained identity to the callback.", java_node_ranges = [[11, 12]] },
   { side = "rust", category = "representation-adapter", reason = "The callback Result makes the nested interpreter's implicit Java exception propagation explicit.", rust_node_ranges = [{ target = 0, start = 8, end = 8 }] },
   { side = "rust", category = "representation-adapter", reason = "Ok(()) represents Java's normal void return after either the no-op or successful nested resume path.", rust_node_ranges = [{ target = 0, start = 16, end = 19 }] },
 ]
@@ -2168,7 +2168,7 @@ operation = [{ semantic = "return whether the Application loading-thread handle 
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:loading", ast_sha256 = "95ca9af782c210b67a06bfe49dec25ed1017f793b3925c6ac032cdf2bf6c9548", nodes_sha256 = "7bedcc4326d5698b1e50c76222693e38f0f58c119f3b60113592e9d48e0844d4", node_count = 5 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "The declaration-crosswalked opaque handle deliberately excludes host threading from the no_std crate while preserving this body's complete observable domain. Null and a real unstarted Thread are set reflectively in each recovered JAR and canonical Java and agree with None/Some in Rust."
+semantic_review = "The declaration-crosswalked opaque handle deliberately excludes host threading from the game-state crate while preserving this body's complete observable domain. Null and a real unstarted Thread are set reflectively in each recovered JAR and canonical Java and agree with None/Some in Rust."
 
 [[body]]
 java_class = "ExtBase"
@@ -2182,7 +2182,7 @@ java_ast_sha256 = "858f76cbe9aca0d0e224a60c2d3a1feea421b5a13814c4ffac6d4728a3ec6
 java_nodes_sha256 = "aeed0b48a21db94b76bd295737a7a30b871926bb0698edf6d1b9a1dfd520d824"
 java_node_count = 7
 rust_node_counts = [10]
-operation = [{ semantic = "replace the script-ID array with exactly twelve null String slots", literal_note = "javac exposes Java's array length literal 12, while syn treats alloc::vec![None; 12] as an opaque macro token tree and therefore emits no Rust LITERAL node. The Rust source spells the same 12 in that macro and the oracle locks the resulting slot count.", java_node_ranges = [[0, 6]], rust_node_ranges = [{ target = 0, start = 0, end = 9 }] }]
+operation = [{ semantic = "replace the script-ID array with exactly twelve null String slots", literal_note = "javac exposes Java's array length literal 12, while syn treats alloc::vec![None; 12] as an opaque macro token tree and therefore emits no Rust LITERAL node. The Rust source spells the same 12 in that macro and the oracle locks the resulting slot count.", java_node_ranges = [[0, 6]], rust_node_ranges = [{ target = 0, start = 0, end = 9 }] , literal_delta = { java_only = [12], rust_only = [] }}]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:action_key_unset_all_keys", ast_sha256 = "a50066c358354739318a90f06d0704219a9773fe2681d61c3ae586fd3bf1c9fb", nodes_sha256 = "97b572a6f789f24ea5ef768ac230aae2cd2ab668e3e8d4b019b773312a0bf63f", node_count = 10 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
@@ -2313,7 +2313,7 @@ java_ast_sha256 = "dc2e0587bb002848994348c3954018243389b6f6898d3cec9925b24d0cef2
 java_nodes_sha256 = "9f78381cf613c9c59e9c41cc9249d9d79c28765fa80c3a80653e37da2fdf3b42"
 java_node_count = 7
 rust_node_counts = [17]
-operation = [{ semantic = "return whether the class-owned menu stack has more than zero entries", java_node_ranges = [[0, 6]], rust_nodes = ["0:0"], rust_node_ranges = [{ target = 0, start = 10, end = 16 }], literal_note = "Java compares Vector.size() with numeric zero; Rust's is_empty predicate encodes that exact threshold without a numeric literal." }]
+operation = [{ semantic = "return whether the class-owned menu stack has more than zero entries", java_node_ranges = [[0, 6]], rust_nodes = ["0:0"], rust_node_ranges = [{ target = 0, start = 10, end = 16 }], literal_note = "Java compares Vector.size() with numeric zero; Rust's is_empty predicate encodes that exact threshold without a numeric literal.", literal_delta = { java_only = [0], rust_only = [] }}]
 adaptation = [{ side = "rust", category = "representation-adapter", reason = "Option plus Result explicitly represents the implicit NullPointerException from invoking Vector.size on a reflected null static.", rust_node_ranges = [{ target = 0, start = 1, end = 9 }] }]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:menu_active", ast_sha256 = "f04665d5842af240965fa7dda4f9f2f73db2cd09baecb21bfe088c5202f640e3", nodes_sha256 = "ef21cdd292e22ed86ca05bbbf202d16ac832b578ceb0614f2ffca84753387d19", node_count = 17 }]
 oracle = "pure-method-v1"
@@ -2357,7 +2357,7 @@ operation = [
   { semantic = "re-read stack activity after removal and continue only when an entry remains", java_node_ranges = [[12, 16]], rust_node_ranges = [{ target = 0, start = 49, end = 56 }] },
   { semantic = "re-read the new last handle and set that exact menu object's current flag true", java_node_ranges = [[17, 22]], rust_node_ranges = [{ target = 0, start = 57, end = 74 }] },
 ]
-adaptation = [{ side = "rust", category = "representation-adapter", reason = "The no_std owner exposes implicit reference faults through Result and therefore needs an explicit successful unit return; Java's normal void return has no source AST node.", rust_node_ranges = [{ target = 0, start = 75, end = 78 }] }]
+adaptation = [{ side = "rust", category = "representation-adapter", reason = "The explicit Rust owner exposes implicit reference faults through Result and therefore needs an explicit successful unit return; Java's normal void return has no source AST node.", rust_node_ranges = [{ target = 0, start = 75, end = 78 }] }]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:menu_close_current", ast_sha256 = "51d64de14b18d749818b45c160d0657c24813a724b951f50c10dfa70e1414e5e", nodes_sha256 = "2d68322de7b27b8d6d85935bd71add81900045ca9ca8af1d25fbe4310672bd84", node_count = 79 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
@@ -2377,7 +2377,7 @@ java_node_count = 17
 rust_node_counts = [28]
 operation = [
   { semantic = "own the complete stack query body", java_node_ranges = [[0, 0]], rust_node_ranges = [{ target = 0, start = 0, end = 0 }] },
-  { semantic = "return null when the menu stack is empty", java_node_ranges = [[1, 10]], rust_node_ranges = [{ target = 0, start = 10, end = 20 }], literal_note = "Java compares Vector.size() with numeric zero; Rust's is_empty predicate encodes the same empty condition without a numeric literal." },
+  { semantic = "return null when the menu stack is empty", java_node_ranges = [[1, 10]], rust_node_ranges = [{ target = 0, start = 10, end = 20 }], literal_note = "Java compares Vector.size() with numeric zero; Rust's is_empty predicate encodes the same empty condition without a numeric literal.", literal_delta = { java_only = [0], rust_only = [] }},
   { semantic = "return the last menu handle when the stack is nonempty", java_node_ranges = [[11, 16]], rust_node_ranges = [{ target = 0, start = 21, end = 27 }] },
 ]
 adaptation = [{ side = "rust", category = "representation-adapter", reason = "Option plus Result explicitly represents the implicit NullPointerException from reading the size of a reflected null Vector.", rust_node_ranges = [{ target = 0, start = 1, end = 9 }] }]
@@ -2540,7 +2540,7 @@ rust_node_counts = [15]
 operation = [
   { semantic = "own the ordered action-key initialization body", java_node_ranges = [[0, 0]], rust_node_ranges = [{ target = 0, start = 0, end = 0 }] },
   { semantic = "clear all twelve script bindings through the reviewed helper", java_node_ranges = [[1, 3]], rust_node_ranges = [{ target = 0, start = 1, end = 5 }] },
-  { semantic = "replace keycodes with the exact star, pound, and digit mapping array", literal_note = "javac emits the twelve Java array literals 42, 35, and 48 through 57; syn treats the matching alloc::vec![42, 35, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57] token tree as an opaque macro and emits no Rust LITERAL nodes. The oracle compares every resulting slot in that order.", java_node_ranges = [[4, 20]], rust_node_ranges = [{ target = 0, start = 6, end = 14 }] },
+  { semantic = "replace keycodes with the exact star, pound, and digit mapping array", literal_note = "javac emits the twelve Java array literals 42, 35, and 48 through 57; syn treats the matching alloc::vec![42, 35, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57] token tree as an opaque macro and emits no Rust LITERAL nodes. The oracle compares every resulting slot in that order.", java_node_ranges = [[4, 20]], rust_node_ranges = [{ target = 0, start = 6, end = 14 }] , literal_delta = { java_only = [35, 42, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57], rust_only = [] }},
 ]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:action_key_init_system", ast_sha256 = "a036065c15fd626f93b9f9fa027347bba54361d9265a4b9c1d5ad3225c7ca8dc", nodes_sha256 = "6e2855e8912e208c6685adb3f6493ccef94f5875d66a1fceb4add7ee357ea191", node_count = 15 }]
 oracle = "pure-method-v1"
@@ -2685,19 +2685,19 @@ java_node_count = 123
 rust_node_counts = [318]
 operation = [
   { semantic = "own the complete resource-type switch and dispatch on the signed type", java_node_ranges = [[0, 3]], rust_node_ranges = [{ target = 0, start = 0, end = 0 }, { target = 0, start = 68, end = 70 }] },
-  { semantic = "build a script path from game ID, script directory, nullable string ID, and binary suffix", java_node_ranges = [[4, 22]], rust_node_ranges = [{ target = 0, start = 71, end = 113 }], literal_note = "Java's resource-type case label 1 is the Rust match arm pattern `1`; syn does not emit numeric literals contained in match patterns, while the arm body owns the exact script-path construction." },
-  { semantic = "select graphics type two and construct its game/transform prefix through the signed transform", java_node_ranges = [[23, 44]], rust_node_ranges = [{ target = 0, start = 114, end = 144 }], literal_note = "Java's resource-type case label 2 is the Rust match arm pattern `2`; syn does not emit numeric literals contained in match patterns, while this arm owns the type-two path prefix." },
+  { semantic = "build a script path from game ID, script directory, nullable string ID, and binary suffix", java_node_ranges = [[4, 22]], rust_node_ranges = [{ target = 0, start = 71, end = 113 }], literal_note = "Java's resource-type case label 1 is the Rust match arm pattern `1`; syn does not emit numeric literals contained in match patterns, while the arm body owns the exact script-path construction.", literal_delta = { java_only = [1], rust_only = [] }},
+  { semantic = "select graphics type two and construct its game/transform prefix through the signed transform", java_node_ranges = [[23, 44]], rust_node_ranges = [{ target = 0, start = 114, end = 144 }], literal_note = "Java's resource-type case label 2 is the Rust match arm pattern `2`; syn does not emit numeric literals contained in match patterns, while this arm owns the type-two path prefix.", literal_delta = { java_only = [2], rust_only = [] }},
   { semantic = "finish graphics type two with slash, nullable string ID, png suffix, and return", java_node_ranges = [[45, 47]], rust_node_ranges = [{ target = 0, start = 145, end = 171 }] },
-  { semantic = "select graphics type three and construct its game/transform prefix through the signed transform", java_node_ranges = [[48, 69]], rust_node_ranges = [{ target = 0, start = 172, end = 202 }], literal_note = "Java's resource-type case label 3 is the Rust match arm pattern `3`; syn does not emit numeric literals contained in match patterns, while this arm owns the type-three path prefix." },
+  { semantic = "select graphics type three and construct its game/transform prefix through the signed transform", java_node_ranges = [[48, 69]], rust_node_ranges = [{ target = 0, start = 172, end = 202 }], literal_note = "Java's resource-type case label 3 is the Rust match arm pattern `3`; syn does not emit numeric literals contained in match patterns, while this arm owns the type-three path prefix.", literal_delta = { java_only = [3], rust_only = [] }},
   { semantic = "finish graphics type three with slash, signed integer ID, png suffix, and return", java_node_ranges = [[70, 72]], rust_node_ranges = [{ target = 0, start = 203, end = 229 }] },
-  { semantic = "build a MIDI sound path from game ID and nullable string ID", java_node_ranges = [[73, 100]], rust_node_ranges = [{ target = 0, start = 230, end = 272 }], literal_note = "Java's resource-type case label 4 is the Rust match arm pattern `4`; syn omits pattern literals, while this arm owns the exact MIDI path fragments and nullable ID append." },
-  { semantic = "build a room path from game ID, room directory, nullable string ID, and binary suffix", java_node_ranges = [[101, 119]], rust_node_ranges = [{ target = 0, start = 273, end = 315 }], literal_note = "Java's resource-type case label 5 is the Rust match arm pattern `5`; syn omits pattern literals, while this arm owns the exact room path construction." },
+  { semantic = "build a MIDI sound path from game ID and nullable string ID", java_node_ranges = [[73, 100]], rust_node_ranges = [{ target = 0, start = 230, end = 272 }], literal_note = "Java's resource-type case label 4 is the Rust match arm pattern `4`; syn omits pattern literals, while this arm owns the exact MIDI path fragments and nullable ID append.", literal_delta = { java_only = [4], rust_only = [] }},
+  { semantic = "build a room path from game ID, room directory, nullable string ID, and binary suffix", java_node_ranges = [[101, 119]], rust_node_ranges = [{ target = 0, start = 273, end = 315 }], literal_note = "Java's resource-type case label 5 is the Rust match arm pattern `5`; syn omits pattern literals, while this arm owns the exact room path construction.", literal_delta = { java_only = [5], rust_only = [] }},
   { semantic = "return null for every unrecognized signed resource type", java_node_ranges = [[120, 122]], rust_node_ranges = [{ target = 0, start = 316, end = 317 }] },
 ]
 adaptation = [
-  { side = "rust", category = "host-adapter", reason = "A local no_std UTF-16 appender replaces StringBuffer's ASCII-literal append machinery without allocating Java host strings.", rust_node_ranges = [{ target = 0, start = 1, end = 21 }] },
+  { side = "rust", category = "host-adapter", reason = "A local allocation-backed UTF-16 appender replaces StringBuffer's ASCII-literal append machinery without allocating Java host strings.", rust_node_ranges = [{ target = 0, start = 1, end = 21 }] },
   { side = "rust", category = "host-adapter", reason = "A local nullable UTF-16 appender makes StringBuffer.append((String)null)'s exact four-code-unit `null` rendering explicit while preserving all non-null code units verbatim.", rust_node_ranges = [{ target = 0, start = 22, end = 50 }] },
-  { side = "rust", category = "host-adapter", reason = "A local signed-decimal appender replaces StringBuffer.append(int) and preserves the complete i32 textual domain in the no_std implementation.", rust_node_ranges = [{ target = 0, start = 51, end = 67 }] },
+  { side = "rust", category = "host-adapter", reason = "A local signed-decimal appender replaces StringBuffer.append(int) and preserves the complete i32 textual domain in the host-independent implementation.", rust_node_ranges = [{ target = 0, start = 51, end = 67 }] },
 ]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:load_request_resource_path", ast_sha256 = "245276923d81b64861ba1cdfbbcbebbddc90bc66586c97ffb51d93bbea277c24", nodes_sha256 = "5b515608644e607b1a4ea662f411c43482502b7ec18e5b9143f7831b97513c27", node_count = 318 }]
 oracle = "pure-method-v1"
@@ -2739,7 +2739,7 @@ java_ast_sha256 = "db3140b43442843d71b43bdc197cf3acec40847040e9af3b990e5b4b8d135
 java_nodes_sha256 = "ffe04dbb0b87fc1d0b371b3799ab4e4591657c7fdfb9008a01def8c0f55bfde2"
 java_node_count = 136
 rust_node_counts = [19]
-operation = [{ semantic = "build the exact five-case resource path by forwarding all four request fields to the already crosswalked common builder", java_node_ranges = [[0, 135]], rust_node_ranges = [{ target = 0, start = 0, end = 18 }], literal_note = "Java's duplicated instance body contains raw switch labels 1 through 5; Rust forwards to the separately crosswalked common builder where those same cases are realized, so this forwarding AST has no discriminator literals.", blanket_ok = true, blanket_reason = "The recovered instance method duplicates all five StringBuffer switch branches, while Rust deliberately factors those exact branches into the separately node-complete common builder and has only one forwarding call to own; splitting would duplicate ownership of that single call." }]
+operation = [{ semantic = "build the exact five-case resource path by forwarding all four request fields to the already crosswalked common builder", java_node_ranges = [[0, 135]], rust_node_ranges = [{ target = 0, start = 0, end = 18 }], literal_note = "Java's duplicated instance body contains raw switch labels 1 through 5; Rust forwards to the separately crosswalked common builder where those same cases are realized, so this forwarding AST has no discriminator literals.", blanket_ok = true, blanket_reason = "The recovered instance method duplicates all five StringBuffer switch branches, while Rust deliberately factors those exact branches into the separately node-complete common builder and has only one forwarding call to own; splitting would duplicate ownership of that single call.", literal_delta = { java_only = [1, 2, 3, 4, 5], rust_only = [] }}]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:resource_request_resource_path", ast_sha256 = "2c67f70eae8ce30279bbf091c346fd66ba709dee9550ac9c8dd48900af2f5806", nodes_sha256 = "1aaa110a976ed61d10eabd5efc4c0a551dd3278f80a2ac29d7ad41c77c1d12ce", node_count = 19 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
@@ -2831,7 +2831,7 @@ rust_node_counts = [24]
 operation = [
   { semantic = "test whether the mutable request discriminator is exactly type three", java_node_ranges = [[0, 6]], rust_node_ranges = [{ target = 0, start = 0, end = 7 }] },
   { semantic = "box and return the signed integer ID for type three", java_node_ranges = [[7, 10]], rust_node_ranges = [{ target = 0, start = 8, end = 14 }] },
-  { semantic = "otherwise return the nullable UTF-16 string ID", java_node_ranges = [[11, 12]], rust_node_ranges = [{ target = 0, start = 15, end = 23 }], literal_note = "Rust's tagged oracle result uses variant tag 0 to distinguish the Java String/null Object category; Java returns the reference directly and therefore has no tag literal." },
+  { semantic = "otherwise return the nullable UTF-16 string ID", java_node_ranges = [[11, 12]], rust_node_ranges = [{ target = 0, start = 15, end = 23 }], literal_note = "Rust's fixed tuple uses `false` as the String/null variant tag; numeric 0 is only the ignored dummy integer payload required by that tuple shape, while Java's Object result carries neither a tag nor a dummy payload.", literal_delta = { java_only = [], rust_only = [0] }},
 ]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:resource_request_get_id", ast_sha256 = "0f19341de05b95bcb46bbfa54a2b115bd6121c2e92c23c78d4b442e19ff9736f", nodes_sha256 = "6995e262621d71519ce3a004c1dc8cf45bbc078410b0e0789cd5ddcaf624ddce", node_count = 24 }]
 oracle = "pure-method-v1"
@@ -2873,7 +2873,7 @@ java_ast_sha256 = "6c834b57d865b4ed9357ce43bb7ca291c3dff47823a22725230e4d6becdce
 java_nodes_sha256 = "4a4972ec35893632fc3edb0fae534dbad21e641ff92760ef4b3911befbecf202"
 java_node_count = 10
 rust_node_counts = [156]
-operation = [{ semantic = "perform the complete null-checked, signed-bounds-checked, overlap-safe System.arraycopy of nullable String references", java_node_ranges = [[0, 9]], rust_node_ranges = [{ target = 0, start = 0, end = 155 }], literal_note = "Java delegates negative-offset and negative-length rejection to the System.arraycopy host primitive; Rust spells those three signed comparisons out against literal zero before converting the offsets and length to usize.", blanket_ok = true, blanket_reason = "Java exposes this as one atomic System.arraycopy host primitive; Rust must spell out that primitive's null, signed-bounds, overlap, snapshot, and reference-copy contract, which the exhaustive overlap oracle verifies as a unit." }]
+operation = [{ semantic = "perform the complete null-checked, signed-bounds-checked, overlap-safe System.arraycopy of nullable String references", java_node_ranges = [[0, 9]], rust_node_ranges = [{ target = 0, start = 0, end = 155 }], literal_note = "Java delegates negative-offset and negative-length rejection to the System.arraycopy host primitive; Rust spells those three signed comparisons out against literal zero before converting the offsets and length to usize.", blanket_ok = true, blanket_reason = "Java exposes this as one atomic System.arraycopy host primitive; Rust must spell out that primitive's null, signed-bounds, overlap, snapshot, and reference-copy contract, which the exhaustive overlap oracle verifies as a unit.", literal_delta = { java_only = [], rust_only = [0, 0, 0] }}]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:array_copy_string_handles", ast_sha256 = "932f3db4baaf09ab2c5f3574320ce81f43880b7eb2f368eacb6a115235a8c1e5", nodes_sha256 = "a71dbaf400e08fed5f6b41b88c2ffdb6b6080565933cb9b95d5d22b568b5038a", node_count = 156 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
@@ -2896,7 +2896,7 @@ operation = [
   { semantic = "return zero for a null Object reference", java_node_ranges = [[1, 8]], rust_node_ranges = [{ target = 0, start = 198, end = 202 }] },
   { semantic = "recognize a boxed Integer and return its exact signed value", java_node_ranges = [[9, 21]], rust_node_ranges = [{ target = 0, start = 203, end = 205 }] },
   { semantic = "return one for a non-null Object that is neither Integer nor String", java_node_ranges = [[22, 31]], rust_node_ranges = [{ target = 0, start = 214, end = 215 }] },
-  { semantic = "parse a UTF-16 String with Java radix-ten sign, Unicode-digit, and i32-overflow rules, returning one on any Exception", java_node_ranges = [[32, 47]], rust_node_ranges = [{ target = 0, start = 1, end = 197 }, { target = 0, start = 206, end = 213 }], literal_note = "Java's one-argument Integer.parseInt hides radix ten, BMP Character.digit ranges, sign handling, and i32 overflow limits inside the library; Rust's inline parser exposes those exact constants so the host-independent body can reproduce the same accepted digits and failure boundary.", blanket_ok = true, blanket_reason = "The Java side is one Integer.parseInt host-library primitive plus its catch result; Rust's no_std realization must explicitly encode the BMP digit table, sign, overflow, and failure paths that the exhaustive oracle checks." },
+  { semantic = "parse a UTF-16 String with Java radix-ten sign, Unicode-digit, and i32-overflow rules, returning one on any Exception", java_node_ranges = [[32, 47]], rust_node_ranges = [{ target = 0, start = 1, end = 197 }, { target = 0, start = 206, end = 213 }], literal_note = "Java's one-argument Integer.parseInt hides radix ten, BMP Character.digit ranges, sign handling, and i32 overflow limits inside the library; Rust's inline parser exposes those exact constants so the host-independent body can reproduce the same accepted digits and failure boundary.", blanket_ok = true, blanket_reason = "The Java side is one Integer.parseInt host-library primitive plus its catch result; Rust's host-independent realization must explicitly encode the BMP digit table, sign, overflow, and failure paths that the exhaustive oracle checks.", literal_delta = { java_only = [], rust_only = [0, 0, 0, 1, 1, 9, 10, 10, 48, 1632, 1776, 1984, 2406, 2534, 2662, 2790, 2918, 3046, 3174, 3302, 3430, 3558, 3664, 3792, 3872, 4160, 4240, 6112, 6160, 6470, 6608, 6784, 6800, 6992, 7088, 7232, 7248, 42528, 43216, 43264, 43472, 43504, 43600, 44016, 65296, 2147483647, 2147483648] }},
 ]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:to_int", ast_sha256 = "e4beab07bb6658f10e567d8a7e7b3be1144b54f006e0a44b94d261fb164aa505", nodes_sha256 = "6bbbf5e7630a03ad223b81f7dad9823b450ff83966eab1d840ec737be1662180", node_count = 216 }]
 oracle = "pure-method-v1"
@@ -2915,7 +2915,7 @@ java_ast_sha256 = "90e404612dee90ecc32ea75ccc5487a26f259859cacbb4644e48104f57927
 java_nodes_sha256 = "8b508d3f3611b826374d9ec3bbda9ea4e1a60ba1ed78c006cb013027fa48fd16"
 java_node_count = 52
 rust_node_counts = [8]
-operation = [{ semantic = "apply the exact shared Object-to-int conversion and return whether the result is at least one", java_node_ranges = [[0, 51]], rust_node_ranges = [{ target = 0, start = 0, end = 7 }], literal_note = "Java writes the `>= 1` threshold once in its Integer branch and again in its String-parse branch; Rust factors both branches through the separately crosswalked to_int and applies the same literal-one threshold once to the common result.", blanket_ok = true, blanket_reason = "Canonical Java retains the full inlined conversion branch tree, while Rust factors its already node-complete equivalent through to_int and owns only the forwarding call plus final comparison; there is no honest one-to-many split of that single call." }]
+operation = [{ semantic = "apply the exact shared Object-to-int conversion and return whether the result is at least one", java_node_ranges = [[0, 51]], rust_node_ranges = [{ target = 0, start = 0, end = 7 }], literal_note = "Java writes the `>= 1` threshold once in its Integer branch and again in its String-parse branch; Rust factors both branches through the separately crosswalked to_int and applies the same literal-one threshold once to the common result.", blanket_ok = true, blanket_reason = "Canonical Java retains the full inlined conversion branch tree, while Rust factors its already node-complete equivalent through to_int and owns only the forwarding call plus final comparison; there is no honest one-to-many split of that single call.", literal_delta = { java_only = [1], rust_only = [] }}]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:to_boolean", ast_sha256 = "0d1653829f65e78cc23fc479f35c84f6bf267459623aa4f283e4ef2af50e83ef", nodes_sha256 = "e00282aaa6b2ae9f8c53f543a069f37e1a9bb10d2f04ad92e2024e23cf06983f", node_count = 8 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
@@ -2940,7 +2940,7 @@ operation = [
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:game_language_path", ast_sha256 = "224f8e09b9e3bfb6a2259d9d8885456dbb5cbde469a4e12d742d1dcb28cd5ede", nodes_sha256 = "01572f6cda12ca10d4b6a71ede6c80fd7e5f604d72543ecf026949ac806a60c6", node_count = 50 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "Null, empty, NUL, unpaired-surrogate, non-ASCII, slash-bearing, and ordinary UTF-16 game identifiers agree across both recovered JARs, canonical Java, and Rust. The Rust path owns UTF-16 output in alloc while the crate remains no_std and explicitly preserves StringBuffer.append((Object)null) as the four code units `null`."
+semantic_review = "Null, empty, NUL, unpaired-surrogate, non-ASCII, slash-bearing, and ordinary UTF-16 game identifiers agree across both recovered JARs, canonical Java, and Rust. The Rust path owns UTF-16 output in alloc while the implementation remains host-independent and explicitly preserves StringBuffer.append((Object)null) as the four code units `null`."
 
 [[body]]
 java_class = "M"
@@ -2978,7 +2978,7 @@ java_node_count = 18
 rust_node_counts = [305]
 operation = [
   { semantic = "own the exception-shielded lookup and delegate a successfully parsed index to getGameText", java_node_ranges = [[0, 5]], rust_node_ranges = [{ target = 0, start = 0, end = 7 }, { target = 0, start = 293, end = 300 }] },
-  { semantic = "parse the nullable UTF-16 text ID with Java radix-36 sign, digit, and i32-overflow behavior, returning unknown text on parse failure", java_node_ranges = [[6, 10]], rust_node_ranges = [{ target = 0, start = 8, end = 292 }], literal_note = "Java exposes only the radix-36 argument and leaves BMP Character.digit tables, ASCII/fullwidth letter bounds, sign handling, and i32 overflow limits inside Integer.parseInt; Rust's inline radix-36 parser necessarily emits those library constants explicitly.", blanket_ok = true, blanket_reason = "Java delegates this entire step to one Integer.parseInt(String,36) host primitive; the Rust realization explicitly implements its Unicode digits, letters, sign, overflow, and failure exits, exhaustively checked over all one-unit UTF-16 inputs." },
+  { semantic = "parse the nullable UTF-16 text ID with Java radix-36 sign, digit, and i32-overflow behavior, returning unknown text on parse failure", java_node_ranges = [[6, 10]], rust_node_ranges = [{ target = 0, start = 8, end = 292 }], literal_note = "Java exposes only the radix-36 argument and leaves BMP Character.digit tables, ASCII/fullwidth letter bounds, sign handling, and i32 overflow limits inside Integer.parseInt; Rust's inline radix-36 parser necessarily emits those library constants explicitly.", blanket_ok = true, blanket_reason = "Java delegates this entire step to one Integer.parseInt(String,36) host primitive; the Rust realization explicitly implements its Unicode digits, letters, sign, overflow, and failure exits, exhaustively checked over all one-unit UTF-16 inputs.", literal_delta = { java_only = [], rust_only = [0, 0, 0, 1, 1, 9, 10, 10, 10, 10, 36, 36, 36, 48, 65, 65, 90, 97, 97, 122, 1632, 1776, 1984, 2406, 2534, 2662, 2790, 2918, 3046, 3174, 3302, 3430, 3558, 3664, 3792, 3872, 4160, 4240, 6112, 6160, 6470, 6608, 6784, 6800, 6992, 7088, 7232, 7248, 42528, 43216, 43264, 43472, 43504, 43600, 44016, 65296, 65313, 65313, 65338, 65345, 65345, 65370, 2147483647, 2147483648] }},
   { semantic = "convert a delegated lookup failure through the catch path to the same unknown-text fallback", java_node_ranges = [[11, 17]], rust_node_ranges = [{ target = 0, start = 301, end = 304 }] },
 ]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:get_game_text_from_string", ast_sha256 = "c8034aa27f895281f16f3d929473bf827c5e24ea0cc8ea1b5a11b748e76d656e", nodes_sha256 = "b8b180fd610ee3a585342377a8d3d23ea4b976f5f4bf842b5d1fadc4a2a8e613", node_count = 305 }]
@@ -3000,9 +3000,9 @@ java_node_count = 43
 rust_node_counts = [123]
 operation = [
   { semantic = "own the complete first-occurrence replacement body", java_node_ranges = [[0, 0]], rust_node_ranges = [{ target = 0, start = 0, end = 0 }] },
-  { semantic = "dereference both strings and locate the first UTF-16 needle occurrence with empty-needle offset zero", java_node_ranges = [[1, 7]], rust_node_ranges = [{ target = 0, start = 1, end = 50 }], literal_note = "Java's String.indexOf host primitive implicitly returns offset zero for an empty needle; Rust expands that library edge as an explicit `Some(0)` before its window search.", blanket_ok = true, blanket_reason = "Java's single String.indexOf host primitive owns the UTF-16 window search; Rust expands that primitive into explicit empty, too-long, and first-window cases, with the randomized oracle checking the complete result." },
-  { semantic = "leave the haystack unchanged when no occurrence exists", java_node_ranges = [[8, 16]], rust_node_ranges = [{ target = 0, start = 51, end = 63 }], literal_note = "Java String.indexOf reports absence with integer sentinel -1; Rust represents the same outcome as None and selects it with `let Some(...) else`, so no numeric sentinel appears." },
-  { semantic = "construct the prefix and append the nullable replacement using Java null rendering", java_node_ranges = [[17, 32]], rust_node_ranges = [{ target = 0, start = 64, end = 103 }], literal_note = "Java calls substring(0, matchIndex) with an explicit zero start; Rust's `haystack[..match_index]` range has the same zero start encoded by an omitted lower bound." },
+  { semantic = "dereference both strings and locate the first UTF-16 needle occurrence with empty-needle offset zero", java_node_ranges = [[1, 7]], rust_node_ranges = [{ target = 0, start = 1, end = 50 }], literal_note = "Java's String.indexOf host primitive implicitly returns offset zero for an empty needle; Rust expands that library edge as an explicit `Some(0)` before its window search.", blanket_ok = true, blanket_reason = "Java's single String.indexOf host primitive owns the UTF-16 window search; Rust expands that primitive into explicit empty, too-long, and first-window cases, with the randomized oracle checking the complete result.", literal_delta = { java_only = [], rust_only = [0] }},
+  { semantic = "leave the haystack unchanged when no occurrence exists", java_node_ranges = [[8, 16]], rust_node_ranges = [{ target = 0, start = 51, end = 63 }], literal_note = "Java String.indexOf reports absence with integer sentinel -1; Rust represents the same outcome as None and selects it with `let Some(...) else`, so no numeric sentinel appears.", literal_delta = { java_only = [-1], rust_only = [] }},
+  { semantic = "construct the prefix and append the nullable replacement using Java null rendering", java_node_ranges = [[17, 32]], rust_node_ranges = [{ target = 0, start = 64, end = 103 }], literal_note = "Java calls substring(0, matchIndex) with an explicit zero start; Rust's `haystack[..match_index]` range has the same zero start encoded by an omitted lower bound.", literal_delta = { java_only = [0], rust_only = [] }},
   { semantic = "append the suffix beginning after the matched needle", java_node_ranges = [[33, 40]], rust_node_ranges = [{ target = 0, start = 104, end = 117 }] },
   { semantic = "return the completed first-replacement string", java_node_ranges = [[41, 42]], rust_node_ranges = [{ target = 0, start = 118, end = 122 }] },
 ]
@@ -3026,9 +3026,9 @@ rust_node_counts = [89]
 operation = [
   { semantic = "own the prefix-removal body", java_node_ranges = [[0, 0]], rust_node_ranges = [{ target = 0, start = 0, end = 0 }] },
   { semantic = "return null immediately for a null source array", java_node_ranges = [[1, 8]], rust_node_ranges = [{ target = 0, start = 1, end = 12 }] },
-  { semantic = "return a shallow same-length copy when the prefix is null or empty", java_node_ranges = [[9, 42]], rust_node_ranges = [{ target = 0, start = 13, end = 34 }], literal_note = "Java tests prefix.length()==0 and copies with System.arraycopy source and destination offsets zero; Rust uses `is_empty()` plus slice `to_vec()`, whose whole-slice copy has both zero offsets implicit." },
+  { semantic = "return a shallow same-length copy when the prefix is null or empty", java_node_ranges = [[9, 42]], rust_node_ranges = [{ target = 0, start = 13, end = 34 }], literal_note = "Java tests prefix.length()==0 and copies with System.arraycopy source and destination offsets zero; Rust uses `is_empty()` plus slice `to_vec()`, whose whole-slice copy has both zero offsets implicit.", literal_delta = { java_only = [0, 0, 0], rust_only = [] }},
   { semantic = "materialize the non-null prefix and allocate a same-length null-filled output", java_node_ranges = [[43, 60]], rust_node_ranges = [{ target = 0, start = 35, end = 42 }] },
-  { semantic = "visit each source element in order, fail on null, and test the exact UTF-16 prefix", java_node_ranges = [[61, 80]], rust_node_ranges = [{ target = 0, start = 43, end = 62 }], literal_note = "Java calls startsWith(prefix, 0) with an explicit zero offset; Rust slice starts_with always tests at offset zero, so the equivalent operation has no numeric offset literal." },
+  { semantic = "visit each source element in order, fail on null, and test the exact UTF-16 prefix", java_node_ranges = [[61, 80]], rust_node_ranges = [{ target = 0, start = 43, end = 62 }], literal_note = "Java calls startsWith(prefix, 0) with an explicit zero offset; Rust slice starts_with always tests at offset zero, so the equivalent operation has no numeric offset literal.", literal_delta = { java_only = [0], rust_only = [] }},
   { semantic = "store a suffix copy for matching elements and leave nonmatches null", java_node_ranges = [[81, 92]], rust_node_ranges = [{ target = 0, start = 63, end = 80 }] },
   { semantic = "return the completed nullable output array", java_node_ranges = [[93, 94]], rust_node_ranges = [{ target = 0, start = 81, end = 88 }] },
 ]
@@ -3049,7 +3049,7 @@ java_ast_sha256 = "1c008ef44355c49cac0b186a8e3cd1a52070c5845f22cd481382144c03ae7
 java_nodes_sha256 = "027e9d35fde43de03578f4972cb41112e9c8c737d3a9605f7e09e4a6294e0ec6"
 java_node_count = 27
 rust_node_counts = [46]
-operation = [{ semantic = "scan the ordered nullable language array for the first UTF-16-equal entry, preserving lazy null-query failure and the zero not-found fallback", java_node_ranges = [[0, 26]], rust_node_ranges = [{ target = 0, start = 0, end = 45 }], literal_note = "Java spells out both loop-index initialization at zero and the zero not-found return; Rust enumerate() supplies the zero-based index implicitly while retaining one explicit zero fallback." }]
+operation = [{ semantic = "scan the ordered nullable language array for the first UTF-16-equal entry, preserving lazy null-query failure and the zero not-found fallback", java_node_ranges = [[0, 26]], rust_node_ranges = [{ target = 0, start = 0, end = 45 }], literal_note = "Java spells out both loop-index initialization at zero and the zero not-found return; Rust enumerate() supplies the zero-based index implicitly while retaining one explicit zero fallback.", literal_delta = { java_only = [0], rust_only = [] }}]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:get_language_selection_position", ast_sha256 = "5cd727633fcc16e4bf067725aba3ec0e7715dc05bcbde4ad5f09de6935dc65db", nodes_sha256 = "f980c6fde3e0675db871cd67f40bdfce8bd3aeae096ae6c5d864595c6453c359", node_count = 46 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
@@ -3067,7 +3067,7 @@ java_ast_sha256 = "884e0b3217166d20ac0b9c0822664c05ddfc4f96c9dd7c66eb3f219915581
 java_nodes_sha256 = "bcd3d668f51ea9bf10a20c7d57f2ef8c16bc27dc81c8df720df19afca2c05ed9"
 java_node_count = 25
 rust_node_counts = [30]
-operation = [{ semantic = "inspect exactly resourceHeapSourceLRE[0], returning zero on equality and minus one otherwise while preserving null and empty-array exception classes", java_node_ranges = [[0, 24]], rust_node_ranges = [{ target = 0, start = 0, end = 29 }], literal_note = "Java expresses the sole slot through a one-iteration loop `i=0; i<1` and returns i on equality; Rust specializes that proven loop to direct index 0 and explicit return 0, replacing the loop-bound literal 1 with the second zero." }]
+operation = [{ semantic = "inspect exactly resourceHeapSourceLRE[0], returning zero on equality and minus one otherwise while preserving null and empty-array exception classes", java_node_ranges = [[0, 24]], rust_node_ranges = [{ target = 0, start = 0, end = 29 }], literal_note = "Java expresses the sole slot through a one-iteration loop `i=0; i<1` and returns i on equality; Rust specializes that proven loop to direct index 0 and explicit return 0, replacing the loop-bound literal 1 with the second zero.", literal_delta = { java_only = [1], rust_only = [0] }}]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:resource_heap_index", ast_sha256 = "e07e12e157b27a70e77df93ae70aacd58c2b049238a380712876fbd0a118eff7", nodes_sha256 = "3193fe970dc940d73c0dd0816c96d306420420c5ad665db0105f14a61a444a70", node_count = 30 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
@@ -3085,7 +3085,7 @@ java_ast_sha256 = "d8a34eb81711500e40f1482db0dfa88c18066918e8baf999eab9e5160f10e
 java_nodes_sha256 = "7c1cb36a3c5a15f7f50b750d910c369b28a2720b43bf5977dd69115ac2c917ae"
 java_node_count = 22
 rust_node_counts = [33]
-operation = [{ semantic = "consume one signed nextInt value, reinterpret it as unsigned 32-bit, multiply by the signed scale in 64 bits, and return the arithmetic high word with the original null-RNG failure", java_node_ranges = [[0, 21]], rust_node_ranges = [{ target = 0, start = 0, end = 32 }], literal_note = "Java reinterprets nextInt with the explicit long mask 0xffffffffL; Rust's `as u32` performs the same low-32-bit reinterpretation by type, so the mask value 4294967295 is not materialized." }]
+operation = [{ semantic = "consume one signed nextInt value, reinterpret it as unsigned 32-bit, multiply by the signed scale in 64 bits, and return the arithmetic high word with the original null-RNG failure", java_node_ranges = [[0, 21]], rust_node_ranges = [{ target = 0, start = 0, end = 32 }], literal_note = "Java reinterprets nextInt with the explicit long mask 0xffffffffL; Rust's `as u32` performs the same low-32-bit reinterpretation by type, so the mask value 4294967295 is not materialized.", literal_delta = { java_only = [4294967295], rust_only = [] }}]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:random_scaled", ast_sha256 = "3e168bb520fc72580b1890adb6261cee2ac6bd64a268621bf4f22c3186bc77b2", nodes_sha256 = "2a9b454ee503bc46120aa5e271c52d14b01af55d8a2037671f30b39cac9d4373", node_count = 33 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
@@ -3140,7 +3140,7 @@ java_nodes_sha256 = "1be18f9b5e638f4f8024a7119480f5a553f8a3d0b39322a6c2aa4934a5f
 java_node_count = 7
 rust_node_counts = [72]
 operation = [
-  { semantic = "realize the exact room-size variable-name constant", java_node_ranges = [[6, 6]], rust_node_ranges = [{ target = 0, start = 0, end = 38 }], literal_note = "Java carries `room-size` as one String literal; Rust realizes that exact value as the nine explicit UTF-16 code units in the local name array, so its character values appear as numeric literals." },
+  { semantic = "realize the exact room-size variable-name constant", java_node_ranges = [[6, 6]], rust_node_ranges = [{ target = 0, start = 0, end = 38 }], literal_note = "Java references the named compile-time INK_SERVER_VARIABLE_NAME_ROOM_HISTORY_SIZE constant, whose reviewed declaration fixes `room-size`; Rust realizes that same value as nine explicit UTF-16 code units in the local name array.", literal_delta = { java_only = [], rust_only = [45, 101, 105, 109, 111, 111, 114, 115, 122] }},
   { semantic = "look up the room-size value and apply the shared Object-to-int conversion to its nullable UTF-16 result", java_node_ranges = [[0, 5]], rust_node_ranges = [{ target = 0, start = 39, end = 71 }] },
 ]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:room_history_size", ast_sha256 = "7ef22b10cab6f513bd6d6d0713645d19e0e9ca9b7af671bf793548c93f9c5326", nodes_sha256 = "35bbd4171ed949f9b29bcfe55fd4b601372c425bc58dca65b254dc78292c1fdf", node_count = 72 }]
@@ -3183,7 +3183,7 @@ java_nodes_sha256 = "dcaec891a3fc97af4c6e7aff96481dd724fa6b78751fe75bac609b2100e
 java_node_count = 14
 rust_node_counts = [67]
 operation = [
-  { semantic = "realize and look up the exact cur-curRoom variable name", java_node_ranges = [[0, 6]], rust_node_ranges = [{ target = 0, start = 0, end = 47 }], literal_note = "Java carries `cur-curRoom` as one String literal; Rust realizes that exact value as the eleven explicit UTF-16 code units in the local name array, so its character values appear as numeric literals." },
+  { semantic = "realize and look up the exact cur-curRoom variable name", java_node_ranges = [[0, 6]], rust_node_ranges = [{ target = 0, start = 0, end = 47 }], literal_note = "Java references the named compile-time INK_SERVER_VARIABLE_NAME_CUR_ROOM constant, whose reviewed declaration fixes `cur-curRoom`; Rust realizes that same value as eleven explicit UTF-16 code units in the local name array.", literal_delta = { java_only = [], rust_only = [45, 82, 99, 99, 109, 111, 111, 114, 114, 117, 117] }},
   { semantic = "copy a present UTF-16 room ID or convert only a missing value to an empty string", java_node_ranges = [[7, 13]], rust_node_ranges = [{ target = 0, start = 48, end = 66 }] },
 ]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:room_current", ast_sha256 = "8b333e477992c522fe3e6a0fb7fa397b4ef360e3cc0561b70dfea2f505144914", nodes_sha256 = "63e5fe96b917959b2659ee61d15778c749ce6e48c4e1e6bafdb9c1de0dfe58d9", node_count = 67 }]
@@ -3221,7 +3221,7 @@ java_ast_sha256 = "a56c045db649e629f92bf29bd251414271713e0dd7304ab7455b45141409b
 java_nodes_sha256 = "218a460ef9bf36500a455378f6c30df3c74839479a9bb43b86a8beb3e42e4383"
 java_node_count = 48
 rust_node_counts = [6]
-operation = [{ semantic = "apply the byte-for-byte equivalent interpreter Object-to-int conversion through the already crosswalked shared implementation", java_node_ranges = [[0, 47]], rust_node_ranges = [{ target = 0, start = 0, end = 5 }], literal_note = "Java duplicates the conversion body and its 0/1 fallback literals here; Rust calls the separately crosswalked shared to-int implementation, so those literals live in the callee rather than this forwarding AST." }]
+operation = [{ semantic = "apply the byte-for-byte equivalent interpreter Object-to-int conversion through the already crosswalked shared implementation", java_node_ranges = [[0, 47]], rust_node_ranges = [{ target = 0, start = 0, end = 5 }], literal_note = "Java duplicates the conversion body and its 0/1 fallback literals here; Rust calls the separately crosswalked shared to-int implementation, so those literals live in the callee rather than this forwarding AST.", literal_delta = { java_only = [0, 1, 1], rust_only = [] }}]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:ink_interpreter_integer_argument", ast_sha256 = "a23656e5be2e5d4d96160ce1c75b96d61ed745bd831497131da1d0a5cc5fcb55", nodes_sha256 = "cd76eea69a3de4c74bf9d3013d6dd910a92af8885dbced59ae8d9c93666b8414", node_count = 6 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
@@ -3367,7 +3367,7 @@ java_nodes_sha256 = "d47164873e74686bf7c4b685b68a1dad33c732bdc494a3132729d248f82
 java_node_count = 9
 rust_node_counts = [72]
 operation = [
-  { semantic = "realize the exact cur-curRoom variable-name constant", java_node_ranges = [[4, 4]], rust_node_ranges = [{ target = 0, start = 0, end = 46 }], literal_note = "Java carries `cur-curRoom` as one String literal; Rust realizes that exact value as the eleven explicit UTF-16 code units in the local name array, so its character values appear as numeric literals." },
+  { semantic = "realize the exact cur-curRoom variable-name constant", java_node_ranges = [[4, 4]], rust_node_ranges = [{ target = 0, start = 0, end = 46 }], literal_note = "Java references the named compile-time INK_SERVER_VARIABLE_NAME_CUR_ROOM constant, whose reviewed declaration fixes `cur-curRoom`; Rust realizes that same value as eleven explicit UTF-16 code units in the local name array.", literal_delta = { java_only = [], rust_only = [45, 82, 99, 99, 109, 111, 111, 114, 114, 117, 117] }},
   { semantic = "realize the one-code-unit C hint", java_node_ranges = [[6, 8]], rust_node_ranges = [{ target = 0, start = 47, end = 52 }] },
   { semantic = "delegate the nullable room ID, exact key, and hint to the server set/remove path", java_node_ranges = [[0, 3], [5, 5]], rust_node_ranges = [{ target = 0, start = 53, end = 71 }] },
 ]
@@ -3393,9 +3393,9 @@ operation = [
   { semantic = "read the history size and increment it with JVM signed wrapping", java_node_ranges = [[10, 16]], rust_node_ranges = [{ target = 0, start = 31, end = 41 }] },
   { semantic = "construct room-N from the exact prefix and wrapped signed history size", java_node_ranges = [[17, 29]], rust_node_ranges = [{ target = 0, start = 42, end = 65 }] },
   { semantic = "write the room ID under room-N with hint R as the first mutation", java_node_ranges = [[30, 33]], rust_node_ranges = [{ target = 0, start = 66, end = 94 }] },
-  { semantic = "realize the exact room-size variable-name constant for the second mutation", java_node_ranges = [[37, 37]], rust_node_ranges = [{ target = 0, start = 95, end = 132 }], literal_note = "Java carries `room-size` as one String literal; Rust realizes that exact value as the nine explicit UTF-16 code units in history_size_name before the second mutation." },
+  { semantic = "realize the exact room-size variable-name constant for the second mutation", java_node_ranges = [[37, 37]], rust_node_ranges = [{ target = 0, start = 95, end = 132 }], literal_note = "Java references the named compile-time INK_SERVER_VARIABLE_NAME_ROOM_HISTORY_SIZE constant, whose reviewed declaration fixes `room-size`; Rust realizes that same value as nine explicit UTF-16 code units in history_size_name before the second mutation.", literal_delta = { java_only = [], rust_only = [45, 101, 105, 109, 111, 111, 114, 115, 122] }},
   { semantic = "decimalize the same wrapped signed N for room-size", java_node_ranges = [[38, 41]], rust_node_ranges = [{ target = 0, start = 133, end = 136 }] },
-  { semantic = "write room-size with hint R as the second mutation", java_node_ranges = [[34, 36], [42, 44]], rust_node_ranges = [{ target = 0, start = 137, end = 162 }], literal_note = "Java repeats the one-code-unit `R` hint literal for each server write; Rust materializes `[u16::from(b'R')]` once in the first-mutation operation and reuses that same room_hint here, so this second operation has no duplicate 82 literal." },
+  { semantic = "write room-size with hint R as the second mutation", java_node_ranges = [[34, 36], [42, 44]], rust_node_ranges = [{ target = 0, start = 137, end = 162 }], literal_note = "Java repeats the one-code-unit `R` hint literal for each server write; Rust materializes `[u16::from(b'R')]` once in the first-mutation operation and reuses that same room_hint here, so this second operation has no duplicate 82 literal.", literal_delta = { java_only = [82], rust_only = [] }},
 ]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:room_add_to_history", ast_sha256 = "76d16fa431ec9bf6c9cf53030a2cbe2290bbe87fe2201e96eb127ede113de543", nodes_sha256 = "99cb1f88bfeed316e9828d7ee0c38429a7705352c23850224d1dc1255afaf5fb", node_count = 163 }]
 oracle = "pure-method-v1"
@@ -3418,7 +3418,7 @@ operation = [
   { semantic = "read the history size before deciding whether removal is active", java_node_ranges = [[0, 5]], rust_node_ranges = [{ target = 0, start = 0, end = 7 }] },
   { semantic = "enter the mutation block only for a strictly positive history size", java_node_ranges = [[6, 12]], rust_node_ranges = [{ target = 0, start = 8, end = 13 }] },
   { semantic = "re-read room-size, build room-N, and remove that variable and hint first", java_node_ranges = [[13, 25]], rust_node_ranges = [{ target = 0, start = 14, end = 53 }] },
-  { semantic = "realize the exact room-size variable-name constant after removing room-N", java_node_ranges = [[29, 29]], rust_node_ranges = [{ target = 0, start = 54, end = 91 }], literal_note = "Java carries `room-size` as one String literal; Rust realizes that exact value as the nine explicit UTF-16 code units in history_size_name after removing room-N." },
+  { semantic = "realize the exact room-size variable-name constant after removing room-N", java_node_ranges = [[29, 29]], rust_node_ranges = [{ target = 0, start = 54, end = 91 }], literal_note = "Java references the named compile-time INK_SERVER_VARIABLE_NAME_ROOM_HISTORY_SIZE constant, whose reviewed declaration fixes `room-size`; Rust realizes that same value as nine explicit UTF-16 code units in history_size_name after removing room-N.", literal_delta = { java_only = [], rust_only = [45, 101, 105, 109, 111, 111, 114, 115, 122] }},
   { semantic = "subtract one from the original first size read with JVM signed wrapping and decimalize it", java_node_ranges = [[30, 35]], rust_node_ranges = [{ target = 0, start = 92, end = 105 }] },
   { semantic = "write the decremented room-size with hint R and complete", java_node_ranges = [[26, 28], [36, 38]], rust_node_ranges = [{ target = 0, start = 106, end = 139 }] },
 ]
@@ -3442,7 +3442,7 @@ rust_node_counts = [83]
 operation = [
   { semantic = "reject null and unsupported Object values without dereferencing the variable ID or either server table", java_node_ranges = [[0, 6]], rust_node_ranges = [{ target = 0, start = 0, end = 9 }] },
   { semantic = "store a String payload unchanged with a one-code-unit S hint through the ordered server mutation", java_node_ranges = [[7, 24]], rust_node_ranges = [{ target = 0, start = 10, end = 36 }] },
-  { semantic = "dispatch Integer zero to unset and decimalize every nonzero signed Integer before storing it with a one-code-unit I hint", java_node_ranges = [[25, 61]], rust_node_ranges = [{ target = 0, start = 37, end = 82 }], literal_note = "Both implementations match Integer payload zero; javac inventories the equality literal, while the current syn preorder surface records the JavaObject::Integer(0) arm body but does not emit literal-pattern nodes." },
+  { semantic = "dispatch Integer zero to unset and decimalize every nonzero signed Integer before storing it with a one-code-unit I hint", java_node_ranges = [[25, 61]], rust_node_ranges = [{ target = 0, start = 37, end = 82 }], literal_note = "Both implementations match Integer payload zero; javac inventories the equality literal, while the current syn preorder surface records the JavaObject::Integer(0) arm body but does not emit literal-pattern nodes.", literal_delta = { java_only = [0], rust_only = [] }},
 ]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:ink_script_set_variable", ast_sha256 = "1d7afbe3b4d819d79b2d14c3567b78ac6c29609c772986c1bead605087b14f15", nodes_sha256 = "bf6d0e0919b7b65e346997fb9f830c7b923090db4e85be30e6f0ce029c667dd7", node_count = 83 }]
 oracle = "pure-method-v1"
@@ -3464,11 +3464,11 @@ rust_node_counts = [112, 193]
 operation = [
   { semantic = "read the nullable value first, preserving server/key NPE behavior and returning a typed null without consulting hints on a miss", java_node_ranges = [[0, 15]], rust_node_ranges = [{ target = 0, start = 0, end = 25 }] },
   { semantic = "read the corresponding hint and convert an absent hint to the original null dereference failure", java_node_ranges = [[16, 22]], rust_node_ranges = [{ target = 0, start = 26, end = 42 }] },
-  { semantic = "perform the first charAt(0) and return the original UTF-16 String only for hint S, distinguishing an empty hint from a missing hint", java_node_ranges = [[23, 33]], rust_node_ranges = [{ target = 0, start = 43, end = 69 }], literal_note = "Java names the first hint code unit with charAt(0); Rust's slice first() expresses the identical empty-check and first-element access without an index literal." },
-  { semantic = "perform the second charAt(0), parse an I-hinted value with Java Integer.parseInt decimal-digit and overflow rules, and box its signed result", java_node_ranges = [[34, 49]], rust_node_ranges = [{ target = 0, start = 70, end = 106 }], literal_note = "Java repeats charAt(0); Rust reuses slice first() for the identical first-code-unit access, so only javac carries the numeric index literal." },
+  { semantic = "perform the first charAt(0) and return the original UTF-16 String only for hint S, distinguishing an empty hint from a missing hint", java_node_ranges = [[23, 33]], rust_node_ranges = [{ target = 0, start = 43, end = 69 }], literal_note = "Java names the first hint code unit with charAt(0); Rust's slice first() expresses the identical empty-check and first-element access without an index literal.", literal_delta = { java_only = [0], rust_only = [] }},
+  { semantic = "perform the second charAt(0), parse an I-hinted value with Java Integer.parseInt decimal-digit and overflow rules, and box its signed result", java_node_ranges = [[34, 49]], rust_node_ranges = [{ target = 0, start = 70, end = 106 }], literal_note = "Java repeats charAt(0); Rust reuses slice first() for the identical first-code-unit access, so only javac carries the numeric index literal.", literal_delta = { java_only = [0], rust_only = [] }},
   { semantic = "return typed null for every nonempty hint other than S or I", java_node_ranges = [[50, 51]], rust_node_ranges = [{ target = 0, start = 107, end = 111 }] },
 ]
-adaptation = [{ side = "rust", category = "host-adapter", reason = "The no_std parse_java_i32 helper is the explicit host-independent realization of Java's single Integer.parseInt primitive, including BMP decimal digits, signs, i32 overflow, and NumberFormatException-equivalent failure; its exhaustive oracle is shared by every call site.", rust_node_ranges = [{ target = 1, start = 0, end = 192 }] }]
+adaptation = [{ side = "rust", category = "host-adapter", reason = "The parse_java_i32 helper is the explicit host-independent realization of Java's single Integer.parseInt primitive, including BMP decimal digits, signs, i32 overflow, and NumberFormatException-equivalent failure; its exhaustive oracle is shared by every call site.", rust_node_ranges = [{ target = 1, start = 0, end = 192 }] }]
 rust = [
   { file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:ink_script_get_variable", ast_sha256 = "4b767ea96bf496ea79a705172f2a8059610a2636b26dd762d07e668d02eb25a1", nodes_sha256 = "6275003aa098a2e004f451038129764882f22037e8ac92e4129b25a187409f3c", node_count = 112 },
   { file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:parse_java_i32", ast_sha256 = "1245cefae5c897556e340403737d60da77b14159ae7e5df0571ef132598036db", nodes_sha256 = "aa52b982770be90a8cdebc4a6460b426139b60526a5f33d467352123cd7268f4", node_count = 193 },
@@ -3531,7 +3531,7 @@ item = "enum:InkVariableError"
 ast_sha256 = "804dbaceeb3598ce8f3ae5170270091b0d47cdaf9b3ffca14cfefaaf94682949"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
-semantic_review = "Typed no_std boundary that preserves the three observably distinct Java exception classes exposed by the reviewed Ink variable readers."
+semantic_review = "Typed Rust boundary that preserves the three observably distinct Java exception classes exposed by the reviewed Ink variable readers."
 
 [[body]]
 java_class = "ScriptThread"
@@ -3549,13 +3549,13 @@ operation = [
   { semantic = "read and mask one unsigned command byte, then return true immediately on a target match without consuming its arity or payload", java_node_ranges = [[0, 19]], rust_node_ranges = [{ target = 0, start = 0, end = 0 }, { target = 0, start = 7, end = 32 }] },
   { semantic = "decode the two high arity bits and consume the following unsigned byte only for the extended-arity marker", java_node_ranges = [[20, 36]], rust_node_ranges = [{ target = 0, start = 33, end = 54 }] },
   { semantic = "initialize the recursive-search result to false", java_node_ranges = [[37, 40]], rust_node_ranges = [{ target = 0, start = 55, end = 56 }] },
-  { semantic = "recognize the integer literal command before inspecting its encoded arity", java_node_ranges = [[41, 47]], rust_node_ranges = [{ target = 0, start = 1, end = 2 }, { target = 0, start = 57, end = 63 }], literal_note = "Java references the compile-time InkCodes.COMMAND_INTEGER identifier, whose initializer is outside this body; Rust localizes its exact value 5 at the no-global-state function boundary." },
+  { semantic = "recognize the integer literal command before inspecting its encoded arity", java_node_ranges = [[41, 47]], rust_node_ranges = [{ target = 0, start = 1, end = 2 }, { target = 0, start = 57, end = 63 }], literal_note = "Java references the compile-time InkCodes.COMMAND_INTEGER identifier, whose initializer is outside this body; Rust localizes its exact value 5 at the no-global-state function boundary.", literal_delta = { java_only = [], rust_only = [5] }},
   { semantic = "for integer arity zero consume one signed payload byte and return false", java_node_ranges = [[48, 59]], rust_node_ranges = [{ target = 0, start = 64, end = 84 }] },
   { semantic = "for integer arity one consume two signed payload bytes and return false", java_node_ranges = [[60, 71]], rust_node_ranges = [{ target = 0, start = 85, end = 105 }] },
   { semantic = "for every remaining integer arity consume four signed payload bytes and return false", java_node_ranges = [[72, 77]], rust_node_ranges = [{ target = 0, start = 106, end = 120 }] },
-  { semantic = "recognize the String literal command, consume its unsigned one-byte index, and perform the otherwise-unused String-pool lookup before returning false", java_node_ranges = [[78, 93]], rust_node_ranges = [{ target = 0, start = 3, end = 4 }, { target = 0, start = 121, end = 150 }], literal_note = "Java references the compile-time InkCodes.COMMAND_STRING identifier, whose initializer is outside this body; Rust localizes its exact value 6 at the no-global-state function boundary." },
-  { semantic = "recognize the end command and return false without consuming children", java_node_ranges = [[94, 102]], rust_node_ranges = [{ target = 0, start = 5, end = 6 }, { target = 0, start = 151, end = 162 }], literal_note = "Java references the compile-time InkCodes.COMMAND_END identifier, whose initializer is outside this body; Rust localizes its exact value 2 at the no-global-state function boundary." },
-  { semantic = "recursively scan each encoded child in order, returning on the first match and otherwise returning the last false result", java_node_ranges = [[103, 128]], rust_node_ranges = [{ target = 0, start = 163, end = 207 }], literal_note = "javac represents the child-loop i++ as an increment operator with no numeric child; Rust makes the identical increment explicit as i32_add(i, 1)." },
+  { semantic = "recognize the String literal command, consume its unsigned one-byte index, and perform the otherwise-unused String-pool lookup before returning false", java_node_ranges = [[78, 93]], rust_node_ranges = [{ target = 0, start = 3, end = 4 }, { target = 0, start = 121, end = 150 }], literal_note = "Java references the compile-time InkCodes.COMMAND_STRING identifier, whose initializer is outside this body; Rust localizes its exact value 6 at the no-global-state function boundary.", literal_delta = { java_only = [], rust_only = [6] }},
+  { semantic = "recognize the end command and return false without consuming children", java_node_ranges = [[94, 102]], rust_node_ranges = [{ target = 0, start = 5, end = 6 }, { target = 0, start = 151, end = 162 }], literal_note = "Java references the compile-time InkCodes.COMMAND_END identifier, whose initializer is outside this body; Rust localizes its exact value 2 at the no-global-state function boundary.", literal_delta = { java_only = [], rust_only = [2] }},
+  { semantic = "recursively scan each encoded child in order, returning on the first match and otherwise returning the last false result", java_node_ranges = [[103, 128]], rust_node_ranges = [{ target = 0, start = 163, end = 207 }], literal_note = "javac represents the child-loop i++ as an increment operator with no numeric child; Rust makes the identical increment explicit as i32_add(i, 1).", literal_delta = { java_only = [], rust_only = [1] }},
 ]
 interleave = [{ side = "rust", target = 0, owners = ["op:0", "op:3", "op:7", "op:8"], reason = "Rust hoists the three command constants before the common byte-read and dispatch tree; each decision then owns its later comparison and branch body." }]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:ink_interpreter_has_command", ast_sha256 = "bc979ff2a209a0144820e1ece1da93589cf7a691218af89f89fa93d4f9abb485", nodes_sha256 = "4f299288b9e21d4e02b851f8e69f0578a82f4ce1520bd953dfa9313353e630fb", node_count = 208 }]
@@ -3577,8 +3577,8 @@ java_node_count = 45
 rust_node_counts = [74]
 operation = [
   { semantic = "initialize the cross-event search result to false", java_node_ranges = [[0, 4]], rust_node_ranges = [{ target = 0, start = 0, end = 2 }] },
-  { semantic = "visit event codes one through 56 in ascending order while no earlier event has matched, using signed JVM increment semantics", java_node_ranges = [[5, 19]], rust_node_ranges = [{ target = 0, start = 3, end = 14 }, { target = 0, start = 60, end = 68 }], literal_note = "javac represents eventCode++ as an increment operator with no numeric child; Rust makes the identical increment explicit as i32_add(event_code, 1)." },
-  { semantic = "read each event offset, skip only minus one, construct a nonnull interpreter bound to this script, and run the recursive scanner from that offset", java_node_ranges = [[20, 42]], rust_node_ranges = [{ target = 0, start = 15, end = 59 }], literal_note = "Rust's factored interpreter constructor requires the Java constructor-default status as explicit Some(0); Java's new InkInterpreter call receives that zero implicitly inside the separately crosswalked constructor." },
+  { semantic = "visit event codes one through 56 in ascending order while no earlier event has matched, using signed JVM increment semantics", java_node_ranges = [[5, 19]], rust_node_ranges = [{ target = 0, start = 3, end = 14 }, { target = 0, start = 60, end = 68 }], literal_note = "javac represents eventCode++ as an increment operator with no numeric child; Rust makes the identical increment explicit as i32_add(event_code, 1).", literal_delta = { java_only = [], rust_only = [1] }},
+  { semantic = "read each event offset, skip only minus one, construct a nonnull interpreter bound to this script, and run the recursive scanner from that offset", java_node_ranges = [[20, 42]], rust_node_ranges = [{ target = 0, start = 15, end = 59 }], literal_note = "Rust passes `Some(0)` as the explicit opaque script-handle argument required by the factored interpreter constructor; Java passes this script object directly, while status zero is initialized inside both separately crosswalked constructors.", literal_delta = { java_only = [], rust_only = [0] }},
   { semantic = "return the accumulated result after a match or all 56 event roots", java_node_ranges = [[43, 44]], rust_node_ranges = [{ target = 0, start = 69, end = 73 }] },
 ]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:ink_script_has_command", ast_sha256 = "35423c2f292d8d4112070feee760ff8b02a9e83c974c76c4b17949f0fca791f6", nodes_sha256 = "2648afb89af8b5f19f2d16154b2072956b2ceb79cb75ef171fecfd940f916133", node_count = 74 }]
@@ -3713,7 +3713,7 @@ java_nodes_sha256 = "ae9530482c608b1c508c2ceadce8f2498f5f6a113e36ac3b4249f7116b7
 java_node_count = 25
 rust_node_counts = [36]
 operation = [
-  { semantic = "return with no mutation unless loading mode is exactly minus one, the load bar is inactive, and the dissolve counter is at most minus three", literal_note = "Java compares against named compile-time constants KEY_UP (-1) and KEY_LEFT (-3), so the javac operation carries identifiers; Rust inlines those exact signed guard thresholds.", java_node_ranges = [[0, 16]], rust_node_ranges = [{ target = 0, start = 0, end = 20 }] },
+  { semantic = "return with no mutation unless loading mode is exactly minus one, the load bar is inactive, and the dissolve counter is at most minus three", literal_note = "Java compares against named compile-time constants KEY_UP (-1) and KEY_LEFT (-3), so the javac operation carries identifiers; Rust inlines those exact signed guard thresholds.", java_node_ranges = [[0, 16]], rust_node_ranges = [{ target = 0, start = 0, end = 20 }] , literal_delta = { java_only = [], rust_only = [-3, -1] }},
   { semantic = "normalize the raw key through the reviewed binding precedence and apply an accepted press through setKeyStatus", java_node_ranges = [[17, 24]], rust_node_ranges = [{ target = 0, start = 21, end = 35 }] },
 ]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:game_canvas_key_pressed", ast_sha256 = "0ac3631c789ce9c6d00b970687eac7908a48dacfcda4881c604a14b6ccb4c8c9", nodes_sha256 = "9c090bce7230adea2442b69b8b31df7cdd05cf3e6f908e19fed55ab7c549aa58", node_count = 36 }]
@@ -3734,7 +3734,7 @@ java_nodes_sha256 = "ad30f2e04a52d8e841d1c3c6a6a27823e0dc11ab2c74719f5c41a728e47
 java_node_count = 25
 rust_node_counts = [36]
 operation = [
-  { semantic = "return with no mutation unless loading mode is exactly minus one, the load bar is inactive, and the dissolve counter is at most minus three", literal_note = "Java compares against named compile-time constants KEY_UP (-1) and KEY_LEFT (-3), so the javac operation carries identifiers; Rust inlines those exact signed guard thresholds.", java_node_ranges = [[0, 16]], rust_node_ranges = [{ target = 0, start = 0, end = 20 }] },
+  { semantic = "return with no mutation unless loading mode is exactly minus one, the load bar is inactive, and the dissolve counter is at most minus three", literal_note = "Java compares against named compile-time constants KEY_UP (-1) and KEY_LEFT (-3), so the javac operation carries identifiers; Rust inlines those exact signed guard thresholds.", java_node_ranges = [[0, 16]], rust_node_ranges = [{ target = 0, start = 0, end = 20 }] , literal_delta = { java_only = [], rust_only = [-3, -1] }},
   { semantic = "normalize the raw key before applying an accepted release, preserving the callee's last-key and scroll state", java_node_ranges = [[17, 24]], rust_node_ranges = [{ target = 0, start = 21, end = 35 }] },
 ]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:game_canvas_key_released", ast_sha256 = "d5cc06b2c337d607a155f939a87ff6083df10365b3ba5e99a9998a642cf35b1f", nodes_sha256 = "506b2c2960937d9d1f2815a96df7853f102c58d6060d377ed19d408e2b45bf94", node_count = 36 }]
@@ -3832,11 +3832,11 @@ java_node_count = 92
 rust_node_counts = [152]
 operation = [
   { semantic = "create the UTF-16 output accumulator", java_node_ranges = [[0, 5]], rust_node_ranges = [{ target = 0, start = 31, end = 34 }] },
-  { semantic = "iterate every source UTF-16 code unit in order, with a null source failing at the original length dereference", java_node_ranges = [[6, 19]], rust_node_ranges = [{ target = 0, start = 0, end = 7 }, { target = 0, start = 35, end = 38 }], literal_note = "Java spells out loop-index initialization at zero; Rust slice iteration starts at the first code unit by construction and therefore has no numeric zero cursor." },
+  { semantic = "iterate every source UTF-16 code unit in order, with a null source failing at the original length dereference", java_node_ranges = [[6, 19]], rust_node_ranges = [{ target = 0, start = 0, end = 7 }, { target = 0, start = 35, end = 38 }], literal_note = "Java spells out loop-index initialization at zero; Rust slice iteration starts at the first code unit by construction and therefore has no numeric zero cursor.", literal_delta = { java_only = [0], rust_only = [] }},
   { semantic = "read one code unit and classify only ASCII a-z, A-Z, and 0-9 as pass-through", java_node_ranges = [[20, 55]], rust_node_ranges = [{ target = 0, start = 39, end = 77 }] },
-  { semantic = "begin every non-alphanumeric encoding with a percent code unit", java_node_ranges = [[56, 71]], rust_node_ranges = [{ target = 0, start = 85, end = 90 }], literal_note = "Java appends percent as the String literal `%`; Rust's UTF-16 accumulator emits the same value as explicit code unit 0x0025 (37)." },
-  { semantic = "apply the retail character-less-than-15 leading-zero rule", java_node_ranges = [[72, 77]], rust_node_ranges = [{ target = 0, start = 91, end = 103 }], literal_note = "Java appends the leading zero as the String literal `0`; Rust's UTF-16 accumulator emits the same character as explicit code unit 0x0030 (48), while retaining the exact less-than-15 condition." },
-  { semantic = "append the lowercase variable-width hexadecimal representation", java_node_ranges = [[78, 81]], rust_node_ranges = [{ target = 0, start = 104, end = 146 }], literal_note = "Java delegates variable-width lowercase formatting to Integer.toHexString; Rust expands that host primitive into the explicit nibble shifts 12, 8, 4, and 0, mask 15, and leading-nibble suppression state." },
+  { semantic = "begin every non-alphanumeric encoding with a percent code unit", java_node_ranges = [[56, 71]], rust_node_ranges = [{ target = 0, start = 85, end = 90 }], literal_note = "Java appends percent as the String literal `%`; Rust's UTF-16 accumulator emits the same value as explicit code unit 0x0025 (37).", literal_delta = { java_only = [], rust_only = [37] }},
+  { semantic = "apply the retail character-less-than-15 leading-zero rule", java_node_ranges = [[72, 77]], rust_node_ranges = [{ target = 0, start = 91, end = 103 }], literal_note = "Java appends the leading zero as the String literal `0`; Rust's UTF-16 accumulator emits the same character as explicit code unit 0x0030 (48), while retaining the exact less-than-15 condition.", literal_delta = { java_only = [], rust_only = [48] }},
+  { semantic = "append the lowercase variable-width hexadecimal representation", java_node_ranges = [[78, 81]], rust_node_ranges = [{ target = 0, start = 104, end = 146 }], literal_note = "Java delegates variable-width lowercase formatting to Integer.toHexString; Rust expands that host primitive into the explicit nibble shifts 12, 8, 4, and 0, mask 15, and leading-nibble suppression state.", literal_delta = { java_only = [], rust_only = [0, 0, 0, 4, 8, 12, 15] }},
   { semantic = "append an accepted ASCII alphanumeric unchanged", java_node_ranges = [[82, 87]], rust_node_ranges = [{ target = 0, start = 78, end = 84 }] },
   { semantic = "return the accumulated UTF-16 text", java_node_ranges = [[88, 91]], rust_node_ranges = [{ target = 0, start = 147, end = 151 }] },
 ]
@@ -3860,15 +3860,15 @@ java_node_count = 199
 rust_node_counts = [226]
 operation = [
   { semantic = "create the result, signed counters, and two per-line UTF-16 accumulators", java_node_ranges = [[0, 23]], rust_node_ranges = [{ target = 0, start = 31, end = 46 }] },
-  { semantic = "walk unsigned input bytes while data remains and fewer than 100 complete lines have been emitted, with null failing at the original arraylength", java_node_ranges = [[24, 51]], rust_node_ranges = [{ target = 0, start = 0, end = 7 }, { target = 0, start = 47, end = 65 }], literal_note = "Java initializes an explicit array index at zero and widens each signed byte through `& 255`; Rust slice iteration has an implicit zero start and its u8 element already is the exact unsigned 0-through-255 value." },
-  { semantic = "append dot for control bytes below space and otherwise append the unsigned byte as one UTF-16 code unit", java_node_ranges = [[52, 68]], rust_node_ranges = [{ target = 0, start = 66, end = 82 }], literal_note = "Java appends dot as the String literal `.`; Rust's UTF-16 column emits that same character as explicit code unit 0x002e (46)." },
-  { semantic = "append exactly two lowercase hex digits and a space, using the independent less-than-or-equal-to-15 zero-padding rule", java_node_ranges = [[69, 93]], rust_node_ranges = [{ target = 0, start = 83, end = 118 }], literal_note = "Java uses String literals `0` and space plus Integer.toHexString; Rust emits UTF-16 code units 0x0030 and 0x0020 and expands the high-nibble shift/mask as 4 and 15 before the shared lowercase-digit helper." },
-  { semantic = "increment the current output column", java_node_ranges = [[94, 96]], rust_node_ranges = [{ target = 0, start = 119, end = 122 }], literal_note = "Java's postfix increment carries an implicit unit step in its AST; Rust's `+= 1` spells that same increment amount as a numeric literal." },
+  { semantic = "walk unsigned input bytes while data remains and fewer than 100 complete lines have been emitted, with null failing at the original arraylength", java_node_ranges = [[24, 51]], rust_node_ranges = [{ target = 0, start = 0, end = 7 }, { target = 0, start = 47, end = 65 }], literal_note = "Java initializes an explicit array index at zero and widens each signed byte through `& 255`; Rust slice iteration has an implicit zero start and its u8 element already is the exact unsigned 0-through-255 value.", literal_delta = { java_only = [0, 255], rust_only = [] }},
+  { semantic = "append dot for control bytes below space and otherwise append the unsigned byte as one UTF-16 code unit", java_node_ranges = [[52, 68]], rust_node_ranges = [{ target = 0, start = 66, end = 82 }], literal_note = "Java appends dot as the String literal `.`; Rust's UTF-16 column emits that same character as explicit code unit 0x002e (46).", literal_delta = { java_only = [], rust_only = [46] }},
+  { semantic = "append exactly two lowercase hex digits and a space, using the independent less-than-or-equal-to-15 zero-padding rule", java_node_ranges = [[69, 93]], rust_node_ranges = [{ target = 0, start = 83, end = 118 }], literal_note = "Java uses String literals `0` and space plus Integer.toHexString; Rust emits UTF-16 code units 0x0030 and 0x0020 and expands the high-nibble shift/mask as 4 and 15 before the shared lowercase-digit helper.", literal_delta = { java_only = [], rust_only = [4, 15, 32, 48] }},
+  { semantic = "increment the current output column", java_node_ranges = [[94, 96]], rust_node_ranges = [{ target = 0, start = 119, end = 122 }], literal_note = "Java's postfix increment carries an implicit unit step in its AST; Rust's `+= 1` spells that same increment amount as a numeric literal.", literal_delta = { java_only = [], rust_only = [1] }},
   { semantic = "test whether the current line has reached the exact 30-column width", java_node_ranges = [[97, 102]], rust_node_ranges = [{ target = 0, start = 123, end = 129 }] },
-  { semantic = "flush a complete line as hex, space-pipe-space, ASCII, and newline", java_node_ranges = [[103, 127]], rust_node_ranges = [{ target = 0, start = 130, end = 153 }], literal_note = "Java appends the String literals ` | ` and newline; Rust's UTF-16 result spells those exact characters as code units 32, 124, 32, and 10." },
-  { semantic = "clear both columns, reset the offset, and increment the completed-line count", java_node_ranges = [[128, 144]], rust_node_ranges = [{ target = 0, start = 154, end = 167 }], literal_note = "Java replaces both StringBuffers with new empty instances, resets the column to numeric zero, and postfix-increments the line count; Rust uses two Vec::clear calls, one zero assignment, and an explicit `+= 1`, so two Java zero-valued empty/reset facts are structural while the Rust unit step is literal." },
-  { semantic = "when a partial final line exists, pad each absent byte with three hex spaces and one ASCII space up to column 30", java_node_ranges = [[145, 169]], rust_node_ranges = [{ target = 0, start = 168, end = 196 }], literal_note = "Java postfix-increments the column and appends the String literals `   ` and space; Rust spells the unit increment as 1 and those four padding characters as four UTF-16 code units 32." },
-  { semantic = "append the padded final line with the same separator and newline", java_node_ranges = [[170, 194]], rust_node_ranges = [{ target = 0, start = 197, end = 220 }], literal_note = "Java appends the String literals ` | ` and newline; Rust's UTF-16 result spells those exact characters as code units 32, 124, 32, and 10." },
+  { semantic = "flush a complete line as hex, space-pipe-space, ASCII, and newline", java_node_ranges = [[103, 127]], rust_node_ranges = [{ target = 0, start = 130, end = 153 }], literal_note = "Java appends the String literals ` | ` and newline; Rust's UTF-16 result spells those exact characters as code units 32, 124, 32, and 10.", literal_delta = { java_only = [], rust_only = [10, 32, 32, 124] }},
+  { semantic = "clear both columns, reset the offset, and increment the completed-line count", java_node_ranges = [[128, 144]], rust_node_ranges = [{ target = 0, start = 154, end = 167 }], literal_note = "Java calls setLength(0) on both existing StringBuffers, resets the column to numeric zero, and postfix-increments the line count; Rust uses two Vec::clear calls, one zero assignment, and an explicit `+= 1`, so the two Java clear-length zeros are structural while the Rust unit step is literal.", literal_delta = { java_only = [0, 0], rust_only = [1] }},
+  { semantic = "when a partial final line exists, pad each absent byte with three hex spaces and one ASCII space up to column 30", java_node_ranges = [[145, 169]], rust_node_ranges = [{ target = 0, start = 168, end = 196 }], literal_note = "Java postfix-increments the column and appends the String literals `   ` and space; Rust spells the unit increment as 1 and those four padding characters as four UTF-16 code units 32.", literal_delta = { java_only = [], rust_only = [1, 32, 32, 32, 32] }},
+  { semantic = "append the padded final line with the same separator and newline", java_node_ranges = [[170, 194]], rust_node_ranges = [{ target = 0, start = 197, end = 220 }], literal_note = "Java appends the String literals ` | ` and newline; Rust's UTF-16 result spells those exact characters as code units 32, 124, 32, and 10.", literal_delta = { java_only = [], rust_only = [10, 32, 32, 124] }},
   { semantic = "return the accumulated UTF-16 dump", java_node_ranges = [[195, 198]], rust_node_ranges = [{ target = 0, start = 221, end = 225 }] },
 ]
 adaptation = [{ side = "rust", category = "host-adapter", reason = "The local lower_hex_digit closure realizes Java's Integer.toHexString nibble conversion as exact lowercase UTF-16 without relying on a host formatter.", rust_node_ranges = [{ target = 0, start = 8, end = 30 }] }]
@@ -4170,7 +4170,7 @@ operation = [
   { semantic = "own the complete exception-swallowing body", java_nodes = [0], rust_nodes = ["0:0"] },
   { semantic = "catch any Exception from byte collection or RMS publication and complete void without exposing it", java_node_ranges = [[1, 2], [10, 14]], rust_nodes = ["0:1", "0:2"], rust_node_ranges = [{ target = 0, start = 8, end = 10 }] },
   { semantic = "invoke inkServerGetBytes first with the nullable DataInputStream identity unchanged and retain its nullable byte-array result", java_node_ranges = [[7, 9]], rust_node_ranges = [{ target = 0, start = 3, end = 7 }] },
-  { semantic = "invoke rmsSet second with the exact RMS_chunkINI UTF-16 name and collected byte-array identity, discarding its boolean result", java_node_ranges = [[3, 6]], rust_node_ranges = [{ target = 0, start = 11, end = 30 }], literal_note = "Java carries `RMS_chunkINI` as one String literal; Rust passes the same twelve-character value as explicit UTF-16 code units, so their numeric values appear in the syn node stream." },
+  { semantic = "invoke rmsSet second with the exact RMS_chunkINI UTF-16 name and collected byte-array identity, discarding its boolean result", java_node_ranges = [[3, 6]], rust_node_ranges = [{ target = 0, start = 11, end = 30 }], literal_note = "Java carries `RMS_chunkINI` as one String literal; Rust passes the same twelve-character value as explicit UTF-16 code units, so their numeric values appear in the syn node stream.", literal_delta = { java_only = [], rust_only = [73, 73, 77, 78, 82, 83, 95, 99, 104, 107, 110, 117] }},
 ]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:application_save_chunk_ini", ast_sha256 = "b6e3ea6e125b53adb01d5dc54b1bc85e0c0ce02db89d67bc7af6f7f51504c71f", nodes_sha256 = "b2117558a480208d3b5e04089de37068ae52a4d40e55a19b2900c84385f9bfa7", node_count = 31 }]
 oracle = "pure-method-v1"
@@ -4194,7 +4194,7 @@ operation = [
   { semantic = "read resourceSCCurrentSize for the allocation expression and create a distinct zero-filled byte array of exactly that length", java_node_ranges = [[1, 7]], rust_node_ranges = [{ target = 0, start = 1, end = 4 }, { target = 0, start = 23, end = 25 }] },
   { semantic = "evaluate resourceSCData as the first System.arraycopy argument after allocation while deferring the platform null check until every argument has been evaluated", java_nodes = [12], rust_node_ranges = [{ target = 0, start = 26, end = 30 }] },
   { semantic = "re-read resourceSCCurrentSize as the fifth System.arraycopy argument after the source, zero offsets, and destination have been evaluated", java_nodes = [16], rust_node_ranges = [{ target = 0, start = 31, end = 34 }] },
-  { semantic = "invoke System.arraycopy with both offsets zero, reject a null source even for length zero, validate the signed length against both arrays, and copy exactly that prefix while retaining any zero-filled destination tail", java_node_ranges = [[8, 11], [13, 15]], rust_node_ranges = [{ target = 0, start = 35, end = 102 }], literal_note = "Java supplies explicit source and destination offsets zero to System.arraycopy; Rust's `source[..copy_length]` and `subchunk[..copy_length]` encode both starts as omitted range bounds, while its one explicit zero belongs to the signed-length validation hidden by the Java primitive.", blanket_ok = true, blanket_reason = "Java exposes the complete copy and its fault order as one System.arraycopy host primitive; Rust must explicitly realize its null, interleaved-length, signed-bounds, and prefix-copy contract, which the hostile callback oracle verifies as one atomic step." },
+  { semantic = "invoke System.arraycopy with both offsets zero, reject a null source even for length zero, validate the signed length against both arrays, and copy exactly that prefix while retaining any zero-filled destination tail", java_node_ranges = [[8, 11], [13, 15]], rust_node_ranges = [{ target = 0, start = 35, end = 102 }], literal_note = "Java supplies explicit source and destination offsets zero to System.arraycopy; Rust's `source[..copy_length]` and `subchunk[..copy_length]` encode both starts as omitted range bounds, while its one explicit zero belongs to the signed-length validation hidden by the Java primitive.", blanket_ok = true, blanket_reason = "Java exposes the complete copy and its fault order as one System.arraycopy host primitive; Rust must explicitly realize its null, interleaved-length, signed-bounds, and prefix-copy contract, which the hostile callback oracle verifies as one atomic step.", literal_delta = { java_only = [0], rust_only = [] }},
   { semantic = "return the newly allocated subchunk without mutating or aliasing resourceSCData", java_node_ranges = [[17, 18]], rust_node_ranges = [{ target = 0, start = 103, end = 107 }] },
 ]
 adaptation = [{ side = "rust", category = "representation-adapter", reason = "Rust allocation does not expose the JVM newarray trap, so an explicit signed-negative check constructs the exact NegativeArraySizeException before allocation or resourceSCData evaluation.", rust_node_ranges = [{ target = 0, start = 5, end = 22 }] }]
@@ -4244,7 +4244,7 @@ rust_node_counts = [6]
 operation = [{ semantic = "declare the nullable InkEngine-owned settings table with UTF-16 keys and the three nonnull Object categories observed by toInt", java_node_ranges = [[0, 2]], rust_node_ranges = [{ target = 0, start = 0, end = 5 }] }]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/state.rs", item = "field:InkEngineState::settings_hash", ast_sha256 = "a6b6177bba2c1db8fa52d3961e6e73c6c7029dd7d0d1b4da6fae7d6364ea817d", nodes_sha256 = "89f12814313a8a71c2c5b77f93b680551fe275e2230dfd3be76b5082322dfbc8", node_count = 6 }]
 semantic_status = "crosswalked"
-semantic_review = "InkEngineState is the sole explicit owner. Option preserves a null Hashtable; the entry vector preserves UTF-16 key equality and last-write-wins setup; JavaOwnedObject retains exact Integer and String payloads plus the only other Object category observable through toInt. The representation stays alloc-only and no_std."
+semantic_review = "InkEngineState is the sole explicit owner. Option preserves a null Hashtable; the entry vector preserves UTF-16 key equality and last-write-wins setup; JavaOwnedObject retains exact Integer and String payloads plus the only other Object category observable through toInt. The representation stays owned and host-independent."
 
 [[rust_value]]
 file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
@@ -4252,7 +4252,7 @@ item = "variant:JavaOwnedObject::Integer"
 ast_sha256 = "3d583f5e4ac428be4ff261bd45c07588a6c7e3a7b4f5b04aae2e68eb290fc957"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
-semantic_review = "Rust-only owned representation of a boxed Java Integer stored in a long-lived no_std settings owner."
+semantic_review = "Rust-only owned representation of a boxed Java Integer stored in a long-lived settings owner."
 
 [[rust_value]]
 file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
@@ -4276,7 +4276,7 @@ item = "enum:JavaOwnedObject"
 ast_sha256 = "03c1a9ebebf673eb077ddf689045fa3b68d09e0cde8fd4791301137254722339"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
-semantic_review = "Owned no_std counterpart to the borrowed JavaObject boundary for the three nonnull Object categories that a persistent settings Hashtable must retain."
+semantic_review = "Owned Rust counterpart to the borrowed JavaObject boundary for the three nonnull Object categories that a persistent settings Hashtable must retain."
 
 [[body]]
 java_class = "MyCanvas"
@@ -4448,7 +4448,7 @@ operation = [
   { semantic = "terminate only on zero and return the accumulated UTF-16 string", java_node_ranges = [[26, 26], [37, 40]], rust_node_ranges = [{ target = 0, start = 46, end = 48 }] },
   { semantic = "append each nonzero widened code unit in source order", java_node_ranges = [[27, 31]], rust_node_ranges = [{ target = 0, start = 49, end = 53 }] },
 ]
-adaptation = [{ side = "rust", category = "representation-adapter", reason = "The no_std slice boundary represents Java's nullable DataInputStream explicitly. A null slice owner spins after output construction, matching the canonical loop's repeatedly caught NullPointerException; spin_loop is an execution hint only.", rust_node_ranges = [{ target = 0, start = 5, end = 15 }] }]
+adaptation = [{ side = "rust", category = "representation-adapter", reason = "The explicit slice boundary represents Java's nullable DataInputStream explicitly. A null slice owner spins after output construction, matching the canonical loop's repeatedly caught NullPointerException; spin_loop is an execution hint only.", rust_node_ranges = [{ target = 0, start = 5, end = 15 }] }]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:read_string", ast_sha256 = "faacd814094e4b045a6259ec8e7d0e33d55f3600612ef421032af74bd1eaa6cd", nodes_sha256 = "3c1ce66cace12b10ebff21a984461d8a982f71f0c9371878d7c13892dfdfbb02", node_count = 54 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
@@ -4470,8 +4470,8 @@ operation = [
   { semantic = "own the complete factory body", java_node_ranges = [[0, 0]], rust_node_ranges = [{ target = 0, start = 0, end = 0 }] },
   { semantic = "read the unsigned request type and collapse null or any outer read/construction Exception to a null request", java_node_ranges = [[1, 8], [50, 56]], rust_node_ranges = [{ target = 0, start = 1, end = 13 }] },
   { semantic = "dispatch on the exact unsigned request-type domain", java_node_ranges = [[9, 11]], rust_node_ranges = [{ target = 0, start = 14, end = 16 }] },
-  { semantic = "for type 2, decode the signed-byte NUL string first, then require an unsigned transform byte, construct through the Object overload, and retain its shipped zero transform", java_node_ranges = [[12, 23]], rust_node_ranges = [{ target = 0, start = 17, end = 51 }], literal_note = "Both implementations use discriminator 2; javac inventories the switch case literal, while the current syn preorder surface records the match and arm body but does not emit literal-pattern nodes." },
-  { semantic = "for type 3, require unsigned ID then transform bytes, box the ID, construct through the Object overload, and retain its shipped zero transform", java_node_ranges = [[24, 40]], rust_node_ranges = [{ target = 0, start = 52, end = 85 }], literal_note = "Both implementations use discriminator 3; javac inventories the switch case literal, while the current syn preorder surface records the match and arm body but does not emit literal-pattern nodes." },
+  { semantic = "for type 2, decode the signed-byte NUL string first, then require an unsigned transform byte, construct through the Object overload, and retain its shipped zero transform", java_node_ranges = [[12, 23]], rust_node_ranges = [{ target = 0, start = 17, end = 51 }], literal_note = "Both implementations use discriminator 2; javac inventories the switch case literal, while the current syn preorder surface records the match and arm body but does not emit literal-pattern nodes.", literal_delta = { java_only = [2], rust_only = [] }},
+  { semantic = "for type 3, require unsigned ID then transform bytes, box the ID, construct through the Object overload, and retain its shipped zero transform", java_node_ranges = [[24, 40]], rust_node_ranges = [{ target = 0, start = 52, end = 85 }], literal_note = "Both implementations use discriminator 3; javac inventories the switch case literal, while the current syn preorder surface records the match and arm body but does not emit literal-pattern nodes.", literal_delta = { java_only = [3], rust_only = [] }},
   { semantic = "for every other unsigned type, decode a signed-byte NUL string and construct through the int/String overload", java_node_ranges = [[41, 49]], rust_node_ranges = [{ target = 0, start = 86, end = 110 }] },
 ]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:resource_request_create_from_input", ast_sha256 = "716d8da65c148b913b51ce3858edd08e7fcf84e2239175babefee32bc52bae9a", nodes_sha256 = "974324a8720541e68d8ea37ae088d2a99fe561af30c00513044d0cd24dab47c5", node_count = 111 }]
@@ -4494,8 +4494,8 @@ rust_node_counts = [61]
 operation = [
   { semantic = "own the complete marker-scan body", java_node_ranges = [[0, 0]], rust_node_ranges = [{ target = 0, start = 0, end = 0 }] },
   { semantic = "construct the mutable sliding window before accessing the nullable target", java_node_ranges = [[3, 7]], rust_node_ranges = [{ target = 0, start = 1, end = 4 }] },
-  { semantic = "collapse any target/input/read exception to the method's constant zero result", java_node_ranges = [[1, 2], [51, 55]], rust_node_ranges = [{ target = 0, start = 5, end = 12 }, { target = 0, start = 28, end = 47 }], literal_note = "Java routes null-target, null-input, and read failures through one catch to the single terminal zero return; Rust exposes those three failure sites as separate early `return 0` paths, preserving the same cursor and result at each cut point." },
-  { semantic = "measure the target and initialize one ASCII space per UTF-16 target code unit", java_node_ranges = [[8, 26]], rust_node_ranges = [{ target = 0, start = 13, end = 19 }], literal_note = "Java fills the window with an explicit loop whose index starts at zero; Rust `window.resize(target.len(), 0x0020)` performs the same count of space insertions without an index variable or zero initializer." },
+  { semantic = "collapse any target/input/read exception to the method's constant zero result", java_node_ranges = [[1, 2], [51, 55]], rust_node_ranges = [{ target = 0, start = 5, end = 12 }, { target = 0, start = 28, end = 47 }], literal_note = "Java routes null-target, null-input, and read failures through one catch to the single terminal zero return; Rust exposes those three failure sites as separate early `return 0` paths, preserving the same cursor and result at each cut point.", literal_delta = { java_only = [], rust_only = [0, 0, 0] }},
+  { semantic = "measure the target and initialize one ASCII space per UTF-16 target code unit", java_node_ranges = [[8, 26]], rust_node_ranges = [{ target = 0, start = 13, end = 19 }], literal_note = "Java fills the window with an explicit loop whose index starts at zero; Rust `window.resize(target.len(), 0x0020)` performs the same count of space insertions without an index variable or zero initializer.", literal_delta = { java_only = [0], rust_only = [] }},
   { semantic = "compare the complete current window with the target before each read, allowing empty targets and an all-space initial match", java_node_ranges = [[27, 36]], rust_node_ranges = [{ target = 0, start = 20, end = 27 }] },
   { semantic = "read one unsigned byte, widen it to a UTF-16 code unit, and append it to the window", java_node_ranges = [[37, 45]], rust_node_ranges = [{ target = 0, start = 48, end = 55 }] },
   { semantic = "delete the oldest code unit after every successful append", java_node_ranges = [[46, 50]], rust_node_ranges = [{ target = 0, start = 56, end = 59 }] },
@@ -4521,7 +4521,7 @@ rust_node_counts = [38]
 operation = [
   { semantic = "own the complete output body", java_node_ranges = [[0, 0]], rust_node_ranges = [{ target = 0, start = 0, end = 0 }] },
   { semantic = "place null value access and all output faults inside one swallowed Exception boundary", java_node_ranges = [[1, 2], [32, 36]], rust_node_ranges = [{ target = 0, start = 1, end = 7 }] },
-  { semantic = "iterate once per UTF-16 code unit in source order", java_node_ranges = [[3, 16]], rust_node_ranges = [{ target = 0, start = 8, end = 11 }], literal_note = "Java spells out a loop index initialized at zero; Rust iterates the UTF-16 slice directly, whose first-element start is structural and has no numeric zero cursor." },
+  { semantic = "iterate once per UTF-16 code unit in source order", java_node_ranges = [[3, 16]], rust_node_ranges = [{ target = 0, start = 8, end = 11 }], literal_note = "Java spells out a loop index initialized at zero; Rust iterates the UTF-16 slice directly, whose first-element start is structural and has no numeric zero cursor.", literal_delta = { java_only = [0], rust_only = [] }},
   { semantic = "truncate each UTF-16 code unit to a signed Java byte and promote that byte to the int passed to DataOutputStream.write", java_node_ranges = [[21, 26]], rust_node_ranges = [{ target = 0, start = 12, end = 23 }] },
   { semantic = "attempt each character write and return immediately after the first swallowed output failure", java_node_ranges = [[17, 20]], rust_node_ranges = [{ target = 0, start = 24, end = 32 }] },
   { semantic = "after every character succeeds, attempt one zero terminator and swallow a failure without retry", java_node_ranges = [[27, 31]], rust_node_ranges = [{ target = 0, start = 33, end = 37 }] },
@@ -4549,21 +4549,21 @@ operation = [
   { semantic = "read the unsigned one-byte element count and publish a null-filled array of exactly that length, returning null if the count read fails", java_node_ranges = [[8, 19]], rust_node_ranges = [{ target = 0, start = 5, end = 16 }] },
   { semantic = "iterate over every allocated slot in ascending index order", java_node_ranges = [[20, 31]], rust_node_ranges = [{ target = 0, start = 17, end = 22 }] },
   { semantic = "read one Java modified-UTF value and return the already allocated partial array if that runtime read throws", java_node_ranges = [[32, 37]], rust_node_ranges = [{ target = 0, start = 23, end = 41 }] },
-  { semantic = "test the nonempty value's first UTF-16 code unit for the dollar localization marker", java_node_ranges = [[38, 52]], rust_node_ranges = [{ target = 0, start = 42, end = 57 }], literal_note = "Java separately tests length against zero and calls charAt(0), with dollar represented as a char literal; Rust `first()==Some(&0x0024)` folds both zero-index/nonempty checks into first() and spells the dollar marker as UTF-16 code unit 36." },
+  { semantic = "test the nonempty value's first UTF-16 code unit for the dollar localization marker", java_node_ranges = [[38, 52]], rust_node_ranges = [{ target = 0, start = 42, end = 57 }], literal_note = "Java separately tests length against zero and calls charAt(0), then compares with named TEXT_IDENTIFICATOR, whose reviewed declaration fixes dollar/36; Rust `first()==Some(&0x0024)` folds both zero checks and inlines that declared UTF-16 value.", literal_delta = { java_only = [0, 0], rust_only = [36] }},
   { semantic = "drop the dollar marker and replace the value through the nullable string-key localization overload", java_node_ranges = [[53, 61]], rust_node_ranges = [{ target = 0, start = 58, end = 76 }] },
   { semantic = "store the resulting nullable string into the current array slot before inspecting it", java_node_ranges = [[62, 67]], rust_node_ranges = [{ target = 0, start = 77, end = 84 }] },
-  { semantic = "dereference the stored slot, compare it with savePoint, then require loading mode zero; a null localized result returns the published partial array through the catch policy", java_node_ranges = [[68, 80]], rust_node_ranges = [{ target = 0, start = 85, end = 121 }], literal_note = "Java compares against the single String literal `savePoint`; Rust's UTF-16 slice comparison spells the same nine code units explicitly, producing numeric literals for s,a,v,e,P,o,i,n,t." },
+  { semantic = "dereference the stored slot, compare it with savePoint, then require loading mode zero; a null localized result returns the published partial array through the catch policy", java_node_ranges = [[68, 80]], rust_node_ranges = [{ target = 0, start = 85, end = 121 }], literal_note = "Java compares against the single String literal `savePoint`; Rust's UTF-16 slice comparison spells the same nine code units explicitly, producing numeric literals for s,a,v,e,P,o,i,n,t.", literal_delta = { java_only = [], rust_only = [80, 97, 101, 105, 110, 111, 115, 116, 118] }},
   { semantic = "set the sole save-permission flag true when both save-point predicates hold", java_node_ranges = [[81, 84]], rust_node_ranges = [{ target = 0, start = 122, end = 126 }] },
 ]
 adaptation = [
-  { side = "rust", category = "representation-adapter", reason = "DataInputStream.readUTF is a Java-library node rather than an application body. The no_std Rust runtime expansion reads its big-endian unsigned 16-bit byte length with the same early-failure cursor behavior.", rust_node_ranges = [{ target = 1, start = 0, end = 21 }] },
-  { side = "rust", category = "representation-adapter", reason = "The no_std runtime expansion reads the complete declared modified-UTF payload before decoding, matching DataInputStream.readFully and therefore its cursor position on malformed encodings.", rust_node_ranges = [{ target = 1, start = 22, end = 41 }] },
+  { side = "rust", category = "representation-adapter", reason = "DataInputStream.readUTF is a Java-library node rather than an application body. The Rust runtime expansion reads its big-endian unsigned 16-bit byte length with the same early-failure cursor behavior.", rust_node_ranges = [{ target = 1, start = 0, end = 21 }] },
+  { side = "rust", category = "representation-adapter", reason = "The Rust runtime expansion reads the complete declared modified-UTF payload before decoding, matching DataInputStream.readFully and therefore its cursor position on malformed encodings.", rust_node_ranges = [{ target = 1, start = 22, end = 41 }] },
   { side = "rust", category = "representation-adapter", reason = "Rust explicitly allocates the UTF-16 result and owns a byte cursor that is implicit inside the Java library implementation.", rust_node_ranges = [{ target = 1, start = 42, end = 49 }] },
   { side = "rust", category = "representation-adapter", reason = "The Java library's modified-UTF decoder is expanded explicitly: leading nibbles 0 through 7 consume one byte and widen it, including the decoder's accepted raw zero form.", rust_node_ranges = [{ target = 1, start = 50, end = 84 }] },
   { side = "rust", category = "representation-adapter", reason = "The Java library's modified-UTF decoder is expanded explicitly: leading nibbles 12 and 13 require one continuation byte and reconstruct one UTF-16 code unit or fail.", rust_node_ranges = [{ target = 1, start = 85, end = 143 }] },
   { side = "rust", category = "representation-adapter", reason = "The Java library's modified-UTF decoder is expanded explicitly: leading nibble 14 requires two continuation bytes and reconstructs one UTF-16 code unit or fails.", rust_node_ranges = [{ target = 1, start = 144, end = 228 }] },
   { side = "rust", category = "representation-adapter", reason = "The explicit decoder rejects every remaining lead-nibble class exactly where Java's modified-UTF runtime throws UTFDataFormatException.", rust_node_ranges = [{ target = 1, start = 229, end = 231 }] },
-  { side = "rust", category = "representation-adapter", reason = "The explicit no_std decoder returns its owned UTF-16 vector where DataInputStream.readUTF constructs and returns a Java String.", rust_node_ranges = [{ target = 1, start = 232, end = 236 }] },
+  { side = "rust", category = "representation-adapter", reason = "The explicit Rust decoder returns its owned UTF-16 vector where DataInputStream.readUTF constructs and returns a Java String.", rust_node_ranges = [{ target = 1, start = 232, end = 236 }] },
 ]
 rust = [
   { file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:read_string_list", ast_sha256 = "3316efcb2eb3ba45c37cf86e7cc7bf691d0b33004eccc8014355f19923ee03dd", nodes_sha256 = "9ebbca629a9fd1b188bc4236c0495bf29c13374e3e0b5dc412c33cccc8a43b4f", node_count = 132 },
@@ -4571,7 +4571,7 @@ rust = [
 ]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "72,119 read-string-list cases extend the four-authority oracle to 960,976 total baseline/canonical/Rust comparisons and 954,780 naming-reference comparisons. The tranche covers null and truncated inputs, every UTF-16 singleton through Java modified UTF, valid and nullable localization results, savePoint under both loading modes and prior flag states, malformed lead/continuation forms, declared lengths through 65,535, exact unread tails, and 4,096 randomized lists. Bytecode inspection separately pins the whole-body Exception range and publication order; the explicit AST adaptations expose every node of the no_std Java-library decoder instead of hiding it behind the readUTF call."
+semantic_review = "72,119 read-string-list cases extend the four-authority oracle to 960,976 total baseline/canonical/Rust comparisons and 954,780 naming-reference comparisons. The tranche covers null and truncated inputs, every UTF-16 singleton through Java modified UTF, valid and nullable localization results, savePoint under both loading modes and prior flag states, malformed lead/continuation forms, declared lengths through 65,535, exact unread tails, and 4,096 randomized lists. Bytecode inspection separately pins the whole-body Exception range and publication order; the explicit AST adaptations expose every node of Rust's Java-library decoder realization instead of hiding it behind the readUTF call."
 
 [[field]]
 java_class = "Resource"
@@ -4601,7 +4601,7 @@ rust_node_counts = [3]
 operation = [{ semantic = "declare the nullable per-resource identifier reference with the value/identity categories reachable at the game boundary", java_node_ranges = [[0, 2]], rust_node_ranges = [{ target = 0, start = 0, end = 2 }] }]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/state.rs", item = "field:GameResourceState::id", ast_sha256 = "22f05c1e6400fa97dfa4f216119b0d63d5a9cb462115a4acc6cf91f9ad0dcfbe", nodes_sha256 = "78757213cb0b6edff051822e33c6ed7a3a9d79019adef31687dd471624c33097", node_count = 3 }]
 semantic_status = "crosswalked"
-semantic_review = "Option preserves Java null. JavaResourceId preserves exact UTF-16 String equality, boxed-Integer value equality, and identity for the remaining game-observed base-Object category without importing a host JVM into the no_std state owner."
+semantic_review = "Option preserves Java null. JavaResourceId preserves exact UTF-16 String equality, boxed-Integer value equality, and identity for the remaining game-observed base-Object category without importing a host JVM into the game-state owner."
 
 [[field]]
 java_class = "Resource"
@@ -4715,7 +4715,7 @@ item = "variant:JavaResourceId::Opaque"
 ast_sha256 = "f4459afc76fedb0e570d2e4b4a6e43446db51015a7111907f3a9510888b85299"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
-semantic_review = "Rust-only opaque-handle category for nonnull base Objects, preserving identity equality without moving host objects into no_std state."
+semantic_review = "Rust-only opaque-handle category for nonnull base Objects, preserving identity equality without moving host objects into owned game state."
 
 [[rust_container]]
 file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
@@ -4723,7 +4723,7 @@ item = "enum:JavaResourceId"
 ast_sha256 = "157dd195c0df853120cf906784443e34a783618a9abc021cde83b2f77e298ca1"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
-semantic_review = "Typed no_std owner for the three nonnull identifier equality categories reachable by GameResource construction; every variant is separately reverse-inventory claimed."
+semantic_review = "Typed Rust owner for the three nonnull identifier equality categories reachable by GameResource construction; every variant is separately reverse-inventory claimed."
 
 [[rust_container]]
 file = "transliteration/crates/orphan-game-xlat/src/state.rs"
@@ -4780,7 +4780,7 @@ operation = [
   { semantic = "compare signed image transforms only after both prior predicates succeed and return the final boolean", java_node_ranges = [[35, 39]], rust_node_ranges = [{ target = 0, start = 79, end = 88 }] },
 ]
 adaptation = [
-  { side = "java", category = "erased", reason = "Option<&GameResourceState> is the typed no_std boundary for the only two instanceof outcomes; a successful Java cast and its temporary local therefore have no Rust syntax.", java_node_ranges = [[15, 20]] },
+  { side = "java", category = "erased", reason = "Option<&GameResourceState> is the typed Rust boundary for the only two instanceof outcomes; a successful Java cast and its temporary local therefore have no Rust syntax.", java_node_ranges = [[15, 20]] },
   { side = "rust", category = "representation-adapter", reason = "Java dispatches one Object.equals library call. Rust expands the game-reachable implementations explicitly: boxed Integer value equality, exact UTF-16 String equality, base-Object opaque identity, and false for null or cross-category right operands.", rust_node_ranges = [{ target = 0, start = 35, end = 68 }] },
 ]
 interleave = [{ side = "java", owners = ["op:2", "op:3"], reason = "javac pre-order emits the outer and nested short-circuit-and shells before the type-equality and ID-equality operand subtrees." }]
@@ -4880,7 +4880,7 @@ item = "variant:InkScriptRegistryValue::Script"
 ast_sha256 = "4702be440df1b3593736cd99b88b1389dc55b74272282c8c9f2c754224709455"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
-semantic_review = "Rust-only registry value category retaining the opaque identity of a nonnull InkScript reference without embedding JVM objects in no_std state."
+semantic_review = "Rust-only registry value category retaining the opaque identity of a nonnull InkScript reference without embedding JVM objects in owned game state."
 
 [[rust_value]]
 file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
@@ -4896,7 +4896,7 @@ item = "enum:InkScriptRegistryValue"
 ast_sha256 = "ba602cde67cb0f9c909e25183d64e958f1867998d4cfd521ac44858df146099b"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
-semantic_review = "Typed no_std representation of the two value categories observable after raw InkScript.list lookup; both variants are separately reverse-inventory claimed."
+semantic_review = "Typed owned representation of the two value categories observable after raw InkScript.list lookup; both variants are separately reverse-inventory claimed."
 
 [[rust_value]]
 file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
@@ -4928,7 +4928,7 @@ item = "enum:InkScriptExecuteEventError"
 ast_sha256 = "09f9c223a6b4e3cc67c41dc4fda71e6cdcdb76b1436ed471cd48d9c00aef1a97"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
-semantic_review = "Typed no_std error boundary separating lookup/cast failures from arbitrary delegated execution failures without collapsing their original propagation."
+semantic_review = "Typed Rust error boundary separating lookup/cast failures from arbitrary delegated execution failures without collapsing their original propagation."
 
 [[rust_container]]
 file = "transliteration/crates/orphan-game-xlat/src/state.rs"
@@ -4960,7 +4960,7 @@ adaptation = [{ side = "rust", category = "representation-adapter", reason = "Ja
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:ink_script_execute_event_by_id", ast_sha256 = "5e99624d092103726d87729f12acc41cfa856474063dadc5c2270023ceaace34", nodes_sha256 = "923d85e44745b8881ab2dad8c277b09471c68b215ea4cdd9e4e3c0c6165cc3c8", node_count = 75 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "528 static-dispatch cases agree across both recovered JARs, canonical Java, and no_std Rust, extending the full oracle to 981,396 cases. The 144-case lookup matrix crosses null/empty/populated registries, null/empty/NUL/surrogate/text IDs, matching and missing keys, valid and wrong-class values, and both paused-thread seeds. The 384-case delegation matrix reuses every reviewed event/data/initial-value/room/pause edge and proves the static overload always supplies false. Null table/key raise NPE, wrong values raise CCE, misses return null and preserve the old pause, and delegated execution retains its exact result, exception, interpreter identity, offset, room, debug flag, and pause mutation."
+semantic_review = "528 static-dispatch cases agree across both recovered JARs, canonical Java, and strict Rust, extending the full oracle to 981,396 cases. The 144-case lookup matrix crosses null/empty/populated registries, null/empty/NUL/surrogate/text IDs, matching and missing keys, valid and wrong-class values, and both paused-thread seeds. The 384-case delegation matrix reuses every reviewed event/data/initial-value/room/pause edge and proves the static overload always supplies false. Null table/key raise NPE, wrong values raise CCE, misses return null and preserve the old pause, and delegated execution retains its exact result, exception, interpreter identity, offset, room, debug flag, and pause mutation."
 
 [[body]]
 java_class = "M"
@@ -4981,7 +4981,7 @@ operation = [
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:application_destroy_app", ast_sha256 = "b09e87c26a32647277d8817a4b697e2f579eae6eaeef4a7d2659e24d7aa2711a", nodes_sha256 = "7e5807588868f29d6fd2839e067e1b88139550803f7a673620b33bff996c10df", node_count = 4 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "Four cases agree across both recovered JARs, canonical Java, and no_std Rust, extending the full oracle to 981,400 cases. Both boolean forced values cross present/null MIDlet state. Complete exit post-state proves the callback ran once in every case: runtime becomes null and appInited becomes false. A present MIDlet completes normally; a null MIDlet propagates the second notifyDestroyed NPE after retaining those writes. The identical outcomes for both flag values prove the parameter is ignored."
+semantic_review = "Four cases agree across both recovered JARs, canonical Java, and strict Rust, extending the full oracle to 981,400 cases. Both boolean forced values cross present/null MIDlet state. Complete exit post-state proves the callback ran once in every case: runtime becomes null and appInited becomes false. A present MIDlet completes normally; a null MIDlet propagates the second notifyDestroyed NPE after retaining those writes. The identical outcomes for both flag values prove the parameter is ignored."
 
 [[field]]
 java_class = "Script"
@@ -5069,7 +5069,7 @@ item = "enum:InkScriptGetItemNameError"
 ast_sha256 = "b091de29e253467beedcb7e7a66427f3ed6e9d679381277e628fdba044b5021f"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
-semantic_review = "Typed no_std error boundary that distinguishes failure inside static executeEvent from the wrapper's own return-value cast."
+semantic_review = "Typed Rust error boundary that distinguishes failure inside static executeEvent from the wrapper's own return-value cast."
 
 [[body]]
 java_class = "Script"
@@ -5111,7 +5111,7 @@ adaptation = [{ side = "rust", category = "representation-adapter", reason = "Ja
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:ink_script_get_item_name", ast_sha256 = "5e70e6b92be6ae607c82639ba10e4076facf31488f5c4e98b3bb52906359c25d", nodes_sha256 = "df8c574f0c1b526f089cd47f7cd3f5be2f6374a35495c9853f489a07124ad9b1", node_count = 55 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "182 item-name cases agree across both recovered JARs, canonical Java, and no_std Rust, extending the full oracle to 981,583 cases. The matrix crosses null/empty/populated registries, valid and wrong-class entries, null/empty/NUL/surrogate/text IDs, null/short/hostile event tables, every reviewed command program, and both prior pause states. It proves event code one, exact UTF-16 '?' fallback, null room, false debug, null/String return casts, Integer CCE, lookup/cast/execution failure propagation, and complete paused-interpreter identity/status/offset/script state."
+semantic_review = "182 item-name cases agree across both recovered JARs, canonical Java, and strict Rust, extending the full oracle to 981,583 cases. The matrix crosses null/empty/populated registries, valid and wrong-class entries, null/empty/NUL/surrogate/text IDs, null/short/hostile event tables, every reviewed command program, and both prior pause states. It proves event code one, exact UTF-16 '?' fallback, null room, false debug, null/String return casts, Integer CCE, lookup/cast/execution failure propagation, and complete paused-interpreter identity/status/offset/script state."
 
 [[body]]
 java_class = "M"
@@ -5129,7 +5129,7 @@ operation = [{ semantic = "delegate the complete pause callback to setHide with 
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:application_pause_app", ast_sha256 = "b154193e41690b5ddb2c87fc0f452e407277a7674d3ef6c682f1a5e5c989c83e", nodes_sha256 = "3f6a4ca329adedaafe798b98923c1eddbf5ec3ba403042ca737dfa689da152a4", node_count = 5 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "Both prior hiddenCanvas states agree across the two recovered JARs, canonical Java, and no_std Rust. The Java static callee is a deliberately explicit callback boundary until setHide itself is admitted; the callback preserves the true argument, single invocation, and uncaught exception propagation instead of pretending pauseApp is a direct field store."
+semantic_review = "Both prior hiddenCanvas states agree across the two recovered JARs, canonical Java, and strict Rust. The Java static callee is a deliberately explicit callback boundary until setHide itself is admitted; the callback preserves the true argument, single invocation, and uncaught exception propagation instead of pretending pauseApp is a direct field store."
 
 [[body]]
 java_class = "M"
@@ -5147,7 +5147,7 @@ operation = [{ semantic = "invoke start exactly once on the current ticker-threa
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:application_app_start", ast_sha256 = "0010675fd359e46efb59ac6f0f0eb7a3e88b9ea3497b42112ba16a5c57671a93", nodes_sha256 = "ddc487949112b1dffacc1b017b4df55265dff619cff0c1d88b0c6f6189ad6992", node_count = 4 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "Null ticker, successful start, and throwing start cases agree across both recovered JARs, canonical Java, and no_std Rust, including whether the virtual start call was attempted. The callback is the explicit Thread adapter: it owns Java's tickerThread receiver dereference and virtual dispatch while the reviewed body fixes the one-call control flow."
+semantic_review = "Null ticker, successful start, and throwing start cases agree across both recovered JARs, canonical Java, and strict Rust, including whether the virtual start call was attempted. The callback is the explicit Thread adapter: it owns Java's tickerThread receiver dereference and virtual dispatch while the reviewed body fixes the one-call control flow."
 
 [[body]]
 java_class = "ExtBase"
@@ -5165,7 +5165,7 @@ operation = [{ semantic = "delegate nullable UTF-16 text and the exact signed re
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:ink_engine_popup_create", ast_sha256 = "bbc0e0486ff252fddd5e7216bb91d5e5c6982ce6853ac468e947d372d6debde9", nodes_sha256 = "06816510fba1447f4fae97276287b34044ab8dd3f3d94556a9874abf81717184", node_count = 18 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "108 cases agree across both recovered JARs, canonical Java, and no_std Rust. The matrix crosses null, empty, NUL, question-mark, isolated-surrogate, and ordinary UTF-16 text; signed recovery-code edges; and empty, last-accepted, and full popup queues. The wrapper now calls the separately crosswalked live three-argument Rust body rather than a placeholder callback, preserving state ownership, propagated failures, exact recovery-code forwarding, and the literal -1 timeout sentinel."
+semantic_review = "108 cases agree across both recovered JARs, canonical Java, and strict Rust. The matrix crosses null, empty, NUL, question-mark, isolated-surrogate, and ordinary UTF-16 text; signed recovery-code edges; and empty, last-accepted, and full popup queues. The wrapper now calls the separately crosswalked live three-argument Rust body rather than a placeholder callback, preserving state ownership, propagated failures, exact recovery-code forwarding, and the literal -1 timeout sentinel."
 
 [[body]]
 java_class = "Cheat"
@@ -5183,7 +5183,7 @@ operation = [{ semantic = "execute the synthetic no-argument Object superclass c
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:cheat_controller_new", ast_sha256 = "dd2fd90360b5ab51d0812d913fd227dca80a9c78755fa9939396029502a5cb23", nodes_sha256 = "a071ff0b8a5c8a48f04bdacfdab635178f33cf7f410e4c0206e0ec752ff9526a", node_count = 4 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "Construction succeeds in both recovered JARs, canonical Java, and no_std Rust. Allocation belongs to the caller; this five-byte <init> body contains only aload_0, invokespecial Object.<init>, and return, represented by an explicit superclass-constructor adapter rather than invented instance state."
+semantic_review = "Construction succeeds in both recovered JARs, canonical Java, and strict Rust. Allocation belongs to the caller; this five-byte <init> body contains only aload_0, invokespecial Object.<init>, and return, represented by an explicit superclass-constructor adapter rather than invented instance state."
 
 [[rust_value]]
 file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
@@ -5251,7 +5251,7 @@ rust_node_counts = [31]
 operation = [
   { semantic = "own the complete property-lookup and integer-conversion body", java_nodes = [0], rust_nodes = ["0:0"] },
   { semantic = "on the successful path, dereference the class-owned MIDlet, forward the nullable key unchanged to getAppProperty, and parse the nullable result with the already crosswalked Java decimal-int rules", java_node_ranges = [[3, 11]], rust_node_ranges = [{ target = 0, start = 1, end = 5 }, { target = 0, start = 10, end = 18 }, { target = 0, start = 23, end = 29 }] },
-  { semantic = "catch every Exception from a null MIDlet, property lookup, null/malformed/overflowing property, or decimal parse and return exact zero", literal_note = "Java funnels every covered failure through one catch(Exception) return-zero literal; Rust factors the same region into two let-else early zeros plus the final parse fallback zero. The two Rust-only zero occurrences are duplicated control-flow realizations of the one audited catch result, not different values.", java_node_ranges = [[12, 18]], rust_node_ranges = [{ target = 0, start = 6, end = 9 }, { target = 0, start = 19, end = 22 }], rust_nodes = ["0:30"] },
+  { semantic = "catch every Exception from a null MIDlet, property lookup, null/malformed/overflowing property, or decimal parse and return exact zero", literal_note = "Java funnels every covered failure through one catch(Exception) return-zero literal; Rust factors the same region into two let-else early zeros plus the final parse fallback zero. The two Rust-only zero occurrences are duplicated control-flow realizations of the one audited catch result, not different values.", java_node_ranges = [[12, 18]], rust_node_ranges = [{ target = 0, start = 6, end = 9 }, { target = 0, start = 19, end = 22 }], rust_nodes = ["0:30"] , literal_delta = { java_only = [], rust_only = [0, 0] }},
 ]
 adaptation = [{ side = "java", category = "erased", reason = "Java's try and successful-block wrapper nodes define the exception region; Rust expresses the same region through explicit Option/Result pattern branches whose nodes are paired with the successful and caught operations.", java_node_ranges = [[1, 2]] }]
 interleave = [{ side = "rust", target = 0, owners = ["op:1", "op:2"], reason = "Successive let-else guards interleave successful pattern and call nodes with early-zero else blocks and the final parse fallback." }]
@@ -5372,7 +5372,7 @@ java_node_count = 12
 rust_node_counts = [35]
 operation = [
   { semantic = "own the complete ordered application-initialization wrapper", java_nodes = [0], rust_nodes = ["0:0"] },
-  { semantic = "request the exact UTF-16 path gfx/menu_logo.png from Application.loadImageFromJAR and publish its nullable image result before engine initialization", literal_note = "Java carries gfx/menu_logo.png as one String literal, which the integer tooth intentionally does not decompose; Rust's &[u16] representation spells its exact seventeen UTF-16 code units as numeric literals. The path-forwarding oracle compares the complete sequence.", java_node_ranges = [[1, 7]], rust_node_ranges = [{ target = 0, start = 1, end = 26 }] },
+  { semantic = "request the exact UTF-16 path gfx/menu_logo.png from Application.loadImageFromJAR and publish its nullable image result before engine initialization", literal_note = "Java carries gfx/menu_logo.png as one String literal, which the integer tooth intentionally does not decompose; Rust's &[u16] representation spells its exact seventeen UTF-16 code units as numeric literals. The path-forwarding oracle compares the complete sequence.", java_node_ranges = [[1, 7]], rust_node_ranges = [{ target = 0, start = 1, end = 26 }] , literal_delta = { java_only = [], rust_only = [46, 47, 95, 101, 102, 103, 103, 103, 108, 109, 110, 110, 111, 111, 112, 117, 120] }},
   { semantic = "delegate to InkEngine.appInit only after the new nullable logo identity is stored", java_node_ranges = [[8, 11]], rust_node_ranges = [{ target = 0, start = 28, end = 30 }] },
 ]
 adaptation = [
@@ -5400,7 +5400,7 @@ operation = [{ semantic = "execute the synthetic no-argument Object superclass c
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:ink_engine_new", ast_sha256 = "e85be149edc27edcf7e2aa96275cfe42f921a1cc7a2e2d820e11bf5930e8cafe", nodes_sha256 = "a071ff0b8a5c8a48f04bdacfdab635178f33cf7f410e4c0206e0ec752ff9526a", node_count = 4 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "Because InkEngine is abstract, the recovered and canonical oracles execute this constructor through real SilentHillGame construction. Its own five-byte body is independently hash-bound and maps the sole synthetic Object-constructor node to one explicit no_std adapter invocation."
+semantic_review = "Because InkEngine is abstract, the recovered and canonical oracles execute this constructor through real SilentHillGame construction. Its own five-byte body is independently hash-bound and maps the sole synthetic Object-constructor node to one explicit superclass-adapter invocation."
 
 [[body]]
 java_class = "M"
@@ -5454,7 +5454,7 @@ operation = [{ semantic = "execute the synthetic no-argument Object superclass c
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:text_id_new", ast_sha256 = "08400271bce2dc482955e2a2d019f99f322ad90a643fb455ee1ca55eee9faeae", nodes_sha256 = "a071ff0b8a5c8a48f04bdacfdab635178f33cf7f410e4c0206e0ec752ff9526a", node_count = 4 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "Construction succeeds in every authority. TextId has no instance state, so the exact transliteration is the one superclass-constructor call represented by the no_std adapter; allocation and object identity remain caller concerns."
+semantic_review = "Construction succeeds in every authority. TextId has no instance state, so the exact transliteration is the one superclass-constructor call represented by the explicit superclass adapter; allocation and object identity remain caller concerns."
 
 [[field]]
 java_class = "M"
@@ -5666,7 +5666,7 @@ item = "enum:InkEnginePopupCreateError"
 ast_sha256 = "acb6e5b70b25e5971174f40aadb8a4e252cfb0e1e0ecc88e2821efa7f3ca6a59"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
-semantic_review = "Typed no_std boundary that keeps delegated text wrapping failures separate from the popup queue's own checked array failures."
+semantic_review = "Typed Rust boundary that keeps delegated text wrapping failures separate from the popup queue's own checked array failures."
 
 [[rust_value]]
 file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
@@ -5794,7 +5794,7 @@ item = "enum:ApplicationRmsGetCallError"
 ast_sha256 = "546ea7ddff7c91e578d6ef1c18195d084d59a53c3ab5946216198f05b45a6bcb"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
-semantic_review = "Typed callback boundary separating every caught Exception category from the uncaught remainder without constraining the transliteration crate to no_std."
+semantic_review = "Typed callback boundary separating every caught Exception category from the uncaught remainder without collapsing any of those categories."
 
 [[rust_value]]
 file = "transliteration/crates/orphan-game-xlat/src/lib.rs"
@@ -5885,12 +5885,12 @@ operation = [
   { semantic = "publish long minus one for an indefinite inactive popup", java_node_ranges = [[56, 60]], rust_node_ranges = [{ target = 0, start = 132, end = 138 }] },
   { semantic = "otherwise read currentTimeMillis lazily, widen the stored i32 maximum time, add with Java long wrapping, and publish the deadline", java_node_ranges = [[61, 74]], rust_node_ranges = [{ target = 0, start = 139, end = 153 }] },
   { semantic = "publish popupActive true only after every inactive-popup deadline operation succeeds", java_node_ranges = [[75, 78]], rust_node_ranges = [{ target = 0, start = 154, end = 158 }] },
-  { semantic = "post-increment popupNumOf with Java signed-32 wrapping as the final mutation", literal_note = "Java's POSTFIX_INCREMENT node has an implicit increment of one and therefore no javac literal; Rust realizes the same signed wrapping increment through i32_add with the explicit operand 1.", java_node_ranges = [[79, 81]], rust_node_ranges = [{ target = 0, start = 159, end = 169 }] },
+  { semantic = "post-increment popupNumOf with Java signed-32 wrapping as the final mutation", literal_note = "Java's POSTFIX_INCREMENT node has an implicit increment of one and therefore no javac literal; Rust realizes the same signed wrapping increment through i32_add with the explicit operand 1.", java_node_ranges = [[79, 81]], rust_node_ranges = [{ target = 0, start = 159, end = 169 }] , literal_delta = { java_only = [], rust_only = [1] }},
 ]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:ink_engine_popup_create_with_max_time", ast_sha256 = "d6121ae29e56c70383767b2351260b389eaf8060dc371272a8a5a713afb919f9", nodes_sha256 = "ed82c855b6dc0bb648d2dcfa5b3af28215696e4e400690d28b4a0f9f47b5015d", node_count = 174 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "1,280 direct maximum-time cases plus 108 live two-argument-wrapper cases agree across both recovered JARs, canonical Java, and no_std Rust, extending the full differential to 982,982 cases. The direct matrix crosses null/empty/NUL/surrogate/text inputs, signed recovery and maximum-time edges, negative/first/last/full queue indices, both prior active states, four nonnegative wrapped-width canvas domains, and independently null/empty/short/full text, recovery, and time arrays. It compares complete arrays and all scalar state after every NPE/AIOOBE, proving wrap-before-aastore evaluation, text-then-recovery-then-time partial publication, choice/current/deadline/active/count write order, the inactive sentinel branch, lazy clock reachability, and final signed count increment."
+semantic_review = "1,280 direct maximum-time cases plus 108 live two-argument-wrapper cases agree across both recovered JARs, canonical Java, and strict Rust, extending the full differential to 982,982 cases. The direct matrix crosses null/empty/NUL/surrogate/text inputs, signed recovery and maximum-time edges, negative/first/last/full queue indices, both prior active states, four nonnegative wrapped-width canvas domains, and independently null/empty/short/full text, recovery, and time arrays. It compares complete arrays and all scalar state after every NPE/AIOOBE, proving wrap-before-aastore evaluation, text-then-recovery-then-time partial publication, choice/current/deadline/active/count write order, the inactive sentinel branch, lazy clock reachability, and final signed count increment."
 
 [[body]]
 java_class = "ExtBase"
@@ -5906,7 +5906,7 @@ java_node_count = 53
 rust_node_counts = [90]
 operation = [
   { semantic = "own the complete queue-advance body and explicit successful unit return", java_nodes = [0], rust_nodes = ["0:0"], rust_node_ranges = [{ target = 0, start = 86, end = 89 }] },
-  { semantic = "post-increment popupCurrent with Java signed-32 wrapping before any comparison or possible failure", literal_note = "Java's POSTFIX_INCREMENT node has an implicit increment of one and therefore no javac literal; Rust realizes the same signed wrapping increment through i32_add with the explicit operand 1.", java_node_ranges = [[1, 3]], rust_node_ranges = [{ target = 0, start = 1, end = 11 }] },
+  { semantic = "post-increment popupCurrent with Java signed-32 wrapping before any comparison or possible failure", literal_note = "Java's POSTFIX_INCREMENT node has an implicit increment of one and therefore no javac literal; Rust realizes the same signed wrapping increment through i32_add with the explicit operand 1.", java_node_ranges = [[1, 3]], rust_node_ranges = [{ target = 0, start = 1, end = 11 }] , literal_delta = { java_only = [], rust_only = [1] }},
   { semantic = "compare the incremented current index against popupNumOf and enter the retirement branch when it is greater than or equal", java_node_ranges = [[4, 9]], rust_node_ranges = [{ target = 0, start = 12, end = 20 }] },
   { semantic = "reset the popup queue count to zero on retirement", java_node_ranges = [[10, 13]], rust_node_ranges = [{ target = 0, start = 21, end = 25 }] },
   { semantic = "clear the active-popup flag after the count reset", java_node_ranges = [[14, 17]], rust_node_ranges = [{ target = 0, start = 26, end = 30 }] },
@@ -5919,7 +5919,7 @@ operation = [
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:ink_engine_popup_set_next", ast_sha256 = "e6c6cf5f367f6981b1dfc54e237e8c3f7c2eefc2f44c77727ee4531cb3fa90e0", nodes_sha256 = "01fd919f4894bb5ab03cfd9814be09766946b4af0dc7069b06b1c0a97eda9045", node_count = 90 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "864 queue-transition cases agree across both recovered JARs, canonical Java, and no_std Rust, extending the full differential to 983,846 cases. The matrix crosses signed current/count edges (including post-increment overflow), both active states, null/empty/sentinel/timed/extreme/short maximum-time arrays, valid and invalid negative/positive indices, and retirement. It compares final current/count/active/deadlines/array state and clock reachability after success, NPE, and AIOOBE, proving zero reads on retirement, minimum-deadline publication before the failing array access, one clock call for failure or the indefinite sentinel, and a distinct second call only for timed popups."
+semantic_review = "864 queue-transition cases agree across both recovered JARs, canonical Java, and strict Rust, extending the full differential to 983,846 cases. The matrix crosses signed current/count edges (including post-increment overflow), both active states, null/empty/sentinel/timed/extreme/short maximum-time arrays, valid and invalid negative/positive indices, and retirement. It compares final current/count/active/deadlines/array state and clock reachability after success, NPE, and AIOOBE, proving zero reads on retirement, minimum-deadline publication before the failing array access, one clock call for failure or the indefinite sentinel, and a distinct second call only for timed popups."
 
 [[body]]
 java_class = "Cheat"
@@ -5933,7 +5933,7 @@ java_ast_sha256 = "62c7dc0b765ed4c480cba3869620ca74c349d25f49063a294cdda5e786dee
 java_nodes_sha256 = "e6fb19189790b94a973d050b9469c9e8c2dfb71949617cfd8537cbea7d815a58"
 java_node_count = 5
 rust_node_counts = [7]
-operation = [{ semantic = "publish signed integer minus 123 into the sole lastKey owner during class initialization", literal_note = "Java's executable assignment refers to the named compile-time constant INIT_VALUE; its -123 literal is owned separately by this body's ConstantValue adaptation, so operation node 4 is only an identifier. Rust spells the exact -123 value in the executable store.", java_nodes = [4], rust_node_ranges = [{ target = 0, start = 0, end = 6 }] }]
+operation = [{ semantic = "publish signed integer minus 123 into the sole lastKey owner during class initialization", literal_note = "Java's executable assignment refers to the named compile-time constant INIT_VALUE; its -123 literal is owned separately by this body's ConstantValue adaptation, so operation node 4 is only an identifier. Rust spells the exact -123 value in the executable store.", java_nodes = [4], rust_node_ranges = [{ target = 0, start = 0, end = 6 }] , literal_delta = { java_only = [], rust_only = [-123] }}]
 adaptation = [{ side = "java", category = "erased", reason = "The javac initializer authority includes the four compile-time CHOICE_BEN, CHOICE_MOON, CHOICE_KAREN, and INIT_VALUE literals in source order, but retail <clinit> has no stores for their ConstantValue fields; only the lastKey putstatic is executable.", java_node_ranges = [[0, 3]] }]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:cheat_controller_initialize", ast_sha256 = "4c8085503fb283c1cd36e0ec03eb6893cf49a3cebcfdb8b06064ae1cb571b4dd", nodes_sha256 = "f570a37b744dad678c6a1e826dd1ea5e50762a38f37bfef683146f85b4ec643f", node_count = 7 }]
 oracle = "pure-method-v1"
@@ -6008,7 +6008,7 @@ item = "enum:RoomObjectStringEventError"
 ast_sha256 = "e226c7465575ff901c3e93819166ae7714b2ab2e55b00fb356ae306f1226ca8b"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
-semantic_review = "Typed no_std boundary distinguishing failure inside RoomObject.executeEvent from the two wrappers' own return-value casts."
+semantic_review = "Typed Rust boundary distinguishing failure inside RoomObject.executeEvent from the two wrappers' own return-value casts."
 
 [[body]]
 java_class = "RoomObject"
@@ -6036,7 +6036,7 @@ adaptation = [
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:room_object_execute_event", ast_sha256 = "edf8ed45680be03ea1bdc29e9ac0a8d74310cdeb9f73d88f4a7485f7ef9b5e92", nodes_sha256 = "864e918dfca8969650912568b2cf507b644274ae0d8b29c6e1566df7f186e320", node_count = 99 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "1,920 cases agree across both recovered JARs, canonical Java, and no_std Rust. The matrix crosses pre-cached and lazy scripts, null/empty/NUL/surrogate/matching/missing IDs, null/empty/matching/wrong-class registries, null/empty/malformed/returning scripts, hostile event tables and codes, null/integer/String initial values, both debug flags, and both prior pause states. It compares result/error, cached-script publication, interpreter script/room/debug/status/offset, and paused identity, proving every bypass, cast, partial mutation, and failure edge. The operation owning Java's Hashtable lookup and dynamic checkcast also owns Rust's explicit typed registry search/match: a miss leaves the already-null Option unchanged before the same following null-dereference failure, while a successful cast publishes the handle before execution."
+semantic_review = "1,920 cases agree across both recovered JARs, canonical Java, and strict Rust. The matrix crosses pre-cached and lazy scripts, null/empty/NUL/surrogate/matching/missing IDs, null/empty/matching/wrong-class registries, null/empty/malformed/returning scripts, hostile event tables and codes, null/integer/String initial values, both debug flags, and both prior pause states. It compares result/error, cached-script publication, interpreter script/room/debug/status/offset, and paused identity, proving every bypass, cast, partial mutation, and failure edge. The operation owning Java's Hashtable lookup and dynamic checkcast also owns Rust's explicit typed registry search/match: a miss leaves the already-null Option unchanged before the same following null-dereference failure, while a successful cast publishes the handle before execution."
 
 [[body]]
 java_class = "RoomObject"
@@ -6058,7 +6058,7 @@ operation = [
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:room_object_get_name", ast_sha256 = "eae7fd15f4e772dd40fb0e0b97bfcec8e47a68b7466611fd2f0042d1ecb95bb8", nodes_sha256 = "60c584ccb17041709f330eb838d61047b058a20966c8cc3bb6f6f54020e0d5c7", node_count = 54 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "192 cases agree across both recovered JARs, canonical Java, and no_std Rust. They cover cached/lazy/missing/wrong-class scripts, absent and present get-name events, null/String/Integer results, malformed script storage, prior pauses, exact question-mark fallback, false debug forwarding, room identity, cached-script publication, nested failures, and final String CCE."
+semantic_review = "192 cases agree across both recovered JARs, canonical Java, and strict Rust. They cover cached/lazy/missing/wrong-class scripts, absent and present get-name events, null/String/Integer results, malformed script storage, prior pauses, exact question-mark fallback, false debug forwarding, room identity, cached-script publication, nested failures, and final String CCE."
 
 [[body]]
 java_class = "RoomObject"
@@ -6080,7 +6080,7 @@ operation = [
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:room_object_get_move_direction", ast_sha256 = "eedd5801c78549a4e4fe81d5190e4d9d228454fda707defcf5444305e7933793", nodes_sha256 = "d0f25b2c97b52a4eefd04e9f52a7777959c0ffde25c304b1080cc7defc8349a6", node_count = 48 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "192 cases agree across both recovered JARs, canonical Java, and no_std Rust. They independently lock event code thirty, null fallback, false debug, cached/lazy registry behavior, room identity and partial publication, absent/present events, String/null success, Integer CCE, malformed-script failures, and paused-interpreter state."
+semantic_review = "192 cases agree across both recovered JARs, canonical Java, and strict Rust. They independently lock event code thirty, null fallback, false debug, cached/lazy registry behavior, room identity and partial publication, absent/present events, String/null success, Integer CCE, malformed-script failures, and paused-interpreter state."
 
 [[field]]
 java_class = "s"
@@ -6120,7 +6120,7 @@ item = "enum:RoomObjectEnterHoverError"
 ast_sha256 = "38ceb9b236f50c8d68c20747129d405a6f32dd155b6c59caa3e85e307aee3c92"
 nodes_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 node_count = 0
-semantic_review = "Typed no_std boundary keeps failure during the hover-event probe distinct from failure during the subsequent event dispatch."
+semantic_review = "Typed Rust boundary keeps failure during the hover-event probe distinct from failure during the subsequent event dispatch."
 
 [[body]]
 java_class = "RoomObject"
@@ -6143,7 +6143,7 @@ operation = [
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:room_object_enter_hover", ast_sha256 = "d233d9783ce16ff46c4272d21b0fe87a33c10451711fb39b6313ea0b8558f00f", nodes_sha256 = "d7c0c7f910e5cedc76dc577507abba357b35838e77c41eae17511c2a7cb03a35", node_count = 60 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "304 cases agree across both recovered JARs, canonical Java, and no_std Rust. The matrix crosses null and cached scripts, null/empty/matching/wrong-class registries, null/empty/short/absent/present/negative/extreme event tables, every existing interpreter-program edge, and both prior pause states. It compares NPE/AIOOBE versus success, exact null-or-this return identity, cached-script state, interpreter script/room/debug/status/offset, and paused identity. This proves that enterHover never performs lazy registry lookup, calls hasEvent before dispatch, ignores the event result, forwards event fifty-four/null/false exactly, and returns this only after successful execution."
+semantic_review = "304 cases agree across both recovered JARs, canonical Java, and strict Rust. The matrix crosses null and cached scripts, null/empty/matching/wrong-class registries, null/empty/short/absent/present/negative/extreme event tables, every existing interpreter-program edge, and both prior pause states. It compares NPE/AIOOBE versus success, exact null-or-this return identity, cached-script state, interpreter script/room/debug/status/offset, and paused identity. This proves that enterHover never performs lazy registry lookup, calls hasEvent before dispatch, ignores the event result, forwards event fifty-four/null/false exactly, and returns this only after successful execution."
 
 [[field]]
 java_class = "Script"
@@ -6183,7 +6183,7 @@ operation = [
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:ink_script_is_waiting", ast_sha256 = "94ed2465f820300995a623742c500c7de23c15c68205a257c78011b8216bb37c", nodes_sha256 = "34ee3f93f6a2044a4b8e7a752ff4e1b48f25e630e3139ffdfae40e6a8983a617", node_count = 50 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "810 cases agree across both recovered JARs, canonical Java, and no_std Rust. Five signed-long deadline classes cross nullable/present paused interpreters, nullable scripts, every existing interpreter program, hostile signed offsets, normal stop/return/choose/wait commands, and NPE/AIOOBE paths. The oracle compares boolean/error, exact or normalized newly scheduled waitStop, interpreter status/offset, and paused identity. It caught and now preserves the nested COMMAND_WAIT behavior that overwrites the pre-resume zero with a fresh clock-based deadline; other resume failures retain zero."
+semantic_review = "810 cases agree across both recovered JARs, canonical Java, and strict Rust. Five signed-long deadline classes cross nullable/present paused interpreters, nullable scripts, every existing interpreter program, hostile signed offsets, normal stop/return/choose/wait commands, and NPE/AIOOBE paths. The oracle compares boolean/error, exact or normalized newly scheduled waitStop, interpreter status/offset, and paused identity. It caught and now preserves the nested COMMAND_WAIT behavior that overwrites the pre-resume zero with a fresh clock-based deadline; other resume failures retain zero."
 
 [[field]]
 java_class = "Script"
@@ -6220,7 +6220,7 @@ operation = [
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:ink_engine_inventory_equip_unequip_handling", ast_sha256 = "8a15618d9d4bcf9e9e856312c3fabdc2c9aabfe07031ef3e5f2b870923291ded", nodes_sha256 = "e8be5bed7bd6d14b5c830e7bf3ada69e3eb2839f5b0a1e49e2db221d8a8e43e0", node_count = 28 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "960 cases agree across both recovered JARs, canonical Java, and no_std Rust. The matrix crosses null/empty/nonempty menu stacks; null/empty/NUL/surrogate/matching/missing item IDs; null/empty/matching/wrong-class registries; signed event-code and event-table edges; malformed, stopping, waiting, returning, and choosing scripts; and both prior pause states. It compares the replaced menu stack after every success, miss, NPE, CCE, and AIOOBE plus interpreter status/offset/script/room/debug and paused identity, proving closeAll-before-dispatch order and exact choice/null/null/false forwarding."
+semantic_review = "960 cases agree across both recovered JARs, canonical Java, and strict Rust. The matrix crosses null/empty/nonempty menu stacks; null/empty/NUL/surrogate/matching/missing item IDs; null/empty/matching/wrong-class registries; signed event-code and event-table edges; malformed, stopping, waiting, returning, and choosing scripts; and both prior pause states. It compares the replaced menu stack after every success, miss, NPE, CCE, and AIOOBE plus interpreter status/offset/script/room/debug and paused identity, proving closeAll-before-dispatch order and exact choice/null/null/false forwarding."
 
 [[body]]
 java_class = "Script"
@@ -6240,25 +6240,25 @@ operation = [
   { semantic = "publish the nullable array of nullable UTF-16 strings before the first input dereference", java_node_ranges = [[4, 8]], rust_node_ranges = [{ target = 0, start = 23, end = 34 }] },
   { semantic = "read exactly one unsigned graphics-kind byte and switch on it, with every unrecognized value consuming no graphics payload", java_node_ranges = [[9, 13]], rust_node_ranges = [{ target = 0, start = 35, end = 51 }, { target = 0, start = 143, end = 144 }] },
   { semantic = "for graphics kind one, read one unsigned one-based string index, perform the same subtracting array access, and store its nullable UTF-16 value", java_node_ranges = [[14, 25]], rust_node_ranges = [{ target = 0, start = 52, end = 97 }] },
-  { semantic = "for graphics kind two, read the unsigned big-endian short and store its exact nonnegative Integer payload", java_node_ranges = [[26, 37]], rust_node_ranges = [{ target = 0, start = 98, end = 142 }], literal_note = "Java's 2 is the switch case discriminator and readUnsignedShort hides its byte width; Rust's match-pattern 2 is outside the current syn node surface while explicit two-byte composition contributes shift distance 8." },
-  { semantic = "allocate the fixed 57-entry signed event table and initialize every element to the absent-event sentinel minus one", java_node_ranges = [[38, 65]], rust_node_ranges = [{ target = 0, start = 145, end = 153 }], literal_note = "Java spells length 57, zero loop start, and fill value -1 as body literals; Rust's exact vec![-1; 57] macro keeps the same values in its token stream, while the syn inventory deliberately treats the statement-position macro as one boundary node." },
+  { semantic = "for graphics kind two, read the unsigned big-endian short and store its exact nonnegative Integer payload", java_node_ranges = [[26, 37]], rust_node_ranges = [{ target = 0, start = 98, end = 142 }], literal_note = "Java's raw case 2 is value-locked by the separately reviewed GFX_TYPE_INTEGER declaration to Rust's typed INK_SCRIPT_GFX_TYPE_INTEGER pattern, which syn omits; the independent Rust-only 8 expands readUnsignedShort's hidden high-byte shift.", literal_delta = { java_only = [2], rust_only = [8] }},
+  { semantic = "allocate the fixed 57-entry signed event table and initialize every element to the absent-event sentinel minus one", java_node_ranges = [[38, 65]], rust_node_ranges = [{ target = 0, start = 145, end = 153 }], literal_note = "Java spells length 57, zero loop start, and fill value -1 as body literals; Rust's exact vec![-1; 57] macro keeps the same values in its token stream, while the syn inventory deliberately treats the statement-position macro as one boundary node.", literal_delta = { java_only = [-1, 0, 57], rust_only = [] }},
   { semantic = "read the unsigned event-record count after publishing the initialized table", java_node_ranges = [[66, 71]], rust_node_ranges = [{ target = 0, start = 154, end = 161 }] },
   { semantic = "iterate exactly the unsigned event-record count in index order", java_node_ranges = [[72, 83]], rust_node_ranges = [{ target = 0, start = 162, end = 167 }] },
   { semantic = "read the event-code byte before either offset byte", java_node_ranges = [[89, 91]], rust_node_ranges = [{ target = 0, start = 168, end = 178 }] },
-  { semantic = "read both big-endian offset bytes and compose their unsigned short value", java_node_ranges = [[92, 94]], rust_node_ranges = [{ target = 0, start = 179, end = 212 }], literal_note = "Java's DataInputStream.readUnsignedShort primitive hides the byte-composition constant; Rust expands that primitive and therefore exposes the high-byte shift distance 8." },
+  { semantic = "read both big-endian offset bytes and compose their unsigned short value", java_node_ranges = [[92, 94]], rust_node_ranges = [{ target = 0, start = 179, end = 212 }], literal_note = "Java's DataInputStream.readUnsignedShort primitive hides the byte-composition constant; Rust expands that primitive and therefore exposes the high-byte shift distance 8.", literal_delta = { java_only = [], rust_only = [8] }},
   { semantic = "bounds-check the event code and publish the offset, retaining every prior record on failure", java_node_ranges = [[84, 88]], rust_node_ranges = [{ target = 0, start = 213, end = 229 }] },
-  { semantic = "consume the two-byte unsigned data length one byte at a time, allocate and publish an equally sized zero-filled byte array", java_node_ranges = [[95, 103]], rust_node_ranges = [{ target = 0, start = 230, end = 272 }], literal_note = "Java's DataInputStream.readUnsignedShort primitive hides the byte-composition constant; Rust expands that primitive and therefore exposes the high-byte shift distance 8." },
-  { semantic = "perform readFully in index order so EOF retains every preceding byte and leaves the not-yet-read suffix zero-filled", java_node_ranges = [[104, 109]], rust_node_ranges = [{ target = 0, start = 273, end = 298 }], literal_note = "Java's readFully(array) overload supplies offset zero implicitly; Rust's explicit partial-copy loop materializes that starting offset as numeric 0 while preserving the same zero-filled suffix." },
+  { semantic = "consume the two-byte unsigned data length one byte at a time, allocate and publish an equally sized zero-filled byte array", java_node_ranges = [[95, 103]], rust_node_ranges = [{ target = 0, start = 230, end = 272 }], literal_note = "Java's DataInputStream.readUnsignedShort primitive hides the byte-composition constant; Rust expands that primitive and therefore exposes the high-byte shift distance 8.", literal_delta = { java_only = [], rust_only = [8] }},
+  { semantic = "perform readFully in index order so EOF retains every preceding byte and leaves the not-yet-read suffix zero-filled", java_node_ranges = [[104, 109]], rust_node_ranges = [{ target = 0, start = 273, end = 298 }], literal_note = "Java's readFully(array) overload supplies offset zero implicitly; Rust's explicit partial-copy loop materializes that starting offset as numeric 0 while preserving the same zero-filled suffix.", literal_delta = { java_only = [], rust_only = [0] }},
 ]
 adaptation = [
   { side = "java", category = "erased", reason = "Rust directly constructs the explicit state owner; Java's synthetic Object super-constructor has no game-state or failure observable here.", java_nodes = [0] },
-  { side = "java", category = "erased", reason = "Retail prints the caught exception stack trace as a diagnostic; the no_std production crate has no stderr and deliberately omits this non-game-state side effect while the independent Java oracles execute the real call.", java_node_ranges = [[110, 118]] },
+  { side = "java", category = "erased", reason = "Retail prints the caught exception stack trace as a diagnostic; the strict Rust transliteration layer deliberately omits this non-game-state side effect while the independent Java oracles execute the real call.", java_node_ranges = [[110, 118]] },
   { side = "rust", category = "representation-adapter", reason = "Rust has no JVM allocation phase, so null data/event/string/gfx fields are made explicit before the constructor parser starts; these are the exact reflection-visible JVM defaults retained by failures before their stores.", rust_node_ranges = [{ target = 0, start = 1, end = 15 }] },
 ]
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:ink_script_new", ast_sha256 = "92d41e5a407f73189e76d553c72a104f684d1f4a756c130d4ed4a27fafbda537", nodes_sha256 = "c79eeadaa0583da3f0ced854f293be0e6af398428f271538c3d06e4a0b04fd6e", node_count = 305 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "1,122 cases agree across both recovered JARs, canonical Java, and no_std Rust. They cover null input, nullable and hostile string tables, all 256 graphics discriminator bytes, one-based string-index boundaries, unsigned Integer graphics IDs, all 256 event codes, 0/1/2/56/57/255 records, full and truncated payloads, maximum 65,535-byte declared data, and 512 deterministic randomized streams. Output includes graphics value, all 57 event offsets, the entire partially filled data array, the retained string table, and exact remaining input bytes. This proves field-publication and consumption order through every caught NPE, AIOOBE, and EOF boundary, including offset bytes consumed before an invalid event-index store and readFully's zero suffix after partial input."
+semantic_review = "1,122 cases agree across both recovered JARs, canonical Java, and strict Rust. They cover null input, nullable and hostile string tables, all 256 graphics discriminator bytes, one-based string-index boundaries, unsigned Integer graphics IDs, all 256 event codes, 0/1/2/56/57/255 records, full and truncated payloads, maximum 65,535-byte declared data, and 512 deterministic randomized streams. Output includes graphics value, all 57 event offsets, the entire partially filled data array, the retained string table, and exact remaining input bytes. This proves field-publication and consumption order through every caught NPE, AIOOBE, and EOF boundary, including offset bytes consumed before an invalid event-index store and readFully's zero suffix after partial input."
 
 [[field]]
 java_class = "RoomObject"
@@ -6729,14 +6729,14 @@ operation = [
   { semantic = "publish visibility true before the first potentially failing input access", java_node_ranges = [[12, 16]], rust_node_ranges = [{ target = 0, start = 87, end = 91 }] },
   { semantic = "publish activity false before the first potentially failing input access", java_node_ranges = [[17, 21]], rust_node_ranges = [{ target = 0, start = 92, end = 96 }] },
   { semantic = "dereference input, consume one unsigned object-kind byte, publish it, and select the matching outer branch; unrecognized kinds consume no branch payload", java_node_ranges = [[22, 32]], rust_node_ranges = [{ target = 0, start = 97, end = 120 }, { target = 0, start = 393, end = 394 }] },
-  { semantic = "enter and complete the graphics-object branch for exact outer kind one", java_node_ranges = [[33, 34], [87, 87]], rust_node_ranges = [{ target = 0, start = 121, end = 122 }], literal_note = "Both implementations select outer kind 1; javac inventories the switch case literal, while the current syn preorder surface records the match arm block but does not emit literal-pattern nodes." },
+  { semantic = "enter and complete the graphics-object branch for exact outer kind one", java_node_ranges = [[33, 34], [87, 87]], rust_node_ranges = [{ target = 0, start = 121, end = 122 }], literal_note = "Java's raw case 1 is value-locked by the separately reviewed TYPE_GFX declaration to Rust's typed ROOM_OBJECT_TYPE_GRAPHICS pattern; the syn node stream omits that constant pattern.", literal_delta = { java_only = [1], rust_only = [] }},
   { semantic = "consume the graphics x short one byte at a time, sign-extend it, and publish only after both bytes arrive", java_node_ranges = [[35, 41]], rust_node_ranges = [{ target = 0, start = 123, end = 153 }] },
   { semantic = "consume the graphics y short one byte at a time, sign-extend it, and publish only after both bytes arrive", java_node_ranges = [[42, 48]], rust_node_ranges = [{ target = 0, start = 154, end = 184 }] },
   { semantic = "consume and publish the unsigned graphics transform byte", java_node_ranges = [[49, 55]], rust_node_ranges = [{ target = 0, start = 185, end = 198 }] },
   { semantic = "consume one graphics-ID kind byte and select its payload shape; unrecognized kinds consume no ID payload", java_node_ranges = [[56, 60]], rust_node_ranges = [{ target = 0, start = 199, end = 209 }, { target = 0, start = 299, end = 300 }] },
-  { semantic = "for graphics-ID kind one, consume the one-based unsigned string index, subtract one with JVM arithmetic, bounds-check the nullable table, clone the nullable UTF-16 value, and publish it", java_node_ranges = [[61, 74]], rust_node_ranges = [{ target = 0, start = 210, end = 253 }], literal_note = "The subtract-one literals match directly; the extra javac 1 is the graphics-ID switch case label, while the current syn preorder surface does not emit Rust literal-pattern nodes." },
-  { semantic = "for graphics-ID kind two, consume both unsigned-short bytes before publishing the exact nonnegative Integer object", java_node_ranges = [[75, 86]], rust_node_ranges = [{ target = 0, start = 254, end = 298 }], literal_note = "Java's 2 is the graphics-ID case label and readUnsignedShort hides its byte width; Rust's match-pattern 2 is outside the current syn node surface while explicit two-byte composition contributes shift distance 8." },
-  { semantic = "coalesce outer kinds two through six into their identical zone payload while retaining every case label and terminal break", java_node_ranges = [[88, 97], [126, 126]], rust_node_ranges = [{ target = 0, start = 301, end = 302 }], literal_note = "Both implementations select exactly outer kinds 2 through 6; javac inventories all five case literals, while the current syn preorder surface records the combined match arm but does not emit its range-pattern bounds." },
+  { semantic = "for graphics-ID kind one, consume the one-based unsigned string index, subtract one with JVM arithmetic, bounds-check the nullable table, clone the nullable UTF-16 value, and publish it", java_node_ranges = [[61, 74]], rust_node_ranges = [{ target = 0, start = 210, end = 253 }], literal_note = "The subtract-one literals match directly; the extra Java case 1 is value-locked by the separately reviewed GFX_ID_TYPE_STRING declaration to Rust's typed ROOM_OBJECT_GRAPHICS_ID_TYPE_STRING pattern, which syn omits.", literal_delta = { java_only = [1], rust_only = [] }},
+  { semantic = "for graphics-ID kind two, consume both unsigned-short bytes before publishing the exact nonnegative Integer object", java_node_ranges = [[75, 86]], rust_node_ranges = [{ target = 0, start = 254, end = 298 }], literal_note = "Java's raw case 2 is value-locked by the separately reviewed GFX_ID_TYPE_INTEGER declaration to Rust's typed ROOM_OBJECT_GRAPHICS_ID_TYPE_INTEGER pattern, which syn omits; the independent Rust-only 8 expands readUnsignedShort's hidden high-byte shift.", literal_delta = { java_only = [2], rust_only = [8] }},
+  { semantic = "coalesce outer kinds two through six into their identical zone payload while retaining every case label and terminal break", java_node_ranges = [[88, 97], [126, 126]], rust_node_ranges = [{ target = 0, start = 301, end = 302 }], literal_note = "Java inventories raw case labels 2 through 6; Rust combines the five separately crosswalked typed constants ROOM_OBJECT_TYPE_ZONE, BATTLE_ZONE, COLOR_ZONE, TEXT_ZONE, and TILE_ZONE in an or-pattern, whose constants are omitted by the syn node stream.", literal_delta = { java_only = [2, 3, 4, 5, 6], rust_only = [] }},
   { semantic = "consume the zone x short one byte at a time, sign-extend it, and publish only after both bytes arrive", java_node_ranges = [[98, 104]], rust_node_ranges = [{ target = 0, start = 303, end = 333 }] },
   { semantic = "consume the zone y short one byte at a time, sign-extend it, and publish only after both bytes arrive", java_node_ranges = [[105, 111]], rust_node_ranges = [{ target = 0, start = 334, end = 364 }] },
   { semantic = "consume and publish the unsigned zone width byte", java_node_ranges = [[112, 118]], rust_node_ranges = [{ target = 0, start = 365, end = 378 }] },
@@ -6752,7 +6752,7 @@ adaptation = [
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:room_object_new", ast_sha256 = "c53c40be30f275d787a2f1d01b3734c32da57c076804fa9afbaab94bb0f2950a", nodes_sha256 = "574da615b175a55d7aa1de1991859b0a637134f069ccebf2f1e3dba7289d93a7", node_count = 441 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "1,454 constructor cases agree across both recovered JARs, canonical Java, and no_std Rust. They cover null input, all 256 outer type bytes, all 256 nested graphics-ID kinds, signed-short boundaries, unsigned dimensions and transforms, String and Integer IDs, null/empty/sparse/hostile string tables, zero/nonzero script indices, every truncation point of representative graphics and zone records, and 512 deterministic malformed streams. Output observes all thirty instance fields plus exact remaining bytes, proving source-initializer order, pre-read visible/active stores, byte consumption, delayed signed-short publication, switch defaults, one-based lookup failures, script lookup after payload, and empty-catch partial state."
+semantic_review = "1,454 constructor cases agree across both recovered JARs, canonical Java, and strict Rust. They cover null input, all 256 outer type bytes, all 256 nested graphics-ID kinds, signed-short boundaries, unsigned dimensions and transforms, String and Integer IDs, null/empty/sparse/hostile string tables, zero/nonzero script indices, every truncation point of representative graphics and zone records, and 512 deterministic malformed streams. Output observes all thirty instance fields plus exact remaining bytes, proving source-initializer order, pre-read visible/active stores, byte consumption, delayed signed-short publication, switch defaults, one-based lookup failures, script lookup after payload, and empty-catch partial state."
 
 [[field]]
 java_class = "RoomObject"
@@ -7148,7 +7148,7 @@ adaptation = [{ side = "java", category = "erased", reason = "The javac initiali
 rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:room_object_initialize", ast_sha256 = "19da1a675d88a1c31865af90324e614877d8b23e33e7e5d4dd26aab704e53e2b", nodes_sha256 = "b6dee78eeb4b91942b735b77f16d98090c8512b0cb9c9a79912dbc8cb42c6c67", node_count = 72 }]
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
-semantic_review = "The first room-object-init request observes all fourteen real JVM startup values before any oracle case can mutate the private indices. Rust starts from hostile maximum/minimum/false seeds and must overwrite every owner. Both recovered JARs, canonical Java, and no_std Rust agree. Original code/opcode hashes establish the exact fourteen putstatic sequence, while all 37 canonical initializer nodes—including twenty-three non-executable ConstantValue literals—have one explicit owner."
+semantic_review = "The first room-object-init request observes all fourteen real JVM startup values before any oracle case can mutate the private indices. Rust starts from hostile maximum/minimum/false seeds and must overwrite every owner. Both recovered JARs, canonical Java, and strict Rust agree. Original code/opcode hashes establish the exact fourteen putstatic sequence, while all 37 canonical initializer nodes—including twenty-three non-executable ConstantValue literals—have one explicit owner."
 
 [[body]]
 java_class = "Menu"

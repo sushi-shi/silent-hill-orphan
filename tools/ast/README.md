@@ -40,8 +40,10 @@ DIVIDE` nodes, so the divergence was invisible.
    arguments — must be equal in value (hex/decimal/typed forms and immediately
    nested Rust unary-minus literals normalized, so Rust `0xff` matches Java `255`
    and Rust `-1` matches Java `-1`). A Rust `entity_row(..)[13]` paired against the
-   faithful Java `[10]` — the real `build_dialogue_menu` crash — is red unless a
-   sanctioned transform is documented in `op.literal_note` / `op.shape_note`.
+   faithful Java `[10]` — the real `build_dialogue_menu` crash — is red. A narrow
+   sanctioned transform needs both a reasoned `op.literal_note` and an exact
+   `op.literal_delta`; `op.shape_note` is reserved for broader representation
+   differences.
 5. **Crossing-ownership rejection.** Normal AST nesting may produce `A-B-A` in
    pre-order: one decision owns a parent and later argument around a nested
    receiver owned by another. `A-B-A-B` (or longer alternation) is different:
@@ -80,6 +82,11 @@ op = [
   # one semantically-atomic step; java/rust name the exact node indices (or ranges)
   { semantic = "icon = c.b[1717] / c.b[1721] — RATIO (idiv)",
     java_range = [[31, 40]], rust_range = [{ target = 0, start = 33, end = 41 }] },
+  # a reviewed literal-only representation transform locks its exact multiset
+  { semantic = "use the host's one-based row representation",
+    java = [41], rust = ["0:42"],
+    literal_note = "The host representation stores this row one-based.",
+    literal_delta = { java_only = [10], rust_only = [11] } },
   # …one op per atomic step…
 ]
 adapt = [
@@ -106,8 +113,13 @@ Rust target, so a target-0 waiver cannot discharge a target-1 crossing.
 Contiguous atomic steps may use `java_range = [[a,b]]` / `rust_range = [{ target,
 start, end }]`; the blanket cap still applies to the resulting node count.
 `op.shape_note` is the explicit escape hatch for a legitimate cross-language
-representation where the operator or literal parity would otherwise fire (a
-literal-only transform may instead use the narrower `op.literal_note`);
+representation where the operator or literal parity would otherwise fire. A
+literal-only transform instead uses the narrower `op.literal_note` together with
+`op.literal_delta = { java_only = [...], rust_only = [...] }`. Both arrays are
+required; they are exact one-sided integer multisets, so order is irrelevant but
+duplicates matter. Prose without the delta, a wrong delta, or a stale delta after
+the inventories come back into parity is red; subtracting the declared deltas
+must leave equal literal multisets.
 `op.blanket_ok` + `op.blanket_reason` similarly justifies a rare genuinely-large
 atomic step.
 

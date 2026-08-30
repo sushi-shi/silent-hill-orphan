@@ -82,7 +82,7 @@ read and compare every field it can write.
 five `BATTLE_PANEL_*` fields are mutable class statics. They therefore live in
 separate `RoomObjectState` and `RoomObjectStatics` owners; folding them into one
 per-instance struct would silently duplicate Java's static authority. The
-`no_std` JVM layer performs signed array bounds checks and distinguishes null,
+`orphan-jvm` compatibility layer performs signed array bounds checks and distinguishes null,
 out-of-bounds, and negative-allocation failures. `battlePanelNew` deliberately
 stores the new ID before allocation so a negative length preserves that write
 while leaving the previous array untouched.
@@ -115,7 +115,7 @@ dereference.
 the crosswalk fixes the original dereference point. Resolving too early changes
 which mutations survive an NPE.
 
-## A-6 — StringBuffer paths use explicit no_std UTF-16 appenders
+## A-6 — StringBuffer paths use explicit UTF-16 appenders
 
 The three `Application.loadRequest_getResourcePath` overloads and
 `ResourceRequest.getResourcePath` construct resource
@@ -123,8 +123,8 @@ names with `StringBuffer.append(String)` and `append(int)`. The strict Rust body
 keeps the result as `Vec<u16>` and implements three local appenders: ASCII
 literals, nullable UTF-16 strings, and signed decimal integers. This preserves
 Java's observable `null` text for a null `gameId` or string ID, every isolated
-surrogate, and the complete signed `i32` decimal domain without importing a
-host string runtime into the `no_std` crate.
+surrogate, and the complete signed `i32` decimal domain without round-tripping
+exact Java code units through a host Unicode string.
 
 Those appenders contribute 67 Rust AST nodes with no one-to-one Java syntax.
 They are therefore explicit Rust-side adaptations, not invisible helper
@@ -157,7 +157,7 @@ all been reviewed instead of falling outside the claimed translation.
 
 `Application.arrayCopyString` is ten Java AST nodes because all null checks,
 signed bounds checks, exception selection, and overlap handling are hidden
-inside `System.arraycopy`. The `no_std` Rust body expands that one native call
+inside `System.arraycopy`. The strict Rust body expands that one native call
 to 156 visible nodes. It validates both arrays and every signed range before
 mutation, snapshots the source window, and then writes the destination so
 forward and backward same-array overlaps have Java memmove behavior.
@@ -257,7 +257,7 @@ failure when it comes from an `I` hint, but catches the same numeric parse
 failure when the text came through hint `S` and returns one. Unknown nonempty
 hints instead become null and therefore integer zero.
 
-The no_std port uses a three-variant `InkVariableError` rather than flattening
+The strict port uses a three-variant `InkVariableError` rather than flattening
 these paths. Its Java-compatible parser is a separately inventoried Rust body
 owned by the `getVariable` crosswalk. All of its nodes are paired to the single
 `Integer.parseInt` Java subtree, including every BMP decimal-digit family and
@@ -286,7 +286,7 @@ read—are observable evidence.
 through 56. It reads each `eventOffsets` slot in order and only constructs a
 scanner for values other than minus one. A match in an early event therefore
 prevents later short-array or malformed-bytecode failures that would otherwise
-occur. The no_std wrapper uses a nonnull opaque script handle when constructing
+occur. The Rust wrapper uses a nonnull opaque script handle when constructing
 the temporary interpreter, preserving Java's nonnull `this` relationship while
 the actual script storage remains explicitly borrowed.
 
@@ -358,7 +358,7 @@ nonstandard `%f`. The byte dump uses `c <= 15`, so byte `0x0f` is rendered as
 `0f `. Coalescing them behind a conventional two-digit percent encoder would
 silently fix one shipped bug and change server request bodies.
 
-The `no_std` Rust bodies keep UTF-16 code units and unsigned bytes directly and
+The strict Rust bodies keep UTF-16 code units and unsigned bytes directly and
 render lowercase hexadecimal without a host formatter. The URL oracle exhausts
 all 65,536 singleton code units plus randomized strings. The dump oracle covers
 all 256 byte values, full/partial 30-column lines, and the 100-line boundary:
@@ -384,7 +384,7 @@ String, and every other nonnull Object retain the three `toInt` categories.
 The first Rust draft hoisted `settings_hash` before the ten assignments. Its
 happy-path and null-table oracle results were identical, but the AST walk made
 the changed read schedule explicit—the same optimization class Gothic G-10
-warns about. The final no_std body performs the owner dereference inside the
+warns about. The final strict body performs the owner dereference inside the
 lookup closure on every call, so its execution schedule still contains ten
 field reads. The explicit state borrow rules out concurrent owner replacement;
 the typed `JavaOwnedObject` representation retains exact Integer and UTF-16
@@ -406,7 +406,7 @@ factors their common lookup mechanics.
 `Application.resetLoad` does not validate its download Vector before changing
 the other loader state. It first clears `loadThread`, then stores loading mode
 minus one, and only then calls `resourcesToDownload.removeAllElements()`. A null
-Vector therefore throws after both scalar/reference stores survive. The no_std
+Vector therefore throws after both scalar/reference stores survive. The Rust
 owner uses an outer `Option` and an explicit null error at the `clear` site;
 1,184 complete-state cases prove the ordering for nullable, empty, populated,
 nullable-entry, and randomized Vectors.
@@ -441,7 +441,7 @@ casts the signed result to `char`; bytes `0x80..0xff` therefore become
 `while (true)`. EOF, a null stream, or any permanently failing read is retried
 forever. Only a successfully read zero byte exits.
 
-The strict no_std transliteration now widens through `i8` and keeps the retry
+The strict transliteration now widens through `i8` and keeps the retry
 loop, using `spin_loop` only as a host execution hint. This deliberately differs
 from the safe bounded codecs in `orphan-formats`: those validate untrusted host
 data, while this body records the shipped game behavior. Its 7,142 terminating
@@ -470,7 +470,7 @@ the next field. A conventional EOF error here would be safer but not faithful.
 input cursor stops immediately after the first matching window; failure and any
 exception consume through the failing read and also return zero. Its window is
 pre-filled with one ASCII space per target code unit, so an empty target or a
-target made entirely of spaces can match without reading at all. The no_std
+target made entirely of spaces can match without reading at all. The strict
 body retains the literal sliding window rather than replacing it with a host
 substring search. Across 69,716 cases, all UTF-16 singleton targets, every
 unsigned byte, overlapping markers, absent non-byte code units, randomized
@@ -488,17 +488,18 @@ nodes before the Rust claim was admitted.
 Retail truncates every UTF-16 code unit to a signed byte before calling
 `DataOutputStream.write(int)`, stops after the first failed character write,
 and attempts one zero terminator only after all characters succeed. A
-closure-based no_std output boundary exposes those exact attempted signed ints
-without imposing `std::io`. The 69,694-case oracle exhausts all UTF-16 singleton
-values and compares every attempted write and committed low byte under null
-owners and injected failures; the ledger owns all 37/38 Java/Rust nodes.
+closure-based typed output boundary exposes those exact attempted signed ints
+independently of a concrete I/O backend. The 69,694-case oracle exhausts all
+UTF-16 singleton values and compares every attempted write and committed low
+byte under null owners and injected failures; the ledger owns all 37/38
+Java/Rust nodes.
 
 **Lesson.** A canonical AST is an authority only while it remains bound to
 bytecode and executable oracles. When an oracle contradicts reconstructed
 source, inspect the exception table, correct the Java app, and deliberately
 reratchet the whole AST inventory—never bend Rust to a convenient decompilation.
 
-## A-19 — `readUTF` expands into visible no_std runtime nodes
+## A-19 — `readUTF` expands into visible host-independent helper nodes
 
 `Application.readStringList` publishes its nullable `String[]` immediately
 after reading an unsigned one-byte count, then fills it in place. Its one outer
@@ -512,7 +513,7 @@ set only when the stored value equals `savePoint` and `loadingMode == 0`.
 
 Java exposes the wire decoder as the single library call
 `DataInputStream.readUTF`; no application AST contains its implementation. The
-strict `no_std` crate must nevertheless implement Java modified UTF exactly.
+strict Rust translation must nevertheless implement Java modified UTF exactly.
 Its private helper therefore contributes 237 Rust nodes recorded as eight
 Rust-only runtime adaptations: the big-endian byte length, complete payload
 read before validation, UTF-16 allocation/cursor, one-, two-, and three-byte
@@ -544,7 +545,7 @@ through `getCurrent`, and sets that object's `isCurrent` flag true. A singleton
 stack becomes empty and no flag is written; a reflected null stack faults at
 the first `active()` call.
 
-The no_std owner retains ordered opaque handles and accepts a callback for the
+The Rust owner retains ordered opaque handles and accepts a callback for the
 final object-field write, keeping object resolution outside the strict game
 state without copying menu instances into the static stack. Its 2,920-case
 oracle exhausts every stack of length zero through five over three identities,
@@ -584,7 +585,7 @@ match, but the same null is never dereferenced after a type mismatch. A null
 `this.ID` is merely the right operand and makes ordinary String/Integer/Object
 equality false.
 
-The no_std owner keeps all eight instance fields. `JavaResourceId` distinguishes
+The Rust owner keeps all eight instance fields. `JavaResourceId` distinguishes
 boxed-Integer value equality, exact UTF-16 String equality, and identity-only
 opaque objects; `Option` retains null. The constructor explicitly supplies the
 JVM allocation defaults for image and four geometry fields. The oracle has 300
@@ -607,7 +608,7 @@ at `invokevirtual`, after all arguments have been evaluated, and an exception
 raised by `drawImage` propagates uncaught. Neither a null image nor an unusual
 anchor is filtered by the game body; both cross the MIDP boundary unchanged.
 
-The no_std transliteration keeps image and graphics as opaque handles and takes
+The strict Rust transliteration keeps image and graphics as opaque handles and takes
 one draw callback. It snapshots the image before making the implicit receiver
 fault explicit, then passes all five values without coordinate arithmetic or
 anchor interpretation. The 2,024-case oracle crosses null/nonnull graphics,
@@ -637,7 +638,7 @@ receiver, image, source origin, width, height, then evaluates
 `transformTable[transform]`; only after loading the remaining arguments does
 `invokevirtual` check whether Graphics is null. Thus an invalid transform and a
 null Graphics together throw `ArrayIndexOutOfBoundsException`, not NPE. The
-no_std body deliberately checks the signed eight-slot array before converting
+Rust body deliberately checks the signed eight-slot array before converting
 the nullable graphics handle into an explicit error. Both draw callbacks retain
 uncaught failure propagation.
 
@@ -695,7 +696,7 @@ object reference, so it represents the shared slot as an optional opaque handle
 inside `InkInterpreterStatics` and passes the bound handle to a resume callback.
 
 That is a deliberate single-read adaptation, not an accidental loss of a Java
-AST subtree. The no_std function holds an exclusive borrow of the complete
+AST subtree. The Rust function holds an exclusive borrow of the complete
 statics owner across the adjacent test and callback dispatch; no alias can
 change the slot between the source-level reads. The crosswalk assigns the
 second Java field-select nodes to this representation argument, while the
@@ -728,7 +729,7 @@ after `hasEvent` already read it. The strict Rust body retains both operations
 instead of treating the boolean query as permission to cache an offset. Runtime
 allocation is explicit: the caller supplies storage and an opaque identity for
 the fresh interpreter, allowing a later CHOOSE/WAIT pause to refer to the same
-owner without putting a host allocator or thread model in the no_std game crate.
+owner without choosing a host allocator or thread model at this typed boundary.
 
 The 1,152-case tranche crosses null/short/canonical event tables, absent and
 hostile offsets, broken and valid scripts, both debug values, room identity,
@@ -752,7 +753,7 @@ would erase three retail states before the body could observe them: reflection
 can set the registry itself to null, `Hashtable.get(null)` throws, and raw Java
 code can store a non-script value whose cast throws `ClassCastException`.
 
-The no_std owner therefore stores an optional vector of exact UTF-16 keys and a
+The Rust owner therefore stores an optional vector of exact UTF-16 keys and a
 two-category value enum: opaque script identity or other Object. Lookup faults,
 cast faults, and arbitrary nested execution failures remain distinct in a
 generic error enum. An absent key returns null before event-table or bytecode
@@ -776,7 +777,7 @@ field.
 ## A-28 — a one-call lifecycle wrapper still needs its own proof
 
 `Application.destroyApp(boolean)` ignores its boolean argument and consists
-only of a call to `exit()`. The production no_std body expresses that unported
+only of a call to `exit()`. The production Rust body expresses that unported
 lifecycle dependency as a generic callback and transparently returns its error,
 but the wrapper remains a separately admitted original method rather than
 receiving credit from either the callback or the future `exit` transliteration.
@@ -821,7 +822,7 @@ String. The registry lookup can throw its own `ClassCastException` for a
 wrong-class table value; a valid script can independently return an Integer and
 fail the final String cast.
 
-The no_std body calls the already crosswalked static dispatcher and wraps its
+The Rust body calls the already crosswalked static dispatcher and wraps its
 complete error domain separately from the final typed cast. Its 182-case oracle
 crosses registry states and key shapes, null/short/hostile event tables, every
 reviewed execution program, and both pause seeds. It observes returned UTF-16,
@@ -843,7 +844,7 @@ current static receiver, and forward nullable UTF-16 text plus the signed
 recovery code with maximum-time sentinel `-1`. Each invocation can propagate a
 callee failure.
 
-The no_std pause/start bodies expose their not-yet-admitted callees as typed
+The Rust pause/start bodies expose their not-yet-admitted callees as typed
 callbacks, while the popup wrapper now calls the separately crosswalked live
 three-argument state machine. This keeps each wrapper independently testable
 without smuggling larger unreviewed bodies into its coverage claim. The
@@ -887,7 +888,7 @@ inactive queue it then publishes `popupCurrent` before re-reading
 `popupMaxTime`; deadline publication precedes `popupActive = true`, and the
 signed popup count increments last.
 
-The no_std body uses checked nullable arrays and preserves that exact schedule.
+The Rust body uses checked nullable arrays and preserves that exact schedule.
 In particular, Java evaluates `wrapString` before `aastore` performs its null or
 bounds check, so a bad `popupText` still executes the wrapping callee. A bad
 recovery array retains the text store; a bad time array retains both earlier
@@ -913,7 +914,7 @@ possibly short maximum-time array. The `-1` element publishes an indefinite end
 time after one clock read; every other value triggers a second, independent
 clock read and a wrapping Java `long` addition.
 
-The no_std body keeps the clock as a callback and the array access checked, so
+The Rust body keeps the clock as a callback and the array access checked, so
 the read schedule and partial-failure state remain observable. An NPE or AIOOBE
 retains the incremented current index and newly published minimum deadline but
 leaves the old end deadline intact. The 864-case oracle crosses wrapping index
@@ -937,7 +938,7 @@ reference. Retail's six-byte `<clinit>`, however, contains only `bipush -123`,
 `putstatic lastKey`, and `return`; the four final constants live in classfile
 `ConstantValue` attributes and execute no stores.
 
-The no_std transliteration adds one explicit `CheatControllerStatics` owner and
+The strict transliteration adds one explicit `CheatControllerStatics` owner and
 one initializer that replaces any seed with `-123`. The crosswalk maps the
 actual mutable initializer and explicitly classifies the four source-only
 constant nodes, while the declaration crosswalk owns `lastKey` separately. A
@@ -961,7 +962,7 @@ the later virtual-call NPE; a wrong-class entry throws CCE before publication;
 and a successfully resolved script remains cached even when its execution
 fails.
 
-The no_std owner represents `scriptID` as nullable UTF-16 and `script` as a
+The Rust owner represents `scriptID` as nullable UTF-16 and `script` as a
 nullable opaque handle. Its typed registry search, cast, publication, and
 executor callback retain the Java order rather than pre-validating the whole
 operation. `getName` then dispatches event 1 with the exact one-code-unit `?`
@@ -1000,7 +1001,7 @@ false)`. The callback's Object result is ignored; after successful execution
 the method returns the exact same RoomObject receiver, while any execution
 failure prevents that return.
 
-The no_std body keeps the room identity as an opaque handle and uses a typed
+The Rust body keeps the room identity as an opaque handle and uses a typed
 error boundary to distinguish failure in the presence probe from failure in
 dispatch. Its 304-case oracle crosses null and cached scripts, every hostile
 registry shape, null/empty/short/absent/present/extreme event tables, the
@@ -1056,7 +1057,7 @@ also supplies false debug. Its successful Object result is discarded.
 
 Consequently, null registry storage, null item ID, a wrong-class registry hit,
 or malformed script execution all occur after the menu stack has been replaced.
-A missing registry entry is a successful no-op after that close. The no_std
+A missing registry entry is a successful no-op after that close. The strict Rust
 body composes the already admitted `menu_close_all` and
 `ink_script_execute_event_by_id` functions around the same `MenuStatics` and
 `InkScriptStatics` owners, rather than pre-validating the script and accidentally
@@ -1094,7 +1095,7 @@ Thus an event code above 56 consumes all three record bytes before the caught
 reader, pre-validating the event code, or parsing into locals and publishing a
 finished value would each change retail behavior.
 
-The no_std transliteration therefore composes each short from two `Reader::u8`
+The strict transliteration therefore composes each short from two `Reader::u8`
 calls and fills the already-published data array byte by byte. Its 1,122-case
 oracle includes null input, nullable/hostile string tables, all 256 graphics
 discriminators, every one-byte string index, representative unsigned Integer
@@ -1106,8 +1107,9 @@ canonical Java, and Rust agree. All 119 Java and 305 Rust constructor nodes and
 all 3/3 `gfxID` declaration nodes have exactly one owner.
 
 Retail's caught `printStackTrace` is explicitly one-sided: it is diagnostic
-stderr, while the production crate deliberately remains `no_std`. The real
-Java oracles still execute it; only the game-state owner omits the host output.
+stderr, while the production transliteration keeps that diagnostic side effect
+outside its typed game-state boundary. The real Java oracles still execute it;
+only the game-state owner omits the host output.
 
 **Lesson.** For a constructor with a broad catch, the oracle is the partially
 initialized object plus the input cursor—not merely success versus failure.
@@ -1133,7 +1135,7 @@ script-string index. Index zero deliberately suppresses any dereference of the
 possibly null string table; a nonzero invalid index is caught after its byte is
 consumed.
 
-The no_std translation models all thirty original instance fields in one
+The strict translation models all thirty original instance fields in one
 `RoomObjectState`, including fields untouched by this constructor, so early
 failure has the same reflection-visible zero/false/null defaults as JVM
 allocation. Signed and unsigned shorts are consumed as two individual byte
@@ -1149,7 +1151,7 @@ representative records, and 512 deterministic malformed streams. Both recovered
 JARs, canonical Java, and Rust agree on all thirty fields and exact remaining
 bytes. The AST ledger independently owns all 153 Java nodes and all 441 Rust
 nodes, including the three source initializers, empty catch, explicit JVM
-defaults, switch defaults, and checked no_std adaptations.
+defaults, switch defaults, and checked Rust adaptations.
 
 **Lesson.** A complete constructor comparison must observe allocation defaults,
 source-initializer order, branch payload width, the cursor at failure, and the
@@ -1169,7 +1171,7 @@ them. The remaining nodes initialize mutable class state in exact order:
 painting time minus one, the vibration latch true, panel IDs one through seven,
 then panel indices zero through four.
 
-The no_std port keeps those models separate. Fourteen newly admitted typed Rust
+The Rust port keeps those models separate. Fourteen newly admitted typed Rust
 constants join the nine constructor constants, preventing equal-valued IDs and
 offsets from unrelated domains from satisfying later translations. The nine
 new mutable values extend the single `RoomObjectStatics` owner; the five
