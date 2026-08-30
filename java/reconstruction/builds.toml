@@ -1670,7 +1670,7 @@ collected_as = ["Silent-Hill-Orphan_J2ME_EN_v010(4).zip::Silent Hill (2014)(Kona
 containers = ["inside _originals/Silent-Hill-Orphan_J2ME_EN_v010(4).zip", "inside _originals/Silent-Hill-Orphan_J2ME_EN_v010(6).zip"]
 notes = "Meaningful aliases: same payload under multiple collected names (kept, playbook R2)."
 
-[[payload]]
+[[archived]]
 id = "silent_hill_orphan_j2me_en_v010_4_zip_silent_hill_2014_konam_86"
 sha256 = "9431e5c3b6ceb9175f88cbc0f98170cf2729d8d248aad1636d8d88163214dc36"
 bytes = 488434
@@ -1686,8 +1686,11 @@ midlet_version = "0.1.0"
 vendor = "Konami"
 cldc = "CLDC-1.0"
 declared_language = "en"   # HINT from filename/manifest; verify from content (R10)
-collected_as = ["Silent-Hill-Orphan_J2ME_EN_v010(4).zip::Silent Hill (2014)(Konami)(v0.1.0)(a2).jar", "Silent-Hill-Orphan_J2ME_EN_v010(6).zip::Silent Hill (2014)(Konami)(v0.1.0)(a2).jar"]
-containers = ["inside _originals/Silent-Hill-Orphan_J2ME_EN_v010(4).zip", "inside _originals/Silent-Hill-Orphan_J2ME_EN_v010(6).zip"]
+official = false
+provenance_class = "fan-or-supplier-repack"
+repack_tag = "dedomil.net manifest advertising"
+collected_as = ["Silent-Hill-Orphan_J2ME_EN_v010(4).zip::Silent Hill (2014)(Konami)(v0.1.0)(a2).jar", "Silent-Hill-Orphan_J2ME_EN_v010(6).zip::Silent Hill (2014)(Konami)(v0.1.0)(a2).jar", "Silent Hill Mobile.jar"]
+containers = ["inside _originals/Silent-Hill-Orphan_J2ME_EN_v010(4).zip", "inside _originals/Silent-Hill-Orphan_J2ME_EN_v010(6).zip", "_originals/Silent Hill Mobile.jar"]
 notes = "Meaningful aliases: same payload under multiple collected names (kept, playbook R2)."
 
 [[payload]]
