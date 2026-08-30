@@ -1774,6 +1774,20 @@ fn read_modified_utf(input: &mut orphan_formats::Reader<'_>) -> Option<alloc::ve
     Some(decoded)
 }
 
+pub fn application_get_language<Get, E>(rms_get: Get) -> Result<Option<alloc::vec::Vec<u16>>, E>
+where
+    Get: FnOnce(&[u16]) -> Result<Option<alloc::vec::Vec<u8>>, E>,
+{
+    let Some(stored_bytes) = rms_get(&[
+        108, 97, 110, 103, 117, 97, 103, 101, 82, 101, 99, 111, 114, 100, 83, 116, 111, 114, 101,
+    ])?
+    else {
+        return Ok(None);
+    };
+    let mut input = orphan_formats::Reader::new(&stored_bytes);
+    Ok(read_modified_utf(&mut input))
+}
+
 pub fn read_string_list(
     state: &mut ApplicationState,
     input: Option<&mut orphan_formats::Reader<'_>>,
@@ -3844,6 +3858,35 @@ mod tests {
         let failure = application_load_sound_mode(&mut state, |_| Err("uncaught"));
         assert_eq!(failure, Err("uncaught"));
         assert!(state.cur_sound_mode);
+    }
+
+    #[test]
+    fn get_language_decodes_one_present_modified_utf_record() {
+        let expected_name = [
+            108, 97, 110, 103, 117, 97, 103, 101, 82, 101, 99, 111, 114, 100, 83, 116, 111, 114,
+            101,
+        ];
+        for (stored, expected) in [
+            (None, None),
+            (Some(alloc::vec![]), None),
+            (Some(alloc::vec![0]), None),
+            (Some(alloc::vec![0, 0]), Some(alloc::vec![])),
+            (Some(alloc::vec![0, 1, 65]), Some(alloc::vec![65])),
+            (Some(alloc::vec![0, 2, 0xc0, 0x80]), Some(alloc::vec![0])),
+            (Some(alloc::vec![0, 1, 0xff]), None),
+            (Some(alloc::vec![0, 1, 65, 0xa5]), Some(alloc::vec![65])),
+        ] {
+            let result = application_get_language(|name| {
+                assert_eq!(name, expected_name);
+                Ok::<_, ()>(stored)
+            });
+            assert_eq!(result, Ok(expected));
+        }
+
+        assert_eq!(
+            application_get_language(|_| Err::<Option<alloc::vec::Vec<u8>>, _>("uncaught")),
+            Err("uncaught")
+        );
     }
 
     #[test]

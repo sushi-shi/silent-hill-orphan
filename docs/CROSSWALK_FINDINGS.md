@@ -1833,15 +1833,44 @@ decision.
 one.” Preserve the empty-stream exception path and the full nonzero byte domain,
 and keep a wrapper's catch type narrower than the callee's unchecked failures.
 
+## A-68 — modified UTF has a nullable failure path distinct from an empty string
+
+`Application.getLanguage()` initializes its result to null, calls the admitted
+`rmsGet` with the interned `languageRecordStore` literal, and only constructs an
+input view for a nonnull byte array. It then reads one Java modified-UTF record.
+A missing record therefore returns null, while the valid two-byte length prefix
+`00 00` returns a distinct empty string.
+
+Truncated length prefixes, payloads shorter than the declared unsigned length,
+invalid leading bytes, and malformed continuation bytes make `readUTF` throw an
+`IOException`; the method catches it and returns the still-null result. Valid
+NUL, surrogate, and noncharacter code units remain exact UTF-16 values. Bytes
+after the first complete record are ignored. As with `loadSoundMode`, caught
+open/get RMS failures look like a null record, a caught close failure retains
+the fetched bytes, and an `Error` at any RMS boundary propagates before decode.
+
+The existing `read_modified_utf` helper already has its own exhaustive AST
+ownership and 72,119-case decoder tranche. The wrapper adds 68,739 direct cases:
+all five outcomes at each RMS phase over representative records, every one-code-
+unit UTF-16 value, all 2,048 leading-byte/continuation-edge payloads, and declared
+length truncations through 65,535. The oracle also records exact RMS name,
+create flag, record ID, call counts, returned UTF-16 units, and propagated status.
+All forty-five wrapper `javac` and fifty-two wrapper `syn` nodes have one decision.
+
+**Lesson.** Preserve null, empty, malformed, and valid-empty as separate states.
+Reusing an admitted decoder is legitimate composition, but its call node and the
+caller's narrower catch/result policy still need their own AST ownership and
+direct original-JAR oracle.
+
 ## Verified clean so far
 
-- 166/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
+- 167/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
   and `syn` node ownership.
 - 185/1,075 Java fields have complete declaration-node ownership: 150 map into
   sixteen hash-locked Rust owner containers, thirty-five map to typed scalar constants,
   and one mutable array also owns a separately inventoried initializer template.
-- The differential currently runs 1,000,584 cases against the recovered baseline,
-  canonical Java, and Rust; the naming-reference JAR agrees on all 994,369
+- The differential currently runs 1,069,323 cases against the recovered baseline,
+  canonical Java, and Rust; the naming-reference JAR agrees on all 1,063,108
   cases, with 6,215 requests excluded only by its two ledger-reviewed
   input-timing variants and one ledger-reviewed rendering-policy variant.
 - Exhaustive subdomains include all Java `char` values, every pair of singleton

@@ -20,6 +20,7 @@ import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 import javax.microedition.midlet.MIDlet;
 import javax.microedition.rms.RecordStore;
+import javax.microedition.rms.RecordStoreException;
 
 /** Calls package-private static methods on the verified original {@code M}. */
 public final class OrphanOriginalPureOracle {
@@ -1262,6 +1263,7 @@ public final class OrphanOriginalPureOracle {
                 inkEngine, "savedGameExistsInRMS", String.class);
         Method rmsGet = method(application, "rmsGet", String.class);
         Method loadSoundMode = method(application, "loadSoundMode");
+        Method getLanguage = method(application, "getLanguage");
         Method saveChunkIni = method(application, "saveChunkINI", DataInputStream.class);
         Method resourceMakeSubChunk = method(application, "resourceMakeSubChunk");
         Method resetLoad = method(application, "resetLoad");
@@ -2247,6 +2249,34 @@ public final class OrphanOriginalPureOracle {
                         ? "-" : Integer.toString(RecordStore.oracleGetId);
                 result = status + ":" + (applicationCurSoundMode.getBoolean(null) ? "1" : "0")
                         + ":" + utf16Output(RecordStore.oracleOpenName) + ":"
+                        + RecordStore.oracleOpenCalls + ":" + nameIdentity + ":"
+                        + (RecordStore.oracleOpenCreate ? "1" : "0") + ":"
+                        + RecordStore.oracleGetCalls + ":" + getId + ":"
+                        + RecordStore.oracleCloseCalls;
+                RecordStore.oracleResetRead(0, 0, 0, null);
+            } else if (parts[0].equals("get-language") && parts.length == 5) {
+                RecordStore.oracleResetRead(
+                        value(parts, 1), value(parts, 2), value(parts, 3), bytes(parts[4]));
+                String returned = null;
+                String status;
+                try {
+                    returned = (String) getLanguage.invoke(null);
+                    status = "OK";
+                } catch (InvocationTargetException exception) {
+                    if (exception.getCause() instanceof AssertionError) {
+                        status = "ERR";
+                    } else if (exception.getCause() instanceof RecordStoreException) {
+                        status = "RSE";
+                    } else {
+                        throw exception;
+                    }
+                }
+                String nameIdentity = RecordStore.oracleOpenCalls == 0
+                        ? "-" : RecordStore.oracleOpenName == "languageRecordStore" ? "I" : "W";
+                String getId = RecordStore.oracleGetCalls == 0
+                        ? "-" : Integer.toString(RecordStore.oracleGetId);
+                result = status + ":" + utf16Output(returned) + ":"
+                        + utf16Output(RecordStore.oracleOpenName) + ":"
                         + RecordStore.oracleOpenCalls + ":" + nameIdentity + ":"
                         + (RecordStore.oracleOpenCreate ? "1" : "0") + ":"
                         + RecordStore.oracleGetCalls + ":" + getId + ":"

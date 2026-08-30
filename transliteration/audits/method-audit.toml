@@ -1,17 +1,17 @@
 schema_version = 1
 baseline_sha256 = "ca9a874ce7c7fb11ed444701b65e967919d3d7c0bcf73f80a9fcf825fb6a4be7"
 total_body_count = 350
-reviewed_body_count = 166
-semantic_reviewed_body_count = 166
+reviewed_body_count = 167
+semantic_reviewed_body_count = 167
 total_field_count = 1075
 semantic_reviewed_field_count = 185
-total_rust_function_count = 168
-reviewed_rust_function_count = 168
+total_rust_function_count = 169
+reviewed_rust_function_count = 169
 total_rust_value_declaration_count = 235
 reviewed_rust_value_declaration_count = 235
 total_rust_container_count = 34
 reviewed_rust_container_count = 34
-total_rust_declaration_count = 437
+total_rust_declaration_count = 438
 
 [crosswalk_policy]
 blanket_max_span = 48
@@ -4180,6 +4180,35 @@ rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "f
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
 semantic_review = "Two thousand five hundred six cases agree across both recovered JARs, canonical Java, and strict Rust. Both initial flag values cross all five open, get, and close outcomes with null, empty, zero, nonzero, and tail-bearing data; an additional 506 cases exhaust every remaining first-byte value. The oracle records the exact soundRecordStore name, create=false, record ID one, open/get/close counts, final flag, and propagated Error status. Null and empty data preserve the old flag, zero clears it, every value one through 255 sets it, tails are ignored, caught close failures retain and decode fetched data, and Error at any RMS boundary propagates before assignment. All thirty-nine javac and sixty syn nodes are owned exactly once."
+
+[[body]]
+java_class = "M"
+canonical_class = "Application"
+java_name = "getLanguage"
+descriptor = "()Ljava/lang/String;"
+java_item = "getLanguage()"
+code_sha256 = "c0c90cad5faf40b3be9174a11868e7e9cef0d057bf9d24c73c03abe487fb4e5c"
+opcode_sha256 = "e236f595d66a69c699c1bb8f697e26dc2b4d4a4c4ae614b1a8908712902135c0"
+java_ast_sha256 = "548ddc82ce581580f2347f4be5f9e80f6dd7c0083a1a3754ad346dcccae7b54b"
+java_nodes_sha256 = "3d27f5457dad7b2ed9d520d592a5f90b83f4fe0f0d2b5fd78980eca3fce5b820"
+java_node_count = 45
+rust_node_counts = [52]
+operation = [
+  { semantic = "own the complete language-record load body", java_nodes = [0], rust_nodes = ["0:0"] },
+  { semantic = "initialize the nullable language result and return that exact nullable value", java_node_ranges = [[1, 4], [43, 44]], rust_node_ranges = [{ target = 0, start = 31, end = 35 }, { target = 0, start = 43, end = 45 }] },
+  { semantic = "call the admitted rmsGet exactly once with the interned languageRecordStore name and propagate only failures outside that callee's Exception catches", java_node_ranges = [[7, 13]], rust_node_ranges = [{ target = 0, start = 3, end = 27 }], literal_note = "Java represents languageRecordStore as one interned String literal; Rust passes the same nineteen UTF-16 code units explicitly, and the differential oracle records the exact opened name on every reachable RMS path.", literal_delta = { java_only = [], rust_only = [108, 97, 110, 103, 117, 97, 103, 101, 82, 101, 99, 111, 114, 100, 83, 116, 111, 114, 101] } },
+  { semantic = "decode only a nonnull fetched byte array and return the initialized null result immediately when rmsGet returns null", java_node_ranges = [[14, 19]], rust_nodes = ["0:1", "0:2"], rust_node_ranges = [{ target = 0, start = 28, end = 30 }] },
+  { semantic = "wrap the exact fetched byte array in a zero-position input view without copying its bytes", java_node_ranges = [[20, 27]], rust_node_ranges = [{ target = 0, start = 36, end = 42 }] },
+  { semantic = "decode exactly one modified-UTF record, publish its distinct UTF-16 value or the decoder's nullable failure result, and ignore trailing bytes", java_node_ranges = [[28, 33]], rust_node_ranges = [{ target = 0, start = 46, end = 51 }] },
+]
+adaptation = [
+  { side = "java", category = "erased", reason = "The explicit try/IOException catch becomes the admitted decoder's nullable failure result; the Rust callback error channel is reserved for failures outside that Java catch domain.", java_node_ranges = [[5, 6], [38, 42]] },
+  { side = "java", category = "faithful-noop", reason = "The returned array is viewed directly in Rust, so the successful ByteArrayInputStream-backed DataInputStream close has no retained resource or state to mutate.", java_node_ranges = [[34, 37]] },
+]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:application_get_language", ast_sha256 = "74b378281760d05bea746886422885356a60ebd595a12a99b6a84fc160d2bff6", nodes_sha256 = "c7defa2ed2cbef92c8889096ac5ec44e39c0f3d8f516644319332318d36090b1", node_count = 52 }]
+oracle = "pure-method-v1"
+semantic_status = "crosswalked"
+semantic_review = "Sixty-eight thousand seven hundred thirty-nine direct cases agree across both recovered JARs, canonical Java, and strict Rust. Nine representative nullable, empty, valid, malformed, and tail-bearing records cross all five RMS open, get, and close outcomes; successful RMS reads additionally exhaust every one-code-unit UTF-16 value, all 2,048 leading-byte/continuation-edge payloads, and declared-length truncations through 65,535. The oracle records the exact languageRecordStore name, create=false, record ID one, open/get/close counts, exact returned UTF-16 code units, and propagated Error status. Null records and caught RMS failures return null, caught close failures retain and decode fetched data, malformed or truncated modified UTF returns null, a zero-length record returns the distinct empty string, trailing bytes are ignored, and Error propagates before decoding. The separately admitted read_modified_utf helper retains its own exhaustive AST ownership; all forty-five wrapper javac and fifty-two wrapper syn nodes here are owned exactly once."
 
 [[body]]
 java_class = "ExtBase"

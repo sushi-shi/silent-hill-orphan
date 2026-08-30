@@ -5,8 +5,8 @@ use orphan_game_xlat::{
     abs, action_key_get_script_id, action_key_id_convert, action_key_init_system,
     action_key_keycode_to_action_key, action_key_unset_all_keys, application_app_start,
     application_clear_all_rms, application_destroy_app, application_exit, application_free_memory,
-    application_load_sound_mode, application_new, application_paint, application_pause_app,
-    application_print_array, application_repaint_canvas_if_possible,
+    application_get_language, application_load_sound_mode, application_new, application_paint,
+    application_pause_app, application_print_array, application_repaint_canvas_if_possible,
     application_resource_make_subchunk, application_rms_delete, application_rms_get,
     application_room_repaint_run, application_save_chunk_ini, application_set_display,
     array_copy_string_handles, char_to_string, cheat_controller_initialize, cheat_controller_new,
@@ -2478,6 +2478,87 @@ fn main() {
                 format!(
                     "{status}:{}:{}:{}:{}:{}:{}:{get_id}:{}",
                     i32::from(application.cur_sound_mode),
+                    observed_name.borrow(),
+                    open_calls.get(),
+                    name_identity.get(),
+                    i32::from(open_create.get()),
+                    get_calls.get(),
+                    close_calls.get()
+                )
+            }
+            Some("get-language") if parts.len() == 5 => {
+                let open_mode = value(&parts, 1);
+                let get_mode = value(&parts, 2);
+                let close_mode = value(&parts, 3);
+                let data = bytes(parts[4]);
+                let expected_name = [
+                    108, 97, 110, 103, 117, 97, 103, 101, 82, 101, 99, 111, 114, 100, 83, 116, 111,
+                    114, 101,
+                ];
+                let open_calls = core::cell::Cell::new(0);
+                let observed_name = core::cell::RefCell::new(String::from("null"));
+                let name_identity = core::cell::Cell::new("-");
+                let open_create = core::cell::Cell::new(false);
+                let get_calls = core::cell::Cell::new(0);
+                let get_id = core::cell::Cell::new(None);
+                let close_calls = core::cell::Cell::new(0);
+                let result = application_get_language(|name| {
+                    application_rms_get(
+                        name,
+                        |opened_name, create| {
+                            open_calls.set(open_calls.get() + 1);
+                            *observed_name.borrow_mut() = utf16_output(Some(opened_name));
+                            name_identity.set(if opened_name == expected_name {
+                                "I"
+                            } else {
+                                "W"
+                            });
+                            open_create.set(create);
+                            match open_mode {
+                                0 => Ok(17_u32),
+                                1 => Err(ApplicationRmsGetCallError::RecordStoreNotFound),
+                                2 => Err(ApplicationRmsGetCallError::RecordStore),
+                                3 => Err(ApplicationRmsGetCallError::Uncaught(())),
+                                4 => Err(ApplicationRmsGetCallError::OtherException),
+                                _ => unreachable!(),
+                            }
+                        },
+                        |store, record_id| {
+                            get_calls.set(get_calls.get() + 1);
+                            get_id.set(Some(record_id));
+                            assert_eq!(*store, 17);
+                            match get_mode {
+                                0 => Ok(data),
+                                1 => Err(ApplicationRmsGetCallError::RecordStoreNotFound),
+                                2 => Err(ApplicationRmsGetCallError::RecordStore),
+                                3 => Err(ApplicationRmsGetCallError::Uncaught(())),
+                                4 => Err(ApplicationRmsGetCallError::OtherException),
+                                _ => unreachable!(),
+                            }
+                        },
+                        |store| {
+                            close_calls.set(close_calls.get() + 1);
+                            assert_eq!(store, 17);
+                            match close_mode {
+                                0 => Ok(()),
+                                1 => Err(ApplicationRmsGetCallError::RecordStoreNotFound),
+                                2 => Err(ApplicationRmsGetCallError::RecordStore),
+                                3 => Err(ApplicationRmsGetCallError::Uncaught(())),
+                                4 => Err(ApplicationRmsGetCallError::OtherException),
+                                _ => unreachable!(),
+                            }
+                        },
+                    )
+                });
+                let (status, returned) = match result {
+                    Ok(returned) => ("OK", utf16_output(returned.as_deref())),
+                    Err(()) => ("ERR", String::from("null")),
+                };
+                let get_id = get_id
+                    .get()
+                    .map_or_else(|| "-".to_owned(), |record_id| record_id.to_string());
+                format!(
+                    "{status}:{returned}:{}:{}:{}:{}:{}:{get_id}:{}",
                     observed_name.borrow(),
                     open_calls.get(),
                     name_identity.get(),

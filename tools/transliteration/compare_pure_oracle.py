@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare 166 methods across recovered JARs, canonical Java, and Rust."""
+"""Compare 167 methods across recovered JARs, canonical Java, and Rust."""
 
 from __future__ import annotations
 
@@ -3054,6 +3054,42 @@ def requests() -> list[str]:
             f"{script_array_token(game_texts)} "
             f"{list_rng.choice((-1, 0, 1))} {list_rng.randrange(2)}"
         )
+
+    language_records: tuple[bytes | None, ...] = (
+        None,
+        b"",
+        b"\x00",
+        modified_utf_record([]),
+        modified_utf_record([0]),
+        modified_utf_record([0x7F, 0x80, 0x7FF, 0x800, 0xD800, 0xFFFF]),
+        modified_utf_record([ord(character) for character in "en"]),
+        modified_utf_record([0x0041]) + b"\xA5",
+        b"\x00\x01\xFF",
+    )
+    result.extend(
+        "get-language "
+        f"{open_mode} {get_mode} {close_mode} {byte_token(data)}"
+        for open_mode in (0, 1, 2, 3, 4)
+        for get_mode in (0, 1, 2, 3, 4)
+        for close_mode in (0, 1, 2, 3, 4)
+        for data in language_records
+    )
+    result.extend(
+        f"get-language 0 0 0 {byte_token(modified_utf_record([unit]))}"
+        for unit in range(1 << 16)
+    )
+    result.extend(
+        "get-language 0 0 0 "
+        f"{byte_token(len(payload).to_bytes(2, 'big') + payload + b'\xA5')}"
+        for payload in sorted(malformed_payloads)
+    )
+    for declared_length in (1, 2, 3, 15, 255, 0xFFFF):
+        for available in (0, 1, 2, 3, 7):
+            payload = bytes((index * 73 + 0x80) & 0xFF for index in range(available))
+            result.append(
+                "get-language 0 0 0 "
+                f"{byte_token(declared_length.to_bytes(2, 'big') + payload)}"
+            )
     return result
 
 

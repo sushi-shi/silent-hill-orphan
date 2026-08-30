@@ -19,6 +19,7 @@ import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 import javax.microedition.midlet.MIDlet;
 import javax.microedition.rms.RecordStore;
+import javax.microedition.rms.RecordStoreException;
 
 /** Calls the actual canonical Java methods for differential testing. */
 public final class OrphanJavaPureOracle {
@@ -1756,6 +1757,30 @@ public final class OrphanJavaPureOracle {
                 String getId = RecordStore.oracleGetCalls == 0
                         ? "-" : Integer.toString(RecordStore.oracleGetId);
                 result = status + ":" + (Application.curSoundMode ? "1" : "0") + ":"
+                        + utf16Output(RecordStore.oracleOpenName) + ":"
+                        + RecordStore.oracleOpenCalls + ":" + nameIdentity + ":"
+                        + (RecordStore.oracleOpenCreate ? "1" : "0") + ":"
+                        + RecordStore.oracleGetCalls + ":" + getId + ":"
+                        + RecordStore.oracleCloseCalls;
+                RecordStore.oracleResetRead(0, 0, 0, null);
+            } else if (parts[0].equals("get-language") && parts.length == 5) {
+                RecordStore.oracleResetRead(
+                        value(parts, 1), value(parts, 2), value(parts, 3), bytes(parts[4]));
+                String returned = null;
+                String status;
+                try {
+                    returned = Application.getLanguage();
+                    status = "OK";
+                } catch (AssertionError error) {
+                    status = "ERR";
+                } catch (RecordStoreException exception) {
+                    status = "RSE";
+                }
+                String nameIdentity = RecordStore.oracleOpenCalls == 0
+                        ? "-" : RecordStore.oracleOpenName == "languageRecordStore" ? "I" : "W";
+                String getId = RecordStore.oracleGetCalls == 0
+                        ? "-" : Integer.toString(RecordStore.oracleGetId);
+                result = status + ":" + utf16Output(returned) + ":"
                         + utf16Output(RecordStore.oracleOpenName) + ":"
                         + RecordStore.oracleOpenCalls + ":" + nameIdentity + ":"
                         + (RecordStore.oracleOpenCreate ? "1" : "0") + ":"
