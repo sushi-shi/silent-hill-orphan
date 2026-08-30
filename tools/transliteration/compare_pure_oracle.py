@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare 163 methods across recovered JARs, canonical Java, and Rust."""
+"""Compare 164 methods across recovered JARs, canonical Java, and Rust."""
 
 from __future__ import annotations
 
@@ -471,6 +471,16 @@ def requests() -> list[str]:
         for mode in (0, 1, 2, 3, 4)
     )
     rms_get_data = (None, b"", bytes((0, 1, 255)))
+    result.extend(
+        "saved-game-exists-in-rms "
+        f"{utf16_token(game_id)} {open_mode} {get_mode} {close_mode} "
+        f"{byte_token(data)}"
+        for game_id in saved_game_ids
+        for open_mode in (0, 1, 2, 3, 4)
+        for get_mode in (0, 1, 2, 3, 4)
+        for close_mode in (0, 1, 2, 3, 4)
+        for data in rms_get_data
+    )
     result.extend(
         "rms-get "
         f"{utf16_token(name)} {open_mode} {get_mode} {close_mode} "

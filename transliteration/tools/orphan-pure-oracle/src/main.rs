@@ -17,22 +17,23 @@ use orphan_game_xlat::{
     get_language_selection_position, get_left, get_top, ink_codes_new,
     ink_engine_inventory_equip_unequip_handling, ink_engine_menu_paint_current_ingame,
     ink_engine_new, ink_engine_popup_create, ink_engine_popup_create_with_max_time,
-    ink_engine_popup_set_next, ink_engine_remove_saved_game_from_rms, ink_engine_wrap_string,
-    ink_interpreter_execute, ink_interpreter_has_command, ink_interpreter_integer_argument,
-    ink_interpreter_new, ink_interpreter_read, ink_interpreter_read_bytes,
-    ink_interpreter_read_signed, ink_interpreter_resume, ink_script_execute_event,
-    ink_script_execute_event_by_id, ink_script_execute_event_debug, ink_script_get_item_name,
-    ink_script_get_string, ink_script_get_variable, ink_script_get_variable_as_integer,
-    ink_script_has_command, ink_script_has_event, ink_script_initialize, ink_script_is_waiting,
-    ink_script_new, ink_script_resume, ink_script_set_variable, ink_script_stop,
-    ink_server_get_hint, ink_server_get_variable, ink_server_set_variable,
-    ink_server_unset_variable, inventory_remove, inventory_set, inventory_size,
-    is_menu_scroll_allowed, key_convert_to_key_id, key_init, load_request_resource_path,
-    load_request_resource_path_for_object, load_request_resource_path_for_string, loading, max,
-    menu_active, menu_add_choice, menu_add_choice_integer, menu_close_all, menu_close_current,
-    menu_count_choices, menu_get_choice_id, menu_get_choice_number, menu_get_current,
-    menu_initialize, menu_next_choice, menu_previous_choice, menu_scroll_decrease,
-    menu_scroll_increase, menu_set_current, menu_set_inventory_item_resource, menu_set_position,
+    ink_engine_popup_set_next, ink_engine_remove_saved_game_from_rms,
+    ink_engine_saved_game_exists_in_rms, ink_engine_wrap_string, ink_interpreter_execute,
+    ink_interpreter_has_command, ink_interpreter_integer_argument, ink_interpreter_new,
+    ink_interpreter_read, ink_interpreter_read_bytes, ink_interpreter_read_signed,
+    ink_interpreter_resume, ink_script_execute_event, ink_script_execute_event_by_id,
+    ink_script_execute_event_debug, ink_script_get_item_name, ink_script_get_string,
+    ink_script_get_variable, ink_script_get_variable_as_integer, ink_script_has_command,
+    ink_script_has_event, ink_script_initialize, ink_script_is_waiting, ink_script_new,
+    ink_script_resume, ink_script_set_variable, ink_script_stop, ink_server_get_hint,
+    ink_server_get_variable, ink_server_set_variable, ink_server_unset_variable, inventory_remove,
+    inventory_set, inventory_size, is_menu_scroll_allowed, key_convert_to_key_id, key_init,
+    load_request_resource_path, load_request_resource_path_for_object,
+    load_request_resource_path_for_string, loading, max, menu_active, menu_add_choice,
+    menu_add_choice_integer, menu_close_all, menu_close_current, menu_count_choices,
+    menu_get_choice_id, menu_get_choice_number, menu_get_current, menu_initialize,
+    menu_next_choice, menu_previous_choice, menu_scroll_decrease, menu_scroll_increase,
+    menu_set_current, menu_set_inventory_item_resource, menu_set_position,
     menu_set_softkey_options, menu_set_top, min, random_scaled, read_string, read_string_list,
     remove_string_prefix, reset_load, reset_variable_system, resource_exit, resource_heap_index,
     resource_merge_sort_cmp, resource_request_create_from_input, resource_request_description,
@@ -2154,6 +2155,85 @@ fn main() {
                     observed_name.borrow(),
                     calls.get(),
                     identity.get()
+                )
+            }
+            Some("saved-game-exists-in-rms") if parts.len() == 6 => {
+                let game_id = utf16(parts[1]);
+                let open_mode = value(&parts, 2);
+                let get_mode = value(&parts, 3);
+                let close_mode = value(&parts, 4);
+                let data = bytes(parts[5]);
+                let open_calls = core::cell::Cell::new(0);
+                let observed_name = core::cell::RefCell::new(String::from("null"));
+                let name_identity = core::cell::Cell::new("-");
+                let open_create = core::cell::Cell::new(false);
+                let get_calls = core::cell::Cell::new(0);
+                let get_id = core::cell::Cell::new(None);
+                let close_calls = core::cell::Cell::new(0);
+                let result = ink_engine_saved_game_exists_in_rms(game_id.as_deref(), |name| {
+                    application_rms_get(
+                        name,
+                        |opened_name, create| {
+                            open_calls.set(open_calls.get() + 1);
+                            *observed_name.borrow_mut() = utf16_output(Some(opened_name));
+                            let aliases_input = game_id.as_deref().is_some_and(|input| {
+                                opened_name.as_ptr() == input.as_ptr()
+                                    && opened_name.len() == input.len()
+                            });
+                            name_identity.set(if aliases_input { "W" } else { "D" });
+                            open_create.set(create);
+                            match open_mode {
+                                0 => Ok(17_u32),
+                                1 => Err(ApplicationRmsGetCallError::RecordStoreNotFound),
+                                2 => Err(ApplicationRmsGetCallError::RecordStore),
+                                3 => Err(ApplicationRmsGetCallError::Uncaught(())),
+                                4 => Err(ApplicationRmsGetCallError::OtherException),
+                                _ => unreachable!(),
+                            }
+                        },
+                        |store, record_id| {
+                            get_calls.set(get_calls.get() + 1);
+                            get_id.set(Some(record_id));
+                            assert_eq!(*store, 17);
+                            match get_mode {
+                                0 => Ok(data),
+                                1 => Err(ApplicationRmsGetCallError::RecordStoreNotFound),
+                                2 => Err(ApplicationRmsGetCallError::RecordStore),
+                                3 => Err(ApplicationRmsGetCallError::Uncaught(())),
+                                4 => Err(ApplicationRmsGetCallError::OtherException),
+                                _ => unreachable!(),
+                            }
+                        },
+                        |store| {
+                            close_calls.set(close_calls.get() + 1);
+                            assert_eq!(store, 17);
+                            match close_mode {
+                                0 => Ok(()),
+                                1 => Err(ApplicationRmsGetCallError::RecordStoreNotFound),
+                                2 => Err(ApplicationRmsGetCallError::RecordStore),
+                                3 => Err(ApplicationRmsGetCallError::Uncaught(())),
+                                4 => Err(ApplicationRmsGetCallError::OtherException),
+                                _ => unreachable!(),
+                            }
+                        },
+                    )
+                });
+                let (status, returned) = match result {
+                    Ok(true) => ("OK", "T"),
+                    Ok(false) => ("OK", "F"),
+                    Err(()) => ("ERR", "-"),
+                };
+                let get_id = get_id
+                    .get()
+                    .map_or_else(|| "-".to_owned(), |record_id| record_id.to_string());
+                format!(
+                    "{status}:{returned}:{}:{}:{}:{}:{}:{get_id}:{}",
+                    observed_name.borrow(),
+                    open_calls.get(),
+                    name_identity.get(),
+                    i32::from(open_create.get()),
+                    get_calls.get(),
+                    close_calls.get()
                 )
             }
             Some("rms-get") if parts.len() == 6 => {

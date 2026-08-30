@@ -350,6 +350,22 @@ where
     Ok(())
 }
 
+pub fn ink_engine_saved_game_exists_in_rms<Get, E>(
+    game_id: Option<&[u16]>,
+    rms_get: Get,
+) -> Result<bool, E>
+where
+    Get: FnOnce(&[u16]) -> Result<Option<alloc::vec::Vec<u8>>, E>,
+{
+    let mut name = INK_ENGINE_SAVED_GAME_RMS_PREFIX.to_vec();
+    if let Some(game_id) = game_id {
+        name.extend_from_slice(game_id);
+    } else {
+        name.extend(b"null".iter().map(|byte| u16::from(*byte)));
+    }
+    Ok(rms_get(&name)?.is_some())
+}
+
 pub fn application_rms_get<Name, Store, OpenRecordStore, GetRecord, CloseRecordStore, E>(
     name: Name,
     open_record_store: OpenRecordStore,
@@ -3679,6 +3695,50 @@ mod tests {
             Err::<bool, _>("delete-error")
         });
         assert_eq!(failure, Err("delete-error"));
+    }
+
+    #[test]
+    fn saved_game_exists_builds_a_distinct_name_and_tests_only_record_nullness() {
+        let game_id = [0_u16, 0xd800, 0xffff];
+        let game_id_pointer = game_id.as_ptr();
+        let mut calls = 0;
+        let present = ink_engine_saved_game_exists_in_rms(
+            Some(&game_id),
+            |name| -> Result<Option<Vec<u8>>, &'static str> {
+                calls += 1;
+                assert_ne!(name.as_ptr(), game_id_pointer);
+                assert_eq!(
+                    name,
+                    [
+                        82, 77, 83, 95, 118, 97, 114, 105, 97, 98, 108, 101, 115, 95, 0, 0xd800,
+                        0xffff,
+                    ]
+                );
+                Ok(Some(Vec::new()))
+            },
+        );
+        assert_eq!(present, Ok(true));
+        assert_eq!(calls, 1);
+
+        let absent = ink_engine_saved_game_exists_in_rms(
+            None,
+            |name| -> Result<Option<Vec<u8>>, &'static str> {
+                assert_eq!(
+                    name,
+                    [
+                        82, 77, 83, 95, 118, 97, 114, 105, 97, 98, 108, 101, 115, 95, 110, 117,
+                        108, 108,
+                    ]
+                );
+                Ok(None)
+            },
+        );
+        assert_eq!(absent, Ok(false));
+
+        let failure = ink_engine_saved_game_exists_in_rms(Some(&[]), |_| {
+            Err::<Option<Vec<u8>>, _>("get-error")
+        });
+        assert_eq!(failure, Err("get-error"));
     }
 
     #[test]

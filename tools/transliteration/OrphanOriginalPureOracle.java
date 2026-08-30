@@ -1257,6 +1257,8 @@ public final class OrphanOriginalPureOracle {
         Method rmsDelete = method(application, "rmsDelete", String.class);
         Method removeSavedGameFromRms = method(
                 inkEngine, "removeSavedGameFromRMS", String.class);
+        Method savedGameExistsInRms = method(
+                inkEngine, "savedGameExistsInRMS", String.class);
         Method rmsGet = method(application, "rmsGet", String.class);
         Method saveChunkIni = method(application, "saveChunkINI", DataInputStream.class);
         Method resourceMakeSubChunk = method(application, "resourceMakeSubChunk");
@@ -2089,6 +2091,34 @@ public final class OrphanOriginalPureOracle {
                 result = status + ":" + utf16Output(RecordStore.oracleDeleteName) + ":"
                         + RecordStore.oracleDeleteCalls + ":" + identity;
                 RecordStore.oracleResetDelete(0);
+            } else if (parts[0].equals("saved-game-exists-in-rms")
+                    && parts.length == 6) {
+                String expectedGameId = utf16(parts[1]);
+                RecordStore.oracleResetRead(
+                        value(parts, 2), value(parts, 3), value(parts, 4), bytes(parts[5]));
+                boolean returned = false;
+                String status;
+                try {
+                    returned = ((Boolean) savedGameExistsInRms.invoke(
+                            null, expectedGameId)).booleanValue();
+                    status = "OK";
+                } catch (InvocationTargetException exception) {
+                    if (!(exception.getCause() instanceof AssertionError)) {
+                        throw exception;
+                    }
+                    status = "ERR";
+                }
+                String identity = RecordStore.oracleOpenCalls == 0
+                        ? "-" : RecordStore.oracleOpenName != expectedGameId ? "D" : "W";
+                String getId = RecordStore.oracleGetCalls == 0
+                        ? "-" : Integer.toString(RecordStore.oracleGetId);
+                result = status + ":" + (status.equals("OK") ? returned ? "T" : "F" : "-")
+                        + ":" + utf16Output(RecordStore.oracleOpenName) + ":"
+                        + RecordStore.oracleOpenCalls + ":" + identity + ":"
+                        + (RecordStore.oracleOpenCreate ? "1" : "0") + ":"
+                        + RecordStore.oracleGetCalls + ":" + getId + ":"
+                        + RecordStore.oracleCloseCalls;
+                RecordStore.oracleResetRead(0, 0, 0, null);
             } else if (parts[0].equals("rms-get") && parts.length == 6) {
                 String expectedName = utf16(parts[1]);
                 int getMode = value(parts, 3);

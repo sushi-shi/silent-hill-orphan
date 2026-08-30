@@ -1749,15 +1749,41 @@ both reads. A convenient retained borrow silently erases mutations that Java can
 observe between them; the oracle must make receiver replacement part of the
 result, not merely compare the ordinary final value.
 
+## A-65 — wrapper truth may depend on reference nullness, not payload length
+
+`InkEngine.savedGameExistsInRMS(String)` constructs the saved-game record name
+with the same ordered `StringBuffer` operations as the deletion wrapper, then
+calls the already admitted `Application.rmsGet` exactly once. Its result is the
+reference comparison `record != null`: an empty byte array means that the saved
+game exists, while only a null reference means that it does not. The wrapper has
+no catch of its own, so an `AssertionError` escaping open, get, or close must
+still propagate.
+
+Rust retains the distinct final Java `String` as a newly owned UTF-16 vector and
+tests `Option<Vec<u8>>::is_some`, never its length. The 3,375-case four-authority
+matrix crosses nine nullable and hostile game IDs with every combination of the
+five reviewed open, get, and close outcomes and null, empty, or binary record
+data. It observes the exact `RMS_variables_` name, non-aliasing from the input,
+`create=false`, record ID one, all three call counts, the returned boolean, and
+propagated status. This also proves that caught open/get failures yield false,
+caught close failures retain a fetched result, and an error suppresses any
+otherwise-ready result. All seventeen `javac` and forty-two `syn` nodes have one
+atomic decision under the generic crosswalk gate.
+
+**Lesson.** Do not translate Java reference existence as container non-emptiness.
+Compose the admitted callee, keep allocation identity observable, and include an
+empty-but-nonnull result in the oracle so `is_some()` cannot regress into
+`!is_empty()`.
+
 ## Verified clean so far
 
-- 163/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
+- 164/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
   and `syn` node ownership.
 - 184/1,075 Java fields have complete declaration-node ownership: 149 map into
   sixteen hash-locked Rust owner containers, thirty-five map to typed scalar constants,
   and one mutable array also owns a separately inventoried initializer template.
-- The differential currently runs 994,543 cases against the recovered baseline,
-  canonical Java, and Rust; the naming-reference JAR agrees on all 988,328
+- The differential currently runs 997,918 cases against the recovered baseline,
+  canonical Java, and Rust; the naming-reference JAR agrees on all 991,703
   cases, with 6,215 requests excluded only by its two ledger-reviewed
   input-timing variants and one ledger-reviewed rendering-policy variant.
 - Exhaustive subdomains include all Java `char` values, every pair of singleton

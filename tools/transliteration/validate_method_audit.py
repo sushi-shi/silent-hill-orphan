@@ -859,6 +859,7 @@ def print_entries() -> None:
         ("M", "Application", "rmsDelete", "(Ljava/lang/String;)Z", "rmsDelete(String)", "fn:application_rms_delete"),
         ("M", "Application", "rmsGet", "(Ljava/lang/String;)[B", "rmsGet(String)", "fn:application_rms_get"),
         ("ExtBase", "InkEngine", "removeSavedGameFromRMS", "(Ljava/lang/String;)V", "removeSavedGameFromRMS(String)", "fn:ink_engine_remove_saved_game_from_rms"),
+        ("ExtBase", "InkEngine", "savedGameExistsInRMS", "(Ljava/lang/String;)Z", "savedGameExistsInRMS(String)", "fn:ink_engine_saved_game_exists_in_rms"),
         ("M", "Application", "saveChunkINI", "(Ljava/io/DataInputStream;)V", "saveChunkINI(DataInputStream)", "fn:application_save_chunk_ini"),
         ("M", "Application", "resourceMakeSubChunk", "()[B", "resourceMakeSubChunk()", "fn:application_resource_make_subchunk"),
         ("M", "Application", "repaintCanvasIfPossible", "()V", "repaintCanvasIfPossible()", "fn:application_repaint_canvas_if_possible"),
