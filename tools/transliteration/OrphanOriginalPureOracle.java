@@ -1261,6 +1261,7 @@ public final class OrphanOriginalPureOracle {
         Method savedGameExistsInRms = method(
                 inkEngine, "savedGameExistsInRMS", String.class);
         Method rmsGet = method(application, "rmsGet", String.class);
+        Method loadSoundMode = method(application, "loadSoundMode");
         Method saveChunkIni = method(application, "saveChunkINI", DataInputStream.class);
         Method resourceMakeSubChunk = method(application, "resourceMakeSubChunk");
         Method resetLoad = method(application, "resetLoad");
@@ -2223,6 +2224,32 @@ public final class OrphanOriginalPureOracle {
                         + dataIdentity + ":" + RecordStore.oracleOpenCalls + ":"
                         + nameIdentity + ":" + (RecordStore.oracleOpenCreate ? "1" : "0")
                         + ":" + RecordStore.oracleGetCalls + ":" + getId + ":"
+                        + RecordStore.oracleCloseCalls;
+                RecordStore.oracleResetRead(0, 0, 0, null);
+            } else if (parts[0].equals("load-sound-mode") && parts.length == 6) {
+                applicationCurSoundMode.setBoolean(null, value(parts, 1) != 0);
+                RecordStore.oracleResetRead(
+                        value(parts, 2), value(parts, 3), value(parts, 4), bytes(parts[5]));
+                String status;
+                try {
+                    loadSoundMode.invoke(null);
+                    status = "OK";
+                } catch (InvocationTargetException exception) {
+                    if (exception.getCause() instanceof AssertionError) {
+                        status = "ERR";
+                    } else {
+                        throw exception;
+                    }
+                }
+                String nameIdentity = RecordStore.oracleOpenCalls == 0
+                        ? "-" : RecordStore.oracleOpenName == "soundRecordStore" ? "I" : "W";
+                String getId = RecordStore.oracleGetCalls == 0
+                        ? "-" : Integer.toString(RecordStore.oracleGetId);
+                result = status + ":" + (applicationCurSoundMode.getBoolean(null) ? "1" : "0")
+                        + ":" + utf16Output(RecordStore.oracleOpenName) + ":"
+                        + RecordStore.oracleOpenCalls + ":" + nameIdentity + ":"
+                        + (RecordStore.oracleOpenCreate ? "1" : "0") + ":"
+                        + RecordStore.oracleGetCalls + ":" + getId + ":"
                         + RecordStore.oracleCloseCalls;
                 RecordStore.oracleResetRead(0, 0, 0, null);
             } else if (parts[0].equals("save-chunk-ini") && parts.length == 3) {

@@ -5,16 +5,16 @@ use orphan_game_xlat::{
     abs, action_key_get_script_id, action_key_id_convert, action_key_init_system,
     action_key_keycode_to_action_key, action_key_unset_all_keys, application_app_start,
     application_clear_all_rms, application_destroy_app, application_exit, application_free_memory,
-    application_new, application_paint, application_pause_app, application_print_array,
-    application_repaint_canvas_if_possible, application_resource_make_subchunk,
-    application_rms_delete, application_rms_get, application_room_repaint_run,
-    application_save_chunk_ini, application_set_display, array_copy_string_handles, char_to_string,
-    cheat_controller_initialize, cheat_controller_new, coded_string, dir, find,
-    game_canvas_key_jad_entry_as_int, game_canvas_key_pressed, game_canvas_key_released,
-    game_canvas_new, game_canvas_paint, game_canvas_resume_sound, game_canvas_show_notify,
-    game_language_path, game_resource_equals, game_resource_initialize, game_resource_new,
-    game_resource_paint, game_resource_paint_simple, get_game_text, get_game_text_from_string,
-    get_language_selection_position, get_left, get_top, ink_codes_new,
+    application_load_sound_mode, application_new, application_paint, application_pause_app,
+    application_print_array, application_repaint_canvas_if_possible,
+    application_resource_make_subchunk, application_rms_delete, application_rms_get,
+    application_room_repaint_run, application_save_chunk_ini, application_set_display,
+    array_copy_string_handles, char_to_string, cheat_controller_initialize, cheat_controller_new,
+    coded_string, dir, find, game_canvas_key_jad_entry_as_int, game_canvas_key_pressed,
+    game_canvas_key_released, game_canvas_new, game_canvas_paint, game_canvas_resume_sound,
+    game_canvas_show_notify, game_language_path, game_resource_equals, game_resource_initialize,
+    game_resource_new, game_resource_paint, game_resource_paint_simple, get_game_text,
+    get_game_text_from_string, get_language_selection_position, get_left, get_top, ink_codes_new,
     ink_engine_inventory_equip_unequip_handling, ink_engine_menu_paint_current_ingame,
     ink_engine_new, ink_engine_popup_create, ink_engine_popup_create_with_max_time,
     ink_engine_popup_set_next, ink_engine_remove_saved_game_from_rms,
@@ -2399,6 +2399,86 @@ fn main() {
                     .map_or_else(|| "-".to_owned(), |record_id| record_id.to_string());
                 format!(
                     "{status}:{returned}:{data_identity}:{}:{}:{}:{}:{get_id}:{}",
+                    open_calls.get(),
+                    name_identity.get(),
+                    i32::from(open_create.get()),
+                    get_calls.get(),
+                    close_calls.get()
+                )
+            }
+            Some("load-sound-mode") if parts.len() == 6 => {
+                let mut application = server_state("-", "-", false);
+                application.cur_sound_mode = value(&parts, 1) != 0;
+                let open_mode = value(&parts, 2);
+                let get_mode = value(&parts, 3);
+                let close_mode = value(&parts, 4);
+                let data = bytes(parts[5]);
+                let expected_name = [
+                    115, 111, 117, 110, 100, 82, 101, 99, 111, 114, 100, 83, 116, 111, 114, 101,
+                ];
+                let open_calls = core::cell::Cell::new(0);
+                let observed_name = core::cell::RefCell::new(String::from("null"));
+                let name_identity = core::cell::Cell::new("-");
+                let open_create = core::cell::Cell::new(false);
+                let get_calls = core::cell::Cell::new(0);
+                let get_id = core::cell::Cell::new(None);
+                let close_calls = core::cell::Cell::new(0);
+                let result = application_load_sound_mode(&mut application, |name| {
+                    application_rms_get(
+                        name,
+                        |opened_name, create| {
+                            open_calls.set(open_calls.get() + 1);
+                            *observed_name.borrow_mut() = utf16_output(Some(opened_name));
+                            name_identity.set(if opened_name == expected_name {
+                                "I"
+                            } else {
+                                "W"
+                            });
+                            open_create.set(create);
+                            match open_mode {
+                                0 => Ok(17_u32),
+                                1 => Err(ApplicationRmsGetCallError::RecordStoreNotFound),
+                                2 => Err(ApplicationRmsGetCallError::RecordStore),
+                                3 => Err(ApplicationRmsGetCallError::Uncaught(())),
+                                4 => Err(ApplicationRmsGetCallError::OtherException),
+                                _ => unreachable!(),
+                            }
+                        },
+                        |store, record_id| {
+                            get_calls.set(get_calls.get() + 1);
+                            get_id.set(Some(record_id));
+                            assert_eq!(*store, 17);
+                            match get_mode {
+                                0 => Ok(data),
+                                1 => Err(ApplicationRmsGetCallError::RecordStoreNotFound),
+                                2 => Err(ApplicationRmsGetCallError::RecordStore),
+                                3 => Err(ApplicationRmsGetCallError::Uncaught(())),
+                                4 => Err(ApplicationRmsGetCallError::OtherException),
+                                _ => unreachable!(),
+                            }
+                        },
+                        |store| {
+                            close_calls.set(close_calls.get() + 1);
+                            assert_eq!(store, 17);
+                            match close_mode {
+                                0 => Ok(()),
+                                1 => Err(ApplicationRmsGetCallError::RecordStoreNotFound),
+                                2 => Err(ApplicationRmsGetCallError::RecordStore),
+                                3 => Err(ApplicationRmsGetCallError::Uncaught(())),
+                                4 => Err(ApplicationRmsGetCallError::OtherException),
+                                _ => unreachable!(),
+                            }
+                        },
+                    )
+                });
+                let status = if result.is_ok() { "OK" } else { "ERR" };
+                let get_id = get_id
+                    .get()
+                    .map_or_else(|| "-".to_owned(), |record_id| record_id.to_string());
+                format!(
+                    "{status}:{}:{}:{}:{}:{}:{}:{get_id}:{}",
+                    i32::from(application.cur_sound_mode),
+                    observed_name.borrow(),
                     open_calls.get(),
                     name_identity.get(),
                     i32::from(open_create.get()),

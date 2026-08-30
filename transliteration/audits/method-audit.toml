@@ -1,17 +1,17 @@
 schema_version = 1
 baseline_sha256 = "ca9a874ce7c7fb11ed444701b65e967919d3d7c0bcf73f80a9fcf825fb6a4be7"
 total_body_count = 350
-reviewed_body_count = 165
-semantic_reviewed_body_count = 165
+reviewed_body_count = 166
+semantic_reviewed_body_count = 166
 total_field_count = 1075
 semantic_reviewed_field_count = 185
-total_rust_function_count = 167
-reviewed_rust_function_count = 167
+total_rust_function_count = 168
+reviewed_rust_function_count = 168
 total_rust_value_declaration_count = 235
 reviewed_rust_value_declaration_count = 235
 total_rust_container_count = 34
 reviewed_rust_container_count = 34
-total_rust_declaration_count = 436
+total_rust_declaration_count = 437
 
 [crosswalk_policy]
 blanket_max_span = 48
@@ -4151,6 +4151,35 @@ rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "f
 oracle = "pure-method-v1"
 semantic_status = "crosswalked"
 semantic_review = "Three thousand cases agree across both recovered JARs, canonical Java, and Rust. Eight nullable and hostile UTF-16 names cross success, RecordStoreNotFoundException, another RecordStoreException, AssertionError, and NullPointerException independently at open, get, and close with null, empty, and binary record data. The oracle compares callback order and counts, name and data identity, create=false, record ID one, returned bytes, and propagated status. Open and get Exceptions return null and skip all later calls, a close Exception returns the exact fetched array, and Error propagates at every stage. All thirty-four javac and ninety syn nodes plus four typed error variants and their enum container are owned exactly once."
+
+[[body]]
+java_class = "M"
+canonical_class = "Application"
+java_name = "loadSoundMode"
+descriptor = "()V"
+java_item = "loadSoundMode()"
+code_sha256 = "46892863461c36de3ffcfb3616eccddb395afaf2dc3692433616f85c9d313cd7"
+opcode_sha256 = "95d0276d9cdd1ffa1da082ee92fea7d9c196de9d9171a8bc3bbed8edefbab129"
+java_ast_sha256 = "32764229514aa34c98332e16ab57c6b033498edd31a3cfe0c572e061f815af5d"
+java_nodes_sha256 = "c875fe3b2e007832652df085dff89df278d1b6f4c62f4cac482d0d6df270fa22"
+java_node_count = 39
+rust_node_counts = [60]
+operation = [
+  { semantic = "own the complete sound-mode load body", java_nodes = [0], rust_nodes = ["0:0"] },
+  { semantic = "call the admitted rmsGet exactly once with the exact interned soundRecordStore name and propagate only failures outside that callee's Exception catches", java_node_ranges = [[3, 9]], rust_node_ranges = [{ target = 0, start = 1, end = 23 }], literal_note = "Java represents soundRecordStore as one interned String literal; Rust passes the same sixteen UTF-16 code units explicitly, and the differential oracle records the exact opened name on every reachable RMS path.", literal_delta = { java_only = [], rust_only = [115, 111, 117, 110, 100, 82, 101, 99, 111, 114, 100, 83, 116, 111, 114, 101] } },
+  { semantic = "decode only a nonnull fetched byte array, preserving the existing flag when rmsGet returns null", java_node_ranges = [[10, 15]], rust_node_ranges = [{ target = 0, start = 24, end = 34 }] },
+  { semantic = "read one Java boolean byte under the IOException catch: an empty array preserves the flag while zero is false and every nonzero byte is true", java_node_ranges = [[1, 2], [27, 29], [34, 38]], rust_node_ranges = [{ target = 0, start = 35, end = 46 }, { target = 0, start = 51, end = 55 }], literal_note = "DataInputStream.readBoolean encodes its zero/nonzero distinction without an explicit Java numeric literal; Rust makes the exact zero comparison explicit after obtaining the first byte.", literal_delta = { java_only = [], rust_only = [0] } },
+  { semantic = "assign the decoded boolean to curSoundMode exactly once after a successful one-byte read", java_node_ranges = [[24, 26]], rust_node_ranges = [{ target = 0, start = 47, end = 50 }] },
+]
+adaptation = [
+  { side = "java", category = "erased", reason = "Rust reads the already-owned byte slice directly, so Java's DataInputStream and ByteArrayInputStream wrapper allocations have no retained representation.", java_node_ranges = [[16, 23]] },
+  { side = "java", category = "faithful-noop", reason = "ByteArrayInputStream.close is an observable no-op here; Rust has no owned stream wrapper to close after the first-byte read.", java_node_ranges = [[30, 33]] },
+  { side = "rust", category = "representation-adapter", reason = "Explicit Ok unit represents Java's implicit normal void return after missing, empty, or successfully decoded data.", rust_node_ranges = [{ target = 0, start = 56, end = 59 }] },
+]
+rust = [{ file = "transliteration/crates/orphan-game-xlat/src/lib.rs", item = "fn:application_load_sound_mode", ast_sha256 = "c40387eff08438d8818800f6827c6e3abf729bd3dfaed11ffb5b1bd52cbbb25b", nodes_sha256 = "aec947d2e51ec69b2e81762a888a7f9f8c3e6e218dfbd8652074dc8ee84dfc32", node_count = 60 }]
+oracle = "pure-method-v1"
+semantic_status = "crosswalked"
+semantic_review = "Two thousand five hundred six cases agree across both recovered JARs, canonical Java, and strict Rust. Both initial flag values cross all five open, get, and close outcomes with null, empty, zero, nonzero, and tail-bearing data; an additional 506 cases exhaust every remaining first-byte value. The oracle records the exact soundRecordStore name, create=false, record ID one, open/get/close counts, final flag, and propagated Error status. Null and empty data preserve the old flag, zero clears it, every value one through 255 sets it, tails are ignored, caught close failures retain and decode fetched data, and Error at any RMS boundary propagates before assignment. All thirty-nine javac and sixty syn nodes are owned exactly once."
 
 [[body]]
 java_class = "ExtBase"

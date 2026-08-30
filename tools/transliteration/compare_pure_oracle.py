@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare 165 methods across recovered JARs, canonical Java, and Rust."""
+"""Compare 166 methods across recovered JARs, canonical Java, and Rust."""
 
 from __future__ import annotations
 
@@ -498,6 +498,30 @@ def requests() -> list[str]:
         for get_mode in (0, 1, 2, 3, 4)
         for close_mode in (0, 1, 2, 3, 4)
         for data in rms_get_data
+    )
+    sound_mode_data = (
+        None,
+        b"",
+        bytes((0,)),
+        bytes((1,)),
+        bytes((255,)),
+        bytes((0, 255)),
+        bytes((1, 0)),
+        bytes((255, 0, 1)),
+    )
+    result.extend(
+        "load-sound-mode "
+        f"{initial} {open_mode} {get_mode} {close_mode} {byte_token(data)}"
+        for initial in (0, 1)
+        for open_mode in (0, 1, 2, 3, 4)
+        for get_mode in (0, 1, 2, 3, 4)
+        for close_mode in (0, 1, 2, 3, 4)
+        for data in sound_mode_data
+    )
+    result.extend(
+        f"load-sound-mode {initial} 0 0 0 {byte_token(bytes((first_byte,)))}"
+        for initial in (0, 1)
+        for first_byte in range(2, 255)
     )
     result.extend(
         f"save-chunk-ini {stream_mode} {open_mode}"

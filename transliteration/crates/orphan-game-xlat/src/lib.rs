@@ -443,6 +443,26 @@ where
     }
 }
 
+pub fn application_load_sound_mode<Get, E>(
+    application: &mut ApplicationState,
+    rms_get: Get,
+) -> Result<(), E>
+where
+    Get: FnOnce(&[u16]) -> Result<Option<alloc::vec::Vec<u8>>, E>,
+{
+    let stored_bytes = rms_get(&[
+        115, 111, 117, 110, 100, 82, 101, 99, 111, 114, 100, 83, 116, 111, 114, 101,
+    ])?;
+    let Some(stored_bytes) = stored_bytes else {
+        return Ok(());
+    };
+    let Some(value) = stored_bytes.first() else {
+        return Ok(());
+    };
+    application.cur_sound_mode = *value != 0;
+    Ok(())
+}
+
 pub fn application_save_chunk_ini<Input, Bytes, GetBytes, SetRms, E>(
     input: Input,
     get_bytes: GetBytes,
@@ -3761,6 +3781,69 @@ mod tests {
             |_| Err(ApplicationRmsGetCallError::Uncaught("close-error")),
         );
         assert_eq!(close_error, Err("close-error"));
+    }
+
+    #[test]
+    fn load_sound_mode_reads_only_a_present_first_boolean_byte() {
+        let mut state = ApplicationState {
+            app_inited: false,
+            tick_based_time_value: 0,
+            canvas_width: 0,
+            fade_frames: 0,
+            demo_frames: 0,
+            painting: false,
+            cur_sound_mode: true,
+            canvas_instance: None,
+            key_last_pressed: 0,
+            key_new: false,
+            key_pressed: false,
+            load_bar_active: false,
+            goto_dissolve_fx_counter: 0,
+            loading_mode: 0,
+            load_thread: None,
+            room_repaint_thread: None,
+            resource_importants: None,
+            resources_to_download: None,
+            game_id: None,
+            game_texts: None,
+            save_is_possible: false,
+            languages: None,
+            resource_heap_sources: None,
+            resource_sc_data: None,
+            resource_sc_current_size: 0,
+            random_instance: None,
+            runtime_instance: None,
+            midlet_instance: None,
+            ink_server_variables: None,
+            ink_server_hints: None,
+            game_changed_since_last_save: false,
+        };
+        let expected_name = [
+            115, 111, 117, 110, 100, 82, 101, 99, 111, 114, 100, 83, 116, 111, 114, 101,
+        ];
+
+        for (stored, initial, expected) in [
+            (None, false, false),
+            (None, true, true),
+            (Some(alloc::vec![]), false, false),
+            (Some(alloc::vec![]), true, true),
+            (Some(alloc::vec![0, 255]), true, false),
+            (Some(alloc::vec![1, 0]), false, true),
+            (Some(alloc::vec![255, 0]), false, true),
+        ] {
+            state.cur_sound_mode = initial;
+            let result = application_load_sound_mode(&mut state, |name| {
+                assert_eq!(name, expected_name);
+                Ok::<_, ()>(stored)
+            });
+            assert_eq!(result, Ok(()));
+            assert_eq!(state.cur_sound_mode, expected);
+        }
+
+        state.cur_sound_mode = true;
+        let failure = application_load_sound_mode(&mut state, |_| Err("uncaught"));
+        assert_eq!(failure, Err("uncaught"));
+        assert!(state.cur_sound_mode);
     }
 
     #[test]

@@ -1740,6 +1740,28 @@ public final class OrphanJavaPureOracle {
                         + ":" + RecordStore.oracleGetCalls + ":" + getId + ":"
                         + RecordStore.oracleCloseCalls;
                 RecordStore.oracleResetRead(0, 0, 0, null);
+            } else if (parts[0].equals("load-sound-mode") && parts.length == 6) {
+                Application.curSoundMode = value(parts, 1) != 0;
+                RecordStore.oracleResetRead(
+                        value(parts, 2), value(parts, 3), value(parts, 4), bytes(parts[5]));
+                String status;
+                try {
+                    Application.loadSoundMode();
+                    status = "OK";
+                } catch (AssertionError error) {
+                    status = "ERR";
+                }
+                String nameIdentity = RecordStore.oracleOpenCalls == 0
+                        ? "-" : RecordStore.oracleOpenName == "soundRecordStore" ? "I" : "W";
+                String getId = RecordStore.oracleGetCalls == 0
+                        ? "-" : Integer.toString(RecordStore.oracleGetId);
+                result = status + ":" + (Application.curSoundMode ? "1" : "0") + ":"
+                        + utf16Output(RecordStore.oracleOpenName) + ":"
+                        + RecordStore.oracleOpenCalls + ":" + nameIdentity + ":"
+                        + (RecordStore.oracleOpenCreate ? "1" : "0") + ":"
+                        + RecordStore.oracleGetCalls + ":" + getId + ":"
+                        + RecordStore.oracleCloseCalls;
+                RecordStore.oracleResetRead(0, 0, 0, null);
             } else if (parts[0].equals("save-chunk-ini") && parts.length == 3) {
                 int streamMode = value(parts, 1);
                 DataInputStream chunkInput;

@@ -1804,15 +1804,44 @@ Code written inside a catch handler is not recursively covered by that handler,
 and a callback between two static reads can change the retry receiver and every
 state value that the method wrote earlier.
 
+## A-67 — `readBoolean` is a one-byte zero/nonzero test with a caught empty-input path
+
+`Application.loadSoundMode()` calls the already admitted `rmsGet` once with the
+interned literal `soundRecordStore`. A null result leaves `curSoundMode`
+unchanged. For a nonnull result the method wraps the exact returned array, reads
+one Java boolean, assigns the flag, and closes the byte-array stream.
+
+The important boundary is the empty array: `DataInputStream.readBoolean()`
+throws `EOFException`, the enclosing `IOException` catch swallows it, and the
+old flag survives. A present first byte of zero clears the flag; every other
+unsigned byte value sets it, and trailing bytes are never read. Ordinary RMS
+failures already swallowed by `rmsGet` therefore behave like a null result,
+including open/get failures. A caught close failure inside `rmsGet` retains the
+fetched array and it is still decoded. An `Error` at any RMS boundary bypasses
+both methods' `Exception`/`IOException` catches and reaches the caller before
+the sound flag is assigned.
+
+The direct oracle crosses both initial flag values with all five open, get, and
+close outcomes and eight null/empty/tail-bearing payloads, then adds every
+remaining first-byte value. Its 2,506 cases record the exact opened name,
+create flag, record ID, call counts, final mode, and propagated status. The AST
+crosswalk separately locks the Java string literal to the exact sixteen UTF-16
+code units in Rust; all thirty-nine `javac` and sixty `syn` nodes have one
+decision.
+
+**Lesson.** Do not translate `readBoolean` as “data exists” or “first byte is
+one.” Preserve the empty-stream exception path and the full nonzero byte domain,
+and keep a wrapper's catch type narrower than the callee's unchecked failures.
+
 ## Verified clean so far
 
-- 165/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
+- 166/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
   and `syn` node ownership.
 - 185/1,075 Java fields have complete declaration-node ownership: 150 map into
   sixteen hash-locked Rust owner containers, thirty-five map to typed scalar constants,
   and one mutable array also owns a separately inventoried initializer template.
-- The differential currently runs 998,078 cases against the recovered baseline,
-  canonical Java, and Rust; the naming-reference JAR agrees on all 991,863
+- The differential currently runs 1,000,584 cases against the recovered baseline,
+  canonical Java, and Rust; the naming-reference JAR agrees on all 994,369
   cases, with 6,215 requests excluded only by its two ledger-reviewed
   input-timing variants and one ledger-reviewed rendering-policy variant.
 - Exhaustive subdomains include all Java `char` values, every pair of singleton

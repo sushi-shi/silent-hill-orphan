@@ -864,6 +864,7 @@ def print_entries() -> None:
         ("M", "Application", "paint", "(Ljavax/microedition/lcdui/Graphics;)V", "paint(Graphics)", "fn:application_paint"),
         ("M", "Application", "rmsDelete", "(Ljava/lang/String;)Z", "rmsDelete(String)", "fn:application_rms_delete"),
         ("M", "Application", "rmsGet", "(Ljava/lang/String;)[B", "rmsGet(String)", "fn:application_rms_get"),
+        ("M", "Application", "loadSoundMode", "()V", "loadSoundMode()", "fn:application_load_sound_mode"),
         ("ExtBase", "InkEngine", "removeSavedGameFromRMS", "(Ljava/lang/String;)V", "removeSavedGameFromRMS(String)", "fn:ink_engine_remove_saved_game_from_rms"),
         ("ExtBase", "InkEngine", "savedGameExistsInRMS", "(Ljava/lang/String;)Z", "savedGameExistsInRMS(String)", "fn:ink_engine_saved_game_exists_in_rms"),
         ("M", "Application", "saveChunkINI", "(Ljava/io/DataInputStream;)V", "saveChunkINI(DataInputStream)", "fn:application_save_chunk_ini"),
