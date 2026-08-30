@@ -4649,19 +4649,12 @@ mod tests {
         assert_eq!(menu.scroll, -1);
         assert!(menu.text_scrolling);
         assert!(menu.update_menu);
-    }
 
-    #[test]
-    fn game_text_string_uses_the_dollar_character_value_as_radix_36() {
         let mut texts = alloc::vec![None; 36];
         texts[35] = Some(alloc::vec![0x007a]);
-        let state = ApplicationState {
-            game_texts: Some(texts),
-            ..ApplicationState::default()
-        };
-
+        application.game_texts = Some(texts);
         assert_eq!(
-            get_game_text_from_string(&state, Some(&[0x007a])),
+            get_game_text_from_string(&application, Some(&[0x007a])),
             Some(alloc::vec![0x007a])
         );
     }

@@ -79,7 +79,7 @@ Living record of what is recovered and verified. Newest first.
   as Rust-only adaptations.
   The reverse `syn` inventory permits only the 165 reviewed functions, 231
   reviewed value declarations, and 33 reviewed containers (429 total
-  declarations). Twenty-six focused Rust tests exercise the admitted bodies, and the
+  declarations). Twenty-five focused Rust tests exercise the admitted bodies, and the
   injected unowned-constant proof goes red.
 
 ## Phase 2 — canonical Java application and AST authority
