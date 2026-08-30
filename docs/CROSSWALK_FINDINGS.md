@@ -204,17 +204,26 @@ retains its own complete Java/Rust body crosswalk.
 source category, fallback value, parse failure, and helper declaration remains
 independently visible to the audit.
 
-## A-9 — Language text IDs are radix-35 UTF-16, not decimal host integers
+## A-9 — Language text IDs use the numeric value of `$`: radix 36
 
-`Application.getGameText(String)` parses text IDs with radix 35 and catches both
-parse failures and failures from the delegated table lookup. The strict Rust path
-therefore implements Java sign, Unicode-digit, ASCII/fullwidth letter, and i32
-overflow rules explicitly. Its oracle covers every UTF-16 code unit and a real
-nullable 35-slot language table; using ordinary decimal parsing would miss valid
-letter IDs, while host Unicode-number parsing would accept the wrong domain.
+`Application.getGameText(String)` passes the character constant
+`TEXT_IDENTIFICATOR = '$'` as `Integer.parseInt`'s radix. Java promotes that
+character to its numeric value, 36. The strict Rust path therefore implements
+Java sign, Unicode-digit, ASCII/fullwidth letter, and i32 overflow rules for
+radix 36 explicitly, and catches both parse failures and delegated lookup
+failures.
+
+The first Rust reconstruction and its prose incorrectly called this radix 35.
+An exhaustive one-code-unit oracle still missed the error because its table also
+had only 35 slots: Java parsed `z` as index 35 and returned the bounds fallback,
+while Rust rejected `z` and returned the parse fallback, producing the same
+`???`. The per-operation literal audit forced a review of the claimed helper
+expansion against the original `bipush 36`. The oracle now uses a nullable
+36-slot table, making `z` select a distinct value in slot 35.
 
 **Lesson.** Language-pack integration includes the game's ID grammar and fallback
-control flow, not only decoding the `.lan` bytes.
+control flow, not only decoding the `.lan` bytes. Exhaustive inputs are not
+enough when the observation fixture collapses two different paths to one value.
 
 ## A-10 — Hashtable mutation order is observable state
 
@@ -224,7 +233,7 @@ table and sets `gameChangedSinceLastSave` only after both writes succeed.
 second table or null hint can therefore leave the first table changed while the
 dirty flag retains its old value. `resetVariableSystem` likewise clears the
 variables table before dereferencing the hints table and never touches the dirty
-flag. The no_std representation keeps both tables as separately nullable owners,
+flag. The strict Rust representation keeps both tables as separately nullable owners,
 and the oracle compares their complete sorted UTF-16 contents plus the flag after
 both success and failure.
 
@@ -1711,15 +1720,42 @@ call. Compose an admitted callee in the oracle, then separately prove argument
 construction, allocation identity, call count, and uncaught-failure propagation
 at the wrapper boundary.
 
+## A-64 — two reads of one static field are two observable operations
+
+`InkEngine.menuPaintCurrentIngame()` first reads `Menu.stack`, invokes `size()`,
+and saves that signed result. Only when the saved value is positive does it read
+the static field again, invoke `elementAt(savedSize - 1)` on that second receiver,
+cast the returned value, and call `menuPaintIngame`. The second field read is not
+an optimization detail: a hostile `Vector.size()` override can clear the first
+receiver or replace the static with null or another vector before returning.
+
+The twenty-case four-authority oracle records the size receiver, mutation or
+replacement, saved value, second receiver, requested index, returned identity,
+whether downstream painting was entered, and final static identity. It covers
+nonpositive suppression, a null replacement that fails before `elementAt`, NPE
+and Error at each callable boundary, invalid saved indices, wrong-class CCE,
+null surviving `checkcast`, and selection of the exact last object from a
+replacement stack. A following initialization request proves the Java oracle
+restores the stack and graphics statics it temporarily replaces. Rust therefore passes the mutable
+`MenuStatics` owner separately to the size and element adapters and carries the
+saved `i32`; it does not cache a stack borrow or recompute its length. All twenty-seven
+`javac` and thirty-seven `syn` nodes have one atomic owner, while explicit try
+and successful-unit nodes remain categorized representation adapters.
+
+**Lesson.** When bytecode repeats `getstatic` around an overridable call, model
+both reads. A convenient retained borrow silently erases mutations that Java can
+observe between them; the oracle must make receiver replacement part of the
+result, not merely compare the ordinary final value.
+
 ## Verified clean so far
 
-- 162/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
+- 163/350 bodies are bytecode-bound and have complete, non-overlapping `javac`
   and `syn` node ownership.
 - 184/1,075 Java fields have complete declaration-node ownership: 149 map into
   sixteen hash-locked Rust owner containers, thirty-five map to typed scalar constants,
   and one mutable array also owns a separately inventoried initializer template.
-- The differential currently runs 994,522 cases against the recovered baseline,
-  canonical Java, and Rust; the naming-reference JAR agrees on all 988,307
+- The differential currently runs 994,543 cases against the recovered baseline,
+  canonical Java, and Rust; the naming-reference JAR agrees on all 988,328
   cases, with 6,215 requests excluded only by its two ledger-reviewed
   input-timing variants and one ledger-reviewed rendering-policy variant.
 - Exhaustive subdomains include all Java `char` values, every pair of singleton

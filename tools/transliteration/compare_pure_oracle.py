@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare 162 methods across recovered JARs, canonical Java, and Rust."""
+"""Compare 163 methods across recovered JARs, canonical Java, and Rust."""
 
 from __future__ import annotations
 
@@ -139,6 +139,10 @@ def requests() -> list[str]:
         f"{painting} {canvas} {repaint_mode} {service_mode}"
         for painting, canvas, repaint_mode, service_mode in repaint_canvas_cases
     )
+    result.extend(f"menu-paint-current-ingame {case_id}" for case_id in range(20))
+    # The Java adapters are long-lived processes: a second menu initialization
+    # makes any stack leaked by the preceding stateful oracle cases observable.
+    result.append("menu-init")
     result.extend(
         f"resource-restart-importants {length}"
         for length in (-1, 0, 1, 12, 127)
@@ -531,7 +535,7 @@ def requests() -> list[str]:
             result.append(f"game-text {token} {index}")
     indexed_game_texts: list[list[int] | None] = [
         None if index == 17 else [ord(character) for character in f"v{index}"]
-        for index in range(35)
+        for index in range(36)
     ]
     indexed_game_texts_token = "s" + ",".join(
         utf16_token(text) for text in indexed_game_texts

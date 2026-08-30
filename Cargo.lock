@@ -147,6 +147,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "j2me-canvas"
+version = "0.1.0"
+source = "git+https://github.com/sushi-shi/j2me-preservation-kit.git?rev=7aeba277a270eb58658d211bd3621b30956f6212#7aeba277a270eb58658d211bd3621b30956f6212"
+
+[[package]]
+name = "j2me-jvm"
+version = "0.1.0"
+source = "git+https://github.com/sushi-shi/j2me-preservation-kit.git?rev=7aeba277a270eb58658d211bd3621b30956f6212#7aeba277a270eb58658d211bd3621b30956f6212"
+
+[[package]]
 name = "libc"
 version = "0.2.189"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -211,10 +221,16 @@ dependencies = [
 [[package]]
 name = "orphan-jvm"
 version = "0.1.0"
+dependencies = [
+ "j2me-jvm",
+]
 
 [[package]]
 name = "orphan-me"
 version = "0.1.0"
+dependencies = [
+ "j2me-canvas",
+]
 
 [[package]]
 name = "orphan-pure-oracle"

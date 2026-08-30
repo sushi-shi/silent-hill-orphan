@@ -856,10 +856,10 @@ pub fn get_game_text_from_string(
         let Some(digit) = digit else {
             return unknown_text();
         };
-        if digit >= 35 || magnitude > (limit - digit) / 35 {
+        if digit >= 36 || magnitude > (limit - digit) / 36 {
             return unknown_text();
         }
-        magnitude = magnitude * 35 + digit;
+        magnitude = magnitude * 36 + digit;
     }
     let parsed_index = if negative {
         (0_i64 - magnitude as i64) as i32
@@ -2410,6 +2410,25 @@ pub fn menu_get_current(
     Ok(stack.last().copied())
 }
 
+pub fn ink_engine_menu_paint_current_ingame<Size, ElementAtAsMenu, PaintIngame, E>(
+    statics: &mut MenuStatics,
+    size: Size,
+    element_at_as_menu: ElementAtAsMenu,
+    paint_ingame: PaintIngame,
+) -> Result<(), E>
+where
+    Size: FnOnce(&mut MenuStatics) -> Result<i32, E>,
+    ElementAtAsMenu: FnOnce(&mut MenuStatics, i32) -> Result<Option<u32>, E>,
+    PaintIngame: FnOnce(Option<u32>) -> Result<(), E>,
+{
+    let size = size(statics)?;
+    if size > 0 {
+        let current_menu = element_at_as_menu(statics, orphan_jvm::i32_sub(size, 1))?;
+        paint_ingame(current_menu)?;
+    }
+    Ok(())
+}
+
 pub fn ink_script_stop(statics: &mut InkInterpreterStatics) {
     if statics.paused_thread.is_some() {
         statics.paused_thread = None;
@@ -3236,6 +3255,123 @@ mod tests {
         assert_eq!(abs(i32::MIN), i32::MIN);
         assert_eq!(get_left(i32::MIN, i32::MAX, 0, -1, 0, 1), 0);
         assert_eq!(get_top(10, 20, 30, 2, 3, 4), -17);
+    }
+
+    #[test]
+    fn menu_paint_current_ingame_suppresses_later_reads_for_nonpositive_sizes() {
+        for reported_size in [i32::MIN, -1, 0] {
+            let mut statics = MenuStatics {
+                stack: Some(alloc::vec![7]),
+            };
+            let mut size_calls = 0;
+            let result = ink_engine_menu_paint_current_ingame(
+                &mut statics,
+                |_| {
+                    size_calls += 1;
+                    Ok::<_, &'static str>(reported_size)
+                },
+                |_, _| Err("element-at must be suppressed"),
+                |_| Err("paint must be suppressed"),
+            );
+            assert_eq!(result, Ok(()));
+            assert_eq!(size_calls, 1);
+        }
+    }
+
+    #[test]
+    fn menu_paint_current_ingame_rereads_replaced_stack_with_saved_index_and_nullable_handle() {
+        let mut statics = MenuStatics {
+            stack: Some(alloc::vec![3, 4, 5]),
+        };
+        let order = core::cell::RefCell::new(alloc::vec::Vec::new());
+        let result = ink_engine_menu_paint_current_ingame(
+            &mut statics,
+            |statics| {
+                order.borrow_mut().push('S');
+                statics.stack = Some(alloc::vec![40, 41]);
+                Ok::<_, &'static str>(3)
+            },
+            |statics, index| {
+                order.borrow_mut().push('E');
+                assert_eq!(statics.stack.as_deref(), Some([40, 41].as_slice()));
+                assert_eq!(index, 2);
+                Ok(None)
+            },
+            |menu| {
+                order.borrow_mut().push('P');
+                assert_eq!(menu, None);
+                Ok(())
+            },
+        );
+        assert_eq!(result, Ok(()));
+        assert_eq!(*order.borrow(), ['S', 'E', 'P']);
+    }
+
+    #[test]
+    fn menu_paint_current_ingame_propagates_each_callback_failure_in_order() {
+        let mut statics = MenuStatics {
+            stack: Some(alloc::vec![11]),
+        };
+        let order = core::cell::RefCell::new(alloc::vec::Vec::new());
+
+        let size_failure = ink_engine_menu_paint_current_ingame(
+            &mut statics,
+            |_| {
+                order.borrow_mut().push('S');
+                Err::<i32, _>("size")
+            },
+            |_, _| {
+                order.borrow_mut().push('E');
+                Ok(None)
+            },
+            |_| {
+                order.borrow_mut().push('P');
+                Ok(())
+            },
+        );
+        assert_eq!(size_failure, Err("size"));
+        assert_eq!(*order.borrow(), ['S']);
+
+        order.borrow_mut().clear();
+        let element_failure = ink_engine_menu_paint_current_ingame(
+            &mut statics,
+            |_| {
+                order.borrow_mut().push('S');
+                Ok(1)
+            },
+            |_, index| {
+                order.borrow_mut().push('E');
+                assert_eq!(index, 0);
+                Err::<Option<u32>, _>("element")
+            },
+            |_| {
+                order.borrow_mut().push('P');
+                Ok(())
+            },
+        );
+        assert_eq!(element_failure, Err("element"));
+        assert_eq!(*order.borrow(), ['S', 'E']);
+
+        order.borrow_mut().clear();
+        let paint_failure = ink_engine_menu_paint_current_ingame(
+            &mut statics,
+            |_| {
+                order.borrow_mut().push('S');
+                Ok(1)
+            },
+            |_, index| {
+                order.borrow_mut().push('E');
+                assert_eq!(index, 0);
+                Ok(Some(11))
+            },
+            |menu| {
+                order.borrow_mut().push('P');
+                assert_eq!(menu, Some(11));
+                Err("paint")
+            },
+        );
+        assert_eq!(paint_failure, Err("paint"));
+        assert_eq!(*order.borrow(), ['S', 'E', 'P']);
     }
 
     #[test]
@@ -4513,5 +4649,20 @@ mod tests {
         assert_eq!(menu.scroll, -1);
         assert!(menu.text_scrolling);
         assert!(menu.update_menu);
+    }
+
+    #[test]
+    fn game_text_string_uses_the_dollar_character_value_as_radix_36() {
+        let mut texts = alloc::vec![None; 36];
+        texts[35] = Some(alloc::vec![0x007a]);
+        let state = ApplicationState {
+            game_texts: Some(texts),
+            ..ApplicationState::default()
+        };
+
+        assert_eq!(
+            get_game_text_from_string(&state, Some(&[0x007a])),
+            Some(alloc::vec![0x007a])
+        );
     }
 }

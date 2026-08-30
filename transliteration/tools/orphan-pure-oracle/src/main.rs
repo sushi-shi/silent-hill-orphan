@@ -15,24 +15,24 @@ use orphan_game_xlat::{
     game_language_path, game_resource_equals, game_resource_initialize, game_resource_new,
     game_resource_paint, game_resource_paint_simple, get_game_text, get_game_text_from_string,
     get_language_selection_position, get_left, get_top, ink_codes_new,
-    ink_engine_inventory_equip_unequip_handling, ink_engine_new, ink_engine_popup_create,
-    ink_engine_popup_create_with_max_time, ink_engine_popup_set_next,
-    ink_engine_remove_saved_game_from_rms, ink_engine_wrap_string, ink_interpreter_execute,
-    ink_interpreter_has_command, ink_interpreter_integer_argument, ink_interpreter_new,
-    ink_interpreter_read, ink_interpreter_read_bytes, ink_interpreter_read_signed,
-    ink_interpreter_resume, ink_script_execute_event, ink_script_execute_event_by_id,
-    ink_script_execute_event_debug, ink_script_get_item_name, ink_script_get_string,
-    ink_script_get_variable, ink_script_get_variable_as_integer, ink_script_has_command,
-    ink_script_has_event, ink_script_initialize, ink_script_is_waiting, ink_script_new,
-    ink_script_resume, ink_script_set_variable, ink_script_stop, ink_server_get_hint,
-    ink_server_get_variable, ink_server_set_variable, ink_server_unset_variable, inventory_remove,
-    inventory_set, inventory_size, is_menu_scroll_allowed, key_convert_to_key_id, key_init,
-    load_request_resource_path, load_request_resource_path_for_object,
-    load_request_resource_path_for_string, loading, max, menu_active, menu_add_choice,
-    menu_add_choice_integer, menu_close_all, menu_close_current, menu_count_choices,
-    menu_get_choice_id, menu_get_choice_number, menu_get_current, menu_initialize,
-    menu_next_choice, menu_previous_choice, menu_scroll_decrease, menu_scroll_increase,
-    menu_set_current, menu_set_inventory_item_resource, menu_set_position,
+    ink_engine_inventory_equip_unequip_handling, ink_engine_menu_paint_current_ingame,
+    ink_engine_new, ink_engine_popup_create, ink_engine_popup_create_with_max_time,
+    ink_engine_popup_set_next, ink_engine_remove_saved_game_from_rms, ink_engine_wrap_string,
+    ink_interpreter_execute, ink_interpreter_has_command, ink_interpreter_integer_argument,
+    ink_interpreter_new, ink_interpreter_read, ink_interpreter_read_bytes,
+    ink_interpreter_read_signed, ink_interpreter_resume, ink_script_execute_event,
+    ink_script_execute_event_by_id, ink_script_execute_event_debug, ink_script_get_item_name,
+    ink_script_get_string, ink_script_get_variable, ink_script_get_variable_as_integer,
+    ink_script_has_command, ink_script_has_event, ink_script_initialize, ink_script_is_waiting,
+    ink_script_new, ink_script_resume, ink_script_set_variable, ink_script_stop,
+    ink_server_get_hint, ink_server_get_variable, ink_server_set_variable,
+    ink_server_unset_variable, inventory_remove, inventory_set, inventory_size,
+    is_menu_scroll_allowed, key_convert_to_key_id, key_init, load_request_resource_path,
+    load_request_resource_path_for_object, load_request_resource_path_for_string, loading, max,
+    menu_active, menu_add_choice, menu_add_choice_integer, menu_close_all, menu_close_current,
+    menu_count_choices, menu_get_choice_id, menu_get_choice_number, menu_get_current,
+    menu_initialize, menu_next_choice, menu_previous_choice, menu_scroll_decrease,
+    menu_scroll_increase, menu_set_current, menu_set_inventory_item_resource, menu_set_position,
     menu_set_softkey_options, menu_set_top, min, random_scaled, read_string, read_string_list,
     remove_string_prefix, reset_load, reset_variable_system, resource_exit, resource_heap_index,
     resource_merge_sort_cmp, resource_request_create_from_input, resource_request_description,
@@ -60,6 +60,147 @@ use orphan_game_xlat::{
 
 fn value(parts: &[&str], index: usize) -> i32 {
     parts[index].parse().expect("oracle input must be i32")
+}
+
+fn menu_paint_current_ingame_oracle(case_id: i32) -> String {
+    assert!((0..20).contains(&case_id));
+
+    let mut statics = MenuStatics {
+        stack: if case_id == 0 {
+            None
+        } else if case_id == 1 {
+            Some(Vec::new())
+        } else {
+            Some(vec![1])
+        },
+    };
+    let trace = core::cell::RefCell::new(Vec::new());
+    let saved_size = core::cell::Cell::new(None);
+    let index = core::cell::Cell::new(None);
+    let returned = core::cell::Cell::new("-");
+    let paint_started = core::cell::Cell::new(false);
+    let final_stack = core::cell::Cell::new(if case_id == 0 { "null" } else { "V1" });
+
+    let result = ink_engine_menu_paint_current_ingame(
+        &mut statics,
+        |statics| {
+            if case_id == 0 {
+                return Err::<i32, &'static str>("NPE");
+            }
+            trace.borrow_mut().push("S");
+            if matches!(case_id, 7 | 8) {
+                statics.stack.as_mut().expect("V1 is nonnull").clear();
+                trace.borrow_mut().push("C");
+            } else if case_id == 9 {
+                statics.stack = None;
+                final_stack.set("null");
+                trace.borrow_mut().push("R2");
+            } else if matches!(case_id, 10 | 11 | 12 | 19) {
+                statics.stack = Some(match case_id {
+                    12 => vec![1],
+                    _ => vec![1, 2],
+                });
+                final_stack.set("V2");
+                trace.borrow_mut().push("R2");
+            }
+            let result = match case_id {
+                1 | 4 | 7 => Ok(0),
+                2 => Ok(i32::MIN),
+                3 => Ok(-1),
+                5 => Err("NPE"),
+                6 => Err("ERROR"),
+                8 | 9 | 13 | 14 | 15 | 16 | 17 | 18 => Ok(1),
+                10 | 12 | 19 => Ok(2),
+                11 => Ok(i32::MAX),
+                _ => unreachable!(),
+            };
+            if let Ok(size) = result {
+                saved_size.set(Some(size));
+            }
+            result
+        },
+        |statics, requested_index| {
+            if case_id == 9 {
+                assert!(statics.stack.is_none());
+                return Err("NPE");
+            }
+            trace.borrow_mut().push("E");
+            index.set(Some(requested_index));
+            match case_id {
+                8 | 11 | 12 => {
+                    let access = orphan_jvm::array_ref(statics.stack.as_deref(), requested_index);
+                    assert!(matches!(
+                        access,
+                        Err(orphan_jvm::ArrayAccessException::ArrayIndexOutOfBounds(_))
+                    ));
+                    Err("AIOOBE")
+                }
+                13 => Err("NPE"),
+                10 | 14 => Err("ERROR"),
+                15 => {
+                    returned.set("O");
+                    Err("CCE")
+                }
+                16 => {
+                    returned.set("N");
+                    Ok(None)
+                }
+                17 | 18 => {
+                    let menu = *orphan_jvm::array_ref(statics.stack.as_deref(), requested_index)
+                        .expect("M1 must be present");
+                    assert_eq!(menu, 1);
+                    returned.set("M1");
+                    Ok(Some(menu))
+                }
+                19 => {
+                    let menu = *orphan_jvm::array_ref(statics.stack.as_deref(), requested_index)
+                        .expect("M2 must be present");
+                    assert_eq!(menu, 2);
+                    returned.set("M2");
+                    Ok(Some(menu))
+                }
+                _ => unreachable!(),
+            }
+        },
+        |menu| {
+            paint_started.set(true);
+            match (case_id, menu) {
+                (16, None) => Err("NPE"),
+                (17, Some(1)) => {
+                    trace.borrow_mut().push("P");
+                    Ok(())
+                }
+                (18, Some(1)) => {
+                    trace.borrow_mut().push("P");
+                    Err("NPE")
+                }
+                (19, Some(2)) => {
+                    trace.borrow_mut().push("P");
+                    Err("ERROR")
+                }
+                _ => unreachable!(),
+            }
+        },
+    );
+
+    let status = result.map_or_else(|error| error, |()| "OK");
+    let trace = if trace.borrow().is_empty() {
+        "-".to_owned()
+    } else {
+        trace.borrow().join(">")
+    };
+    let saved_size = saved_size
+        .get()
+        .map_or_else(|| "-".to_owned(), |size| size.to_string());
+    let index = index
+        .get()
+        .map_or_else(|| "-".to_owned(), |index| index.to_string());
+    format!(
+        "{status}:{trace}:{saved_size}:{index}:{}:{}:{}",
+        returned.get(),
+        i32::from(paint_started.get()),
+        final_stack.get()
+    )
 }
 
 fn game_canvas_state(parts: &[&str], start: usize) -> GameCanvasState {
@@ -1214,6 +1355,9 @@ fn main() {
                     .stack
                     .as_deref()
                     .map_or_else(|| "null".to_owned(), |stack| stack.len().to_string())
+            }
+            Some("menu-paint-current-ingame") if parts.len() == 2 => {
+                menu_paint_current_ingame_oracle(value(&parts, 1))
             }
             Some("game-resource-init") if parts.len() == 1 => {
                 let mut statics = GameResourceStatics {

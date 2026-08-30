@@ -3,4 +3,7 @@ name = "orphan-jvm"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Java arithmetic semantics used by the strict transliteration"
+description = "Silent Hill: Orphan typed-exception adapter over the shared JVM semantics"
+
+[dependencies]
+j2me-jvm = { workspace = true }

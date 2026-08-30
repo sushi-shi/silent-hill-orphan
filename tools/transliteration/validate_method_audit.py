@@ -348,6 +348,7 @@ def generic_crosswalk_documents(
                 ("rust_nodes", "rust"),
                 ("rust_node_ranges", "rust_range"),
                 ("shape_note", "shape_note"),
+                ("literal_note", "literal_note"),
                 ("blanket_ok", "blanket_ok"),
                 ("blanket_reason", "blanket_reason"),
             ):
@@ -386,6 +387,7 @@ def generic_crosswalk_documents(
                 "rust": entry.get("rust", []),
                 "op": operations,
                 "adapt": adaptations,
+                "interleave": entry.get("interleave", []),
             }
         )
 

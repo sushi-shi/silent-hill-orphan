@@ -16,6 +16,8 @@ edition = "2021"
 license = "CC0-1.0"
 
 [workspace.dependencies]
+j2me-canvas = { git = "https://github.com/sushi-shi/j2me-preservation-kit.git", rev = "7aeba277a270eb58658d211bd3621b30956f6212" }
+j2me-jvm = { git = "https://github.com/sushi-shi/j2me-preservation-kit.git", rev = "7aeba277a270eb58658d211bd3621b30956f6212" }
 quote = "1"
 syn = { version = "3", features = ["full", "visit"] }
 

@@ -186,6 +186,275 @@ public final class OrphanOriginalPureOracle {
         }
     }
 
+    private static final class OracleMenuError extends Error {
+    }
+
+    private interface OracleMenuStackSetter {
+        void set(Vector stack);
+    }
+
+    private static final class OracleMenuPaintState {
+        final StringBuffer trace = new StringBuffer();
+        int savedSize;
+        boolean savedSizePresent;
+        int index;
+        boolean indexPresent;
+        Object returned;
+        boolean returnedPresent;
+        boolean paintStarted;
+
+        void event(String event) {
+            if (this.trace.length() != 0) {
+                this.trace.append('>');
+            }
+            this.trace.append(event);
+        }
+    }
+
+    private static final class OracleMenuStack extends Vector {
+        final OracleMenuPaintState state;
+        final int reportedSize;
+        final int sizeFailure;
+        final int elementFailure;
+        final int mutation;
+        final Vector replacement;
+        final OracleMenuStackSetter setter;
+
+        OracleMenuStack(
+                OracleMenuPaintState state,
+                int reportedSize,
+                int sizeFailure,
+                int elementFailure,
+                int mutation,
+                Vector replacement,
+                OracleMenuStackSetter setter) {
+            this.state = state;
+            this.reportedSize = reportedSize;
+            this.sizeFailure = sizeFailure;
+            this.elementFailure = elementFailure;
+            this.mutation = mutation;
+            this.replacement = replacement;
+            this.setter = setter;
+        }
+
+        public synchronized int size() {
+            this.state.event("S");
+            if (this.sizeFailure == 1) {
+                throw new NullPointerException("injected size failure");
+            }
+            if (this.sizeFailure == 2) {
+                throw new OracleMenuError();
+            }
+            if (this.mutation == 1) {
+                super.removeAllElements();
+                this.state.event("C");
+            } else if (this.mutation == 2) {
+                this.setter.set(this.replacement);
+                this.state.event("R2");
+            }
+            this.state.savedSize = this.reportedSize;
+            this.state.savedSizePresent = true;
+            return this.reportedSize;
+        }
+
+        public synchronized Object elementAt(int requestedIndex) {
+            this.state.event("E");
+            this.state.index = requestedIndex;
+            this.state.indexPresent = true;
+            if (this.elementFailure == 1) {
+                throw new NullPointerException("injected elementAt failure");
+            }
+            if (this.elementFailure == 2) {
+                throw new OracleMenuError();
+            }
+            Object result = super.elementAt(requestedIndex);
+            this.state.returned = result;
+            this.state.returnedPresent = true;
+            return result;
+        }
+    }
+
+    private static final class OracleMenuPaintGraphics extends Graphics {
+        final OracleMenuPaintState state;
+        final int mode;
+
+        OracleMenuPaintGraphics(OracleMenuPaintState state, int mode) {
+            this.state = state;
+            this.mode = mode;
+        }
+
+        public void setColor(int rgb) {
+            if (this.state.paintStarted) {
+                return;
+            }
+            this.state.event("P");
+            this.state.paintStarted = true;
+            if (this.mode == 1) {
+                throw new NullPointerException("injected paint failure");
+            }
+            if (this.mode == 2) {
+                throw new OracleMenuError();
+            }
+        }
+    }
+
+    private static String menuPaintCurrentIngameCase(
+            int caseId,
+            final Field menuStack,
+            Field applicationGraphics,
+            Constructor<?> menuConstructor,
+            Field menuId,
+            Field menuUpdateMenu,
+            Field menuChoiceIds,
+            Field inkEngineUseImageBorders,
+            Method menuPaintCurrentIngame) throws Exception {
+        final OracleMenuPaintState state = new OracleMenuPaintState();
+        final Object menu1 = menuConstructor.newInstance();
+        final Object menu2 = menuConstructor.newInstance();
+        menuId.setInt(menu1, 0);
+        menuUpdateMenu.setBoolean(menu1, false);
+        menuChoiceIds.set(menu1, new Vector());
+        menuId.setInt(menu2, 0);
+        menuUpdateMenu.setBoolean(menu2, false);
+        menuChoiceIds.set(menu2, new Vector());
+        final OracleMenuStackSetter setter = new OracleMenuStackSetter() {
+            public void set(Vector stack) {
+                try {
+                    menuStack.set(null, stack);
+                } catch (Exception exception) {
+                    throw new RuntimeException(exception);
+                }
+            }
+        };
+        OracleMenuStack vector2 = null;
+        OracleMenuStack vector1 = null;
+        int paintMode = 0;
+        switch (caseId) {
+            case 0:
+                break;
+            case 1:
+                vector1 = new OracleMenuStack(state, 0, 0, 0, 0, null, setter);
+                break;
+            case 2:
+                vector1 = new OracleMenuStack(
+                        state, Integer.MIN_VALUE, 0, 0, 0, null, setter);
+                break;
+            case 3:
+                vector1 = new OracleMenuStack(state, -1, 0, 0, 0, null, setter);
+                break;
+            case 4:
+                vector1 = new OracleMenuStack(state, 0, 0, 0, 0, null, setter);
+                break;
+            case 5:
+                vector1 = new OracleMenuStack(state, 1, 1, 0, 0, null, setter);
+                break;
+            case 6:
+                vector1 = new OracleMenuStack(state, 1, 2, 0, 0, null, setter);
+                break;
+            case 7:
+                vector1 = new OracleMenuStack(state, 0, 0, 0, 1, null, setter);
+                vector1.addElement(menu1);
+                break;
+            case 8:
+                vector1 = new OracleMenuStack(state, 1, 0, 0, 1, null, setter);
+                vector1.addElement(menu1);
+                break;
+            case 9:
+                vector1 = new OracleMenuStack(state, 1, 0, 0, 2, null, setter);
+                break;
+            case 10:
+                vector2 = new OracleMenuStack(state, 0, 0, 2, 0, null, setter);
+                vector1 = new OracleMenuStack(state, 2, 0, 0, 2, vector2, setter);
+                break;
+            case 11:
+                vector2 = new OracleMenuStack(state, 1, 0, 0, 0, null, setter);
+                vector2.addElement(menu1);
+                vector1 = new OracleMenuStack(
+                        state, Integer.MAX_VALUE, 0, 0, 2, vector2, setter);
+                break;
+            case 12:
+                vector2 = new OracleMenuStack(state, 1, 0, 0, 0, null, setter);
+                vector2.addElement(menu1);
+                vector1 = new OracleMenuStack(state, 2, 0, 0, 2, vector2, setter);
+                break;
+            case 13:
+                vector1 = new OracleMenuStack(state, 1, 0, 1, 0, null, setter);
+                break;
+            case 14:
+                vector1 = new OracleMenuStack(state, 1, 0, 2, 0, null, setter);
+                break;
+            case 15:
+                vector1 = new OracleMenuStack(state, 1, 0, 0, 0, null, setter);
+                vector1.addElement(new Handle(99));
+                break;
+            case 16:
+                vector1 = new OracleMenuStack(state, 1, 0, 0, 0, null, setter);
+                vector1.addElement(null);
+                break;
+            case 17:
+                vector1 = new OracleMenuStack(state, 1, 0, 0, 0, null, setter);
+                vector1.addElement(menu1);
+                break;
+            case 18:
+                vector1 = new OracleMenuStack(state, 1, 0, 0, 0, null, setter);
+                vector1.addElement(menu1);
+                paintMode = 1;
+                break;
+            case 19:
+                vector2 = new OracleMenuStack(state, 2, 0, 0, 0, null, setter);
+                vector2.addElement(menu1);
+                vector2.addElement(menu2);
+                vector1 = new OracleMenuStack(state, 2, 0, 0, 2, vector2, setter);
+                paintMode = 2;
+                break;
+            default:
+                throw new IllegalArgumentException("invalid menu-paint-current-ingame case");
+        }
+        Object oldStack = menuStack.get(null);
+        Object oldGraphics = applicationGraphics.get(null);
+        boolean oldUseImageBorders = inkEngineUseImageBorders.getBoolean(null);
+        menuStack.set(null, vector1);
+        applicationGraphics.set(null, new OracleMenuPaintGraphics(state, paintMode));
+        inkEngineUseImageBorders.setBoolean(null, false);
+        String status;
+        String finalStack;
+        try {
+            menuPaintCurrentIngame.invoke(null);
+            status = "OK";
+        } catch (InvocationTargetException exception) {
+            Throwable cause = exception.getCause();
+            if (cause instanceof NullPointerException) {
+                status = "NPE";
+                if (state.returnedPresent && state.returned == null) {
+                    state.paintStarted = true;
+                }
+            } else if (cause instanceof ArrayIndexOutOfBoundsException) {
+                status = "AIOOBE";
+            } else if (cause instanceof ClassCastException) {
+                status = "CCE";
+            } else if (cause instanceof OracleMenuError) {
+                status = "ERROR";
+            } else {
+                throw exception;
+            }
+        } finally {
+            Object finalStackObject = menuStack.get(null);
+            finalStack = finalStackObject == null ? "null"
+                    : finalStackObject == vector1 ? "V1"
+                    : finalStackObject == vector2 ? "V2" : "OTHER";
+            menuStack.set(null, oldStack);
+            applicationGraphics.set(null, oldGraphics);
+            inkEngineUseImageBorders.setBoolean(null, oldUseImageBorders);
+        }
+        String returned = !state.returnedPresent ? "-" : state.returned == null ? "N"
+                : state.returned == menu1 ? "M1" : state.returned == menu2 ? "M2" : "O";
+        return status + ":" + (state.trace.length() == 0 ? "-" : state.trace.toString())
+                + ":" + (state.savedSizePresent ? Integer.toString(state.savedSize) : "-")
+                + ":" + (state.indexPresent ? Integer.toString(state.index) : "-")
+                + ":" + returned + ":" + (state.paintStarted ? "1" : "0")
+                + ":" + finalStack;
+    }
+
     private static String paintSimpleOutput(String status, RecordingGraphics graphics) {
         return status + ":" + (graphics == null || graphics.attempt == null
                 ? "null" : graphics.attempt);
@@ -1089,6 +1358,7 @@ public final class OrphanOriginalPureOracle {
         Method menuCloseAll = method(menuClass, "closeAll");
         Method menuCloseCurrent = method(menuClass, "closeCurrent");
         Method menuGetCurrent = method(menuClass, "getCurrent");
+        Method menuPaintCurrentIngame = method(inkEngine, "menuPaintCurrentIngame");
         Method gameResourceEquals = method(resourceClass, "equals", Object.class);
         Method gameResourcePaint = method(resourceClass, "paint",
                 Graphics.class, Integer.TYPE, Integer.TYPE, Integer.TYPE);
@@ -1235,7 +1505,9 @@ public final class OrphanOriginalPureOracle {
         Field menuSoftkeyLeft = field(menuClass, "engineSoftkeyOptionLeft");
         Field menuSoftkeyRight = field(menuClass, "engineSoftkeyOptionRight");
         Field menuInvItemResource = field(menuClass, "curInvItemResource");
+        Field menuId = field(menuClass, "ID");
         Field menuStack = field(menuClass, "stack");
+        Field inkEngineUseImageBorders = field(inkEngine, "ingameUseImageBorders");
         Field gameResourceType = field(resourceClass, "type");
         Field gameResourceId = field(resourceClass, "ID");
         Field gameResourceImage = field(resourceClass, "image");
@@ -2885,6 +3157,11 @@ public final class OrphanOriginalPureOracle {
                     status = "NPE";
                 }
                 result = paintSimpleOutput(status, graphics);
+            } else if (parts[0].equals("menu-paint-current-ingame") && parts.length == 2) {
+                result = menuPaintCurrentIngameCase(
+                        value(parts, 1), menuStack, applicationGraphics, menuConstructor,
+                        menuId, menuUpdateMenu, menuChoiceIds, inkEngineUseImageBorders,
+                        menuPaintCurrentIngame);
             } else if ((parts[0].equals("menu-active") || parts[0].equals("menu-close-all")
                     || parts[0].equals("menu-get-current")) && parts.length == 2) {
                 int length = value(parts, 1);

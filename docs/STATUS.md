@@ -1,5 +1,14 @@
 # Status — Silent Hill: Orphan
 
+## Portable runtime dependency (2026-08-30)
+
+The Orphan-specific `orphan-jvm` and `orphan-me` crates remain as audited API
+adapters, but their reusable arithmetic and framebuffer storage now come from
+the public
+[`j2me-preservation-kit`](https://github.com/sushi-shi/j2me-preservation-kit),
+pinned to full commit `7aeba277a270eb58658d211bd3621b30956f6212`.
+No game-facing exception types or framebuffer behavior were removed.
+
 Living record of what is recovered and verified. Newest first.
 
 ## Phase 3 — strict transliteration started
@@ -12,7 +21,7 @@ Living record of what is recovered and verified. Newest first.
   `orphan-me` starts the deterministic MIDP subset with a clipped CPU ARGB
   framebuffer. These are device/runtime implementations, not transliterated
   game bodies.
-- The first 162/350 game methods (`M.min`, `max`, `abs`, `dir`, `toInt`,
+- The first 163/350 game methods (`M.min`, `max`, `abs`, `dir`, `toInt`,
   `toBoolean`, `getLeft`,
   `getTop`, `resourceExit`, `destroyApp`, `pauseApp`, `appStart`, `resourceURLEncode`, `codedString`, `charToString`,
   the default constructors for `Application`, `CheatController`, `SilentHillGame`,
@@ -32,7 +41,7 @@ Living record of what is recovered and verified. Newest first.
   `ExtBase.actionKeyIdConvert`, both `popupCreate` overloads, `popupSetNext`,
   `actionKeyKeycodeToActionkey`, `actionKeyGetScriptId`,
   `actionKeyUnsetAllKeys`, `actionKeyInitSystem`, `isMenuScrollAllowed`,
-  `inventoryEquipUnequipHandling`, `removeSavedGameFromRMS`, `splashMoreExists`, the two-argument `wrapString`,
+  `inventoryEquipUnequipHandling`, `removeSavedGameFromRMS`, `menuPaintCurrentIngame`, `splashMoreExists`, the two-argument `wrapString`,
   `M.loading`, all three `loadRequest_getResourcePath` overloads,
   `M.setKeyStatus`, and `MyCanvas.<init>`, `paint`, `showNotify`, `resumeSound`, `keyInit`, `keyJadEntryAsInt`, `keyConvertToKeyId`, `keyPressed`, `keyReleased`,
   both `Menu.addChoice` overloads, `getChoiceNr`, `countChoices`,
@@ -49,12 +58,12 @@ Living record of what is recovered and verified. Newest first.
   `getMoveDir`, and `enterHover`) are strict
   Rust translations. Each is hash-bound to original
   bytecode and opcode streams, complete `javac` and `syn` ASTs, a written
-  per-node semantic crosswalk, and a live 994,522-case oracle in which the
+  per-node semantic crosswalk, and a live 994,543-case oracle in which the
   recovered baseline, canonical Java, and Rust agree. The naming-reference JAR
-  agrees on all 988,307 non-variant cases; its 6,215 excluded requests cover two
+  agrees on all 988,328 non-variant cases; its 6,215 excluded requests cover two
   input-timing policies and one rendering policy scoped by live validation of
   the variant ledger.
-  Coverage stays an explicit ratchet; the other 188 bodies are not claimed.
+  Coverage stays an explicit ratchet; the other 187 bodies are not claimed.
 - The 184 Java fields reached by those methods are exhaustively mapped: 149 mutable
   fields become 149 Rust fields in `CheatControllerStatics`, `SilentHillGameStatics`, `ApplicationState`, `ResourceRequestState`, `GameResourceState`, `GameResourceStatics`, `InkEngineState`, `GameCanvasState`,
   `MenuState`, `MenuStatics`, `InkInterpreterState`, `InkInterpreterStatics`,
@@ -68,9 +77,9 @@ Living record of what is recovered and verified. Newest first.
   `ApplicationRepaintCanvasIfPossibleError`, `ApplicationResourceMakeSubChunkError`, and
   `RoomObjectStringEventError` and `RoomObjectEnterHoverError` enums and their variants are independently claimed
   as Rust-only adaptations.
-  The reverse `syn` inventory permits only the 164 reviewed functions, 231
-  reviewed value declarations, and 33 reviewed containers (428 total
-  declarations). Twenty-two focused Rust tests exercise the admitted bodies, and the
+  The reverse `syn` inventory permits only the 165 reviewed functions, 231
+  reviewed value declarations, and 33 reviewed containers (429 total
+  declarations). Twenty-six focused Rust tests exercise the admitted bodies, and the
   injected unowned-constant proof goes red.
 
 ## Phase 2 — canonical Java application and AST authority

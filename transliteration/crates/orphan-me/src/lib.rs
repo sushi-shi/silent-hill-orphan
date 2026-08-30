@@ -4,7 +4,7 @@
 extern crate alloc;
 
 use alloc::vec;
-use alloc::vec::Vec;
+use j2me_canvas::Image;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum MeError {
@@ -46,7 +46,7 @@ impl Rect {
 pub struct Framebuffer {
     width: u32,
     height: u32,
-    pixels: Vec<u32>,
+    image: Image,
     clip: Rect,
 }
 
@@ -59,11 +59,12 @@ impl Framebuffer {
             .checked_mul(height)
             .and_then(|value| usize::try_from(value).ok())
             .ok_or(MeError::AllocationTooLarge)?;
-        let pixels = vec![0; length];
+        let image = Image::from_argb(width as i32, height as i32, vec![0; length])
+            .map_err(|_| MeError::AllocationTooLarge)?;
         Ok(Self {
             width,
             height,
-            pixels,
+            image,
             clip: Rect {
                 x: 0,
                 y: 0,
@@ -80,7 +81,7 @@ impl Framebuffer {
         self.height
     }
     pub fn pixels(&self) -> &[u32] {
-        &self.pixels
+        self.image.pixels()
     }
 
     pub fn set_clip(&mut self, clip: Rect) {
@@ -103,9 +104,8 @@ impl Framebuffer {
             return;
         }
         for y in area.y..area.y + area.height {
-            let row = y as usize * self.width as usize;
             for x in area.x..area.x + area.width {
-                self.pixels[row + x as usize] = argb;
+                self.image.set(x, y, argb);
             }
         }
     }

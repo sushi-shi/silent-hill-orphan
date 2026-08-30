@@ -3,7 +3,6 @@
 
 extern crate alloc;
 
-use alloc::vec;
 use alloc::vec::Vec;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -39,10 +38,12 @@ pub enum ArrayCopyException {
 }
 
 pub fn new_i32_array(length: i32) -> Result<Vec<i32>, NegativeArraySizeException> {
-    if length < 0 {
-        Err(NegativeArraySizeException { length })
-    } else {
-        Ok(vec![0; length as usize])
+    match j2me_jvm::new_i32_array(length) {
+        Ok(values) => Ok(values),
+        Err(j2me_jvm::JavaError::NegativeArraySize { length }) => {
+            Err(NegativeArraySizeException { length })
+        }
+        Err(_) => unreachable!("new_i32_array has one closed error variant"),
     }
 }
 
@@ -71,15 +72,15 @@ pub fn array_ref<T>(values: Option<&[T]>, index: i32) -> Result<&T, ArrayAccessE
 }
 
 pub const fn i32_add(left: i32, right: i32) -> i32 {
-    left.wrapping_add(right)
+    j2me_jvm::i32_add(left, right)
 }
 
 pub const fn i32_sub(left: i32, right: i32) -> i32 {
-    left.wrapping_sub(right)
+    j2me_jvm::i32_sub(left, right)
 }
 
 pub const fn i32_mul(left: i32, right: i32) -> i32 {
-    left.wrapping_mul(right)
+    j2me_jvm::i32_mul(left, right)
 }
 
 pub const fn i32_div(left: i32, right: i32) -> Result<i32, ArithmeticException> {
@@ -103,15 +104,15 @@ pub const fn i32_rem(left: i32, right: i32) -> Result<i32, ArithmeticException> 
 }
 
 pub const fn i32_shl(value: i32, distance: i32) -> i32 {
-    value.wrapping_shl((distance & 31) as u32)
+    j2me_jvm::i32_shl(value, distance)
 }
 
 pub const fn i32_shr(value: i32, distance: i32) -> i32 {
-    value.wrapping_shr((distance & 31) as u32)
+    j2me_jvm::i32_shr(value, distance)
 }
 
 pub const fn i32_ushr(value: i32, distance: i32) -> i32 {
-    ((value as u32) >> ((distance & 31) as u32)) as i32
+    j2me_jvm::i32_ushr(value, distance)
 }
 
 #[cfg(test)]
